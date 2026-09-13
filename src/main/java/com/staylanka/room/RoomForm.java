@@ -17,8 +17,6 @@ public class RoomForm {
     private String description;
     @NotNull @DecimalMin("0.01")
     private BigDecimal nightlyPrice;
-    @NotNull
-    private RoomStatus status = RoomStatus.AVAILABLE;
     private MultipartFile image;
 
     public static RoomForm from(Room room) {
@@ -27,7 +25,6 @@ public class RoomForm {
         form.roomTypeId = room.getRoomType().getId();
         form.description = room.getDescription();
         form.nightlyPrice = room.getNightlyPrice();
-        form.status = room.getStatus();
         return form;
     }
 
@@ -39,9 +36,6 @@ public class RoomForm {
     public void setDescription(String description) { this.description = description; }
     public BigDecimal getNightlyPrice() { return nightlyPrice; }
     public void setNightlyPrice(BigDecimal nightlyPrice) { this.nightlyPrice = nightlyPrice; }
-    public RoomStatus getStatus() { return status; }
-    public void setStatus(RoomStatus status) { this.status = status; }
     public MultipartFile getImage() { return image; }
     public void setImage(MultipartFile image) { this.image = image; }
 }
-

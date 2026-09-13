@@ -6,8 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
     updateNavbar();
     window.addEventListener('scroll', updateNavbar, { passive: true });
 
-    const today = new Date();
-    const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const colomboDateParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Colombo', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date()).reduce((parts, part) => {
+        if (part.type !== 'literal') parts[part.type] = part.value;
+        return parts;
+    }, {});
+    const localToday = `${colomboDateParts.year}-${colomboDateParts.month}-${colomboDateParts.day}`;
 
     document.querySelectorAll('[data-date-pair]').forEach(function (group) {
         const checkIn = group.querySelector('[data-check-in]');
@@ -22,9 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 checkOut.min = localToday;
                 return;
             }
-            const nextDay = new Date(checkIn.value + 'T00:00:00');
-            nextDay.setDate(nextDay.getDate() + 1);
-            const minCheckout = new Date(nextDay.getTime() - nextDay.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+            const nextDay = new Date(checkIn.value + 'T00:00:00Z');
+            nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+            const minCheckout = nextDay.toISOString().split('T')[0];
             checkOut.min = minCheckout;
             if (checkOut.value && checkOut.value < minCheckout) checkOut.value = '';
         };

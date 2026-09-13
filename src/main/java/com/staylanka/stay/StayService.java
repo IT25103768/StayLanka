@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -74,6 +75,17 @@ public class StayService {
         }
         if (!today.isBefore(reservation.getCheckOutDate())) {
             throw new BusinessRuleException("The reservation's check-out date has passed.");
+        }
+        if (form.getActualCheckIn() == null) {
+            throw new BusinessRuleException("Actual check-in time is required.");
+        }
+        if (form.getActualCheckIn().isAfter(LocalDateTime.now())) {
+            throw new BusinessRuleException("Actual check-in time cannot be in the future.");
+        }
+        LocalDate actualCheckInDate = form.getActualCheckIn().toLocalDate();
+        if (actualCheckInDate.isBefore(reservation.getCheckInDate())
+                || !actualCheckInDate.isBefore(reservation.getCheckOutDate())) {
+            throw new BusinessRuleException("Actual check-in time must fall within the reservation dates.");
         }
         Room room = roomRepository.findByIdForUpdate(reservation.getRoom().getId())
                 .orElseThrow(() -> new NotFoundException("Assigned room was not found."));
@@ -167,6 +179,12 @@ public class StayService {
                 .orElseThrow(() -> new NotFoundException("Stay was not found."));
         if (stay.isCompleted()) {
             throw new BusinessRuleException("This stay has already been checked out.");
+        }
+        if (form.getActualCheckOut() == null) {
+            throw new BusinessRuleException("Actual check-out time is required.");
+        }
+        if (form.getActualCheckOut().isAfter(LocalDateTime.now())) {
+            throw new BusinessRuleException("Actual check-out time cannot be in the future.");
         }
         if (!form.getActualCheckOut().isAfter(stay.getActualCheckIn())) {
             throw new BusinessRuleException("Check-out time must be after check-in time.");

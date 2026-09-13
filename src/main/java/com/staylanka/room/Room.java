@@ -42,16 +42,16 @@ public class Room extends BaseEntity {
 
     public Room(String roomNumber, RoomType roomType, String description,
                 BigDecimal nightlyPrice, RoomStatus status) {
-        update(roomNumber, roomType, description, nightlyPrice, status);
+        updateDetails(roomNumber, roomType, description, nightlyPrice);
+        this.status = status;
     }
 
-    public void update(String roomNumber, RoomType roomType, String description,
-                       BigDecimal nightlyPrice, RoomStatus status) {
+    public void updateDetails(String roomNumber, RoomType roomType, String description,
+                              BigDecimal nightlyPrice) {
         this.roomNumber = roomNumber;
         this.roomType = roomType;
         this.description = description;
         this.nightlyPrice = nightlyPrice;
-        this.status = status;
     }
 
     public String getRoomNumber() { return roomNumber; }

@@ -3,11 +3,14 @@ package com.staylanka.room;
 import com.staylanka.common.BusinessRuleException;
 import com.staylanka.common.ConflictException;
 import com.staylanka.common.NotFoundException;
+import com.staylanka.reservation.ReservationRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -20,13 +23,16 @@ public class RoomService {
     private final RoomTypeRepository roomTypeRepository;
     private final RoomImageRepository imageRepository;
     private final FileStorageService fileStorageService;
+    private final ReservationRepository reservationRepository;
 
     public RoomService(RoomRepository roomRepository, RoomTypeRepository roomTypeRepository,
-                       RoomImageRepository imageRepository, FileStorageService fileStorageService) {
+                       RoomImageRepository imageRepository, FileStorageService fileStorageService,
+                       ReservationRepository reservationRepository) {
         this.roomRepository = roomRepository;
         this.roomTypeRepository = roomTypeRepository;
         this.imageRepository = imageRepository;
         this.fileStorageService = fileStorageService;
+        this.reservationRepository = reservationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -81,10 +87,12 @@ public class RoomService {
     @Transactional(readOnly = true)
     public Map<Long, String> primaryImagePaths(List<Room> rooms) {
         Map<Long, String> paths = new LinkedHashMap<>();
-        for (Room room : rooms) {
-            imageRepository.findByRoomIdOrderByPrimaryImageDescIdAsc(room.getId()).stream()
-                    .findFirst()
-                    .ifPresent(image -> paths.put(room.getId(), image.getStoragePath()));
+        if (rooms == null || rooms.isEmpty()) {
+            return paths;
+        }
+        List<Long> roomIds = rooms.stream().map(Room::getId).toList();
+        for (RoomImage image : imageRepository.findForRooms(roomIds)) {
+            paths.putIfAbsent(image.getRoom().getId(), image.getStoragePath());
         }
         return paths;
     }
@@ -121,6 +129,11 @@ public class RoomService {
         if (roomTypeRepository.existsByNameIgnoreCaseAndIdNot(form.getName(), id)) {
             throw new ConflictException("A room type with this name already exists.");
         }
+        if (form.getCapacity() < type.getCapacity()
+                && reservationRepository.countCapacityConflictsForRoomType(id, form.getCapacity(), LocalDate.now()) > 0) {
+            throw new BusinessRuleException(
+                    "Room type capacity cannot be reduced below the guest count of an active or upcoming reservation.");
+        }
         type.update(form.getName().trim(), trimToNull(form.getDescription()), form.getCapacity(),
                 form.getBedInformation().trim(), form.getBasePrice(), trimToNull(form.getAmenities()));
     }
@@ -137,8 +150,11 @@ public class RoomService {
             throw new ConflictException("This room number is already in use.");
         }
         RoomType type = getType(form.getRoomTypeId());
+        if (!type.isActive()) {
+            throw new BusinessRuleException("Choose an active room type for a new room.");
+        }
         Room room = roomRepository.save(new Room(form.getRoomNumber().trim(), type,
-                trimToNull(form.getDescription()), form.getNightlyPrice(), form.getStatus()));
+                trimToNull(form.getDescription()), form.getNightlyPrice(), RoomStatus.AVAILABLE));
         saveImageIfPresent(room, form);
         return room;
     }
@@ -151,19 +167,36 @@ public class RoomService {
             throw new ConflictException("This room number is already in use.");
         }
         RoomType type = getType(form.getRoomTypeId());
-        room.update(form.getRoomNumber().trim(), type, trimToNull(form.getDescription()),
-                form.getNightlyPrice(), form.getStatus());
+        if (!room.getRoomType().getId().equals(type.getId())
+                && (room.getStatus() == RoomStatus.OCCUPIED
+                || reservationRepository.countBlockingOperationalChanges(room.getId(), LocalDate.now()) > 0)) {
+            throw new BusinessRuleException(
+                    "Room type cannot be changed while this room has an active or upcoming reservation.");
+        }
+        if (!type.isActive() && (room.getStatus() == RoomStatus.AVAILABLE
+                || room.getStatus() == RoomStatus.OCCUPIED)) {
+            throw new BusinessRuleException("An operational room must use an active room type.");
+        }
+        room.updateDetails(form.getRoomNumber().trim(), type, trimToNull(form.getDescription()),
+                form.getNightlyPrice());
         saveImageIfPresent(room, form);
+    }
+
+    @Transactional
+    public void changeOperationalStatus(Long id, RoomStatus target) {
+        if (target == null) {
+            throw new BusinessRuleException("Choose a valid room status.");
+        }
+        Room room = roomRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new NotFoundException("Room was not found."));
+        applyOperationalStatus(room, target);
     }
 
     @Transactional
     public void deactivate(Long id) {
         Room room = roomRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("Room was not found."));
-        if (room.getStatus() == RoomStatus.OCCUPIED) {
-            throw new BusinessRuleException("An occupied room cannot be deactivated.");
-        }
-        room.setStatus(RoomStatus.INACTIVE);
+        applyOperationalStatus(room, RoomStatus.INACTIVE);
     }
 
     @Transactional(readOnly = true)
@@ -171,14 +204,47 @@ public class RoomService {
         return roomRepository.countByStatus(RoomStatus.AVAILABLE);
     }
 
+    private void applyOperationalStatus(Room room, RoomStatus target) {
+        if (target == RoomStatus.OCCUPIED) {
+            throw new BusinessRuleException("Occupied status is controlled by the check-in workflow.");
+        }
+        if (room.getStatus() == RoomStatus.OCCUPIED) {
+            throw new BusinessRuleException("An occupied room's status is controlled by check-in and check-out.");
+        }
+        if (target == RoomStatus.AVAILABLE && !room.getRoomType().isActive()) {
+            throw new BusinessRuleException("Activate the room type before making this room available.");
+        }
+        if ((target == RoomStatus.INACTIVE || target == RoomStatus.MAINTENANCE)
+                && reservationRepository.countBlockingOperationalChanges(room.getId(), LocalDate.now()) > 0) {
+            throw new BusinessRuleException(
+                    "This room has an active or upcoming reservation. Cancel, reject, or reassign it before changing the room status.");
+        }
+        room.setStatus(target);
+    }
+
     private void saveImageIfPresent(Room room, RoomForm form) {
         if (form.getImage() == null || form.getImage().isEmpty()) {
             return;
         }
         FileStorageService.StoredFile stored = fileStorageService.storeRoomImage(form.getImage());
+        registerRollbackCleanup(stored.relativePath());
         boolean primary = !imageRepository.existsByRoomId(room.getId());
         imageRepository.save(new RoomImage(room, stored.originalName(), stored.contentType(),
                 stored.relativePath(), primary));
+    }
+
+    private void registerRollbackCleanup(String relativePath) {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != TransactionSynchronization.STATUS_COMMITTED) {
+                    fileStorageService.delete(relativePath);
+                }
+            }
+        });
     }
 
     private String trimToNull(String value) {

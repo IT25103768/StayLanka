@@ -59,5 +59,33 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                @Param("checkOut") LocalDate checkOut,
                                @Param("excludeId") Long excludeId);
 
+    @Query("""
+            select count(r) from Reservation r
+            where r.room.id = :roomId
+              and r.status in (
+                com.staylanka.reservation.ReservationStatus.PENDING,
+                com.staylanka.reservation.ReservationStatus.CONFIRMED,
+                com.staylanka.reservation.ReservationStatus.CHECKED_IN)
+              and (r.status = com.staylanka.reservation.ReservationStatus.CHECKED_IN
+                   or r.checkOutDate > :today)
+            """)
+    long countBlockingOperationalChanges(@Param("roomId") Long roomId,
+                                         @Param("today") LocalDate today);
+
+    @Query("""
+            select count(r) from Reservation r
+            where r.room.roomType.id = :roomTypeId
+              and r.status in (
+                com.staylanka.reservation.ReservationStatus.PENDING,
+                com.staylanka.reservation.ReservationStatus.CONFIRMED,
+                com.staylanka.reservation.ReservationStatus.CHECKED_IN)
+              and (r.status = com.staylanka.reservation.ReservationStatus.CHECKED_IN
+                   or r.checkOutDate > :today)
+              and r.guestCount > :capacity
+            """)
+    long countCapacityConflictsForRoomType(@Param("roomTypeId") Long roomTypeId,
+                                           @Param("capacity") int capacity,
+                                           @Param("today") LocalDate today);
+
     long countByStatus(ReservationStatus status);
 }

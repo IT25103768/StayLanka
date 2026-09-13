@@ -22,12 +22,15 @@ import com.staylanka.review.Review;
 import com.staylanka.review.ReviewForm;
 import com.staylanka.review.ReviewService;
 import com.staylanka.review.ReviewStatus;
+import com.staylanka.room.FileStorageService;
 import com.staylanka.room.Room;
+import com.staylanka.room.RoomForm;
 import com.staylanka.room.RoomRepository;
 import com.staylanka.room.RoomSearchForm;
 import com.staylanka.room.RoomService;
 import com.staylanka.room.RoomStatus;
 import com.staylanka.room.RoomType;
+import com.staylanka.room.RoomTypeForm;
 import com.staylanka.room.RoomTypeRepository;
 import com.staylanka.stay.AdditionalChargeForm;
 import com.staylanka.stay.CheckInForm;
@@ -47,11 +50,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,6 +76,7 @@ class CriticalWorkflowIntegrationTests {
     @Autowired RoomTypeRepository roomTypeRepository;
     @Autowired RoomRepository roomRepository;
     @Autowired RoomService roomService;
+    @Autowired FileStorageService fileStorageService;
     @Autowired AppUserRepository userRepository;
     @Autowired StaffProfileRepository staffProfileRepository;
     @Autowired PasswordEncoder passwordEncoder;
@@ -145,6 +151,74 @@ class CriticalWorkflowIntegrationTests {
     }
 
     @Test
+    void futureReservationsBlockOperationalShutdownAndRoomEditsPreserveStatus() {
+        Authentication customer = registerCustomer("room.lifecycle.customer@staylanka.test");
+        Room room = createRoom("T106", 2, "10000.00");
+        Reservation reservation = reservationService.create(customer,
+                reservationForm(room, LocalDate.now().plusDays(2), LocalDate.now().plusDays(4), 2));
+        reservationService.confirm(reservation.getId());
+
+        assertThatThrownBy(() -> roomService.changeOperationalStatus(room.getId(), RoomStatus.MAINTENANCE))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("upcoming reservation");
+        assertThat(room.getStatus()).isEqualTo(RoomStatus.AVAILABLE);
+
+        reservationService.cancelOwn(customer, reservation.getId(), "Trip cancelled");
+        roomService.changeOperationalStatus(room.getId(), RoomStatus.MAINTENANCE);
+        assertThat(room.getStatus()).isEqualTo(RoomStatus.MAINTENANCE);
+
+        RoomForm edit = RoomForm.from(room);
+        edit.setDescription("Updated without bypassing operational lifecycle");
+        edit.setNightlyPrice(new BigDecimal("10500.00"));
+        roomService.update(room.getId(), edit);
+
+        assertThat(room.getStatus()).isEqualTo(RoomStatus.MAINTENANCE);
+        assertThat(room.getNightlyPrice()).isEqualByComparingTo("10500.00");
+    }
+
+    @Test
+    void bookedRoomTypeCapacityCannotBeReducedBelowReservedGuestCount() {
+        Authentication customer = registerCustomer("capacity.guard.customer@staylanka.test");
+        Room room = createRoom("T108", 4, "14000.00");
+        Reservation reservation = reservationService.create(customer,
+                reservationForm(room, LocalDate.now().plusDays(2), LocalDate.now().plusDays(4), 4));
+        reservationService.confirm(reservation.getId());
+
+        RoomType type = room.getRoomType();
+        RoomTypeForm edit = RoomTypeForm.from(type);
+        edit.setCapacity(2);
+
+        assertThatThrownBy(() -> roomService.updateType(type.getId(), edit))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("capacity cannot be reduced");
+        assertThat(type.getCapacity()).isEqualTo(4);
+    }
+
+    @Test
+    void futureConfirmedReservationCannotBeMarkedNoShow() {
+        Authentication customer = registerCustomer("no.show.customer@staylanka.test");
+        Room room = createRoom("T107", 2, "9500.00");
+        Reservation reservation = reservationService.create(customer,
+                reservationForm(room, LocalDate.now().plusDays(2), LocalDate.now().plusDays(3), 1));
+        reservationService.confirm(reservation.getId());
+
+        assertThatThrownBy(() -> reservationService.markNoShow(reservation.getId(), "Too early"))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("future reservation");
+        assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    void imageUploadRejectsSpoofedContentType() {
+        MockMultipartFile fakeImage = new MockMultipartFile("image", "room.png", "image/png",
+                "this is not a real png".getBytes(StandardCharsets.UTF_8));
+
+        assertThatThrownBy(() -> fileStorageService.storeRoomImage(fakeImage))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("valid JPEG, PNG, and WebP");
+    }
+
+    @Test
     void percentageAndFixedPromotionStrategiesEnforceEligibilityAndZeroFloor() {
         PromotionForm percentage = promotionForm("TEST10", PromotionType.PERCENTAGE, "10.00");
         promotionService.create(percentage);
@@ -170,7 +244,7 @@ class CriticalWorkflowIntegrationTests {
         reservationService.confirm(reservation.getId());
 
         CheckInForm checkInForm = new CheckInForm();
-        checkInForm.setActualCheckIn(LocalDateTime.now().minusHours(1));
+        checkInForm.setActualCheckIn(LocalDate.now().atStartOfDay());
         checkInForm.setGuestCount(2);
         Stay stay = stayService.checkIn(reservation.getId(), checkInForm);
 

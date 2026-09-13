@@ -83,6 +83,10 @@ public class RoomController {
             bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
             prepareRoomForm(model, roomForm, null);
             return "room/form";
+        } catch (BusinessRuleException ex) {
+            bindingResult.reject("room.invalid", ex.getMessage());
+            prepareRoomForm(model, roomForm, null);
+            return "room/form";
         }
     }
 
@@ -107,6 +111,10 @@ public class RoomController {
             bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
             prepareRoomForm(model, roomForm, id);
             return "room/form";
+        } catch (BusinessRuleException ex) {
+            bindingResult.reject("room.invalid", ex.getMessage());
+            prepareRoomForm(model, roomForm, id);
+            return "room/form";
         }
         redirectAttributes.addFlashAttribute("success", "Room updated successfully.");
         return "redirect:/staff/rooms/" + id + "/edit";
@@ -114,8 +122,24 @@ public class RoomController {
 
     @PostMapping("/staff/rooms/{id}/deactivate")
     public String deactivate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        roomService.deactivate(id);
-        redirectAttributes.addFlashAttribute("success", "Room deactivated safely.");
+        try {
+            roomService.deactivate(id);
+            redirectAttributes.addFlashAttribute("success", "Room deactivated safely.");
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/staff/rooms";
+    }
+
+    @PostMapping("/staff/rooms/{id}/status")
+    public String changeStatus(@PathVariable Long id, @RequestParam RoomStatus status,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            roomService.changeOperationalStatus(id, status);
+            redirectAttributes.addFlashAttribute("success", "Room status updated successfully.");
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/staff/rooms";
     }
 
@@ -172,6 +196,10 @@ public class RoomController {
             bindingResult.rejectValue("name", "duplicate", ex.getMessage());
             model.addAttribute("typeId", id);
             return "room/type-form";
+        } catch (BusinessRuleException ex) {
+            bindingResult.reject("roomType.invalid", ex.getMessage());
+            model.addAttribute("typeId", id);
+            return "room/type-form";
         }
         redirectAttributes.addFlashAttribute("success", "Room type updated.");
         return "redirect:/admin/room-types";
@@ -186,8 +214,7 @@ public class RoomController {
 
     private void prepareRoomForm(Model model, RoomForm form, Long id) {
         model.addAttribute("roomForm", form);
-        model.addAttribute("roomTypes", roomService.allTypes());
-        model.addAttribute("roomStatuses", RoomStatus.values());
+        model.addAttribute("roomTypes", id == null ? roomService.activeTypes() : roomService.allTypes());
         model.addAttribute("roomId", id);
         if (id != null) {
             model.addAttribute("images", roomService.images(id));

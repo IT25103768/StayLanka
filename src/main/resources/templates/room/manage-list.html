@@ -1,2 +1,76 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"><head th:replace="~{fragments/layout :: head('Manage rooms')}"></head><body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div><main class="container py-4"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 section-title">Room management</h1><p class="text-secondary mb-0">Maintain rooms and operational availability.</p></div><div class="d-flex gap-2"><a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-success" th:href="@{/admin/room-types}">Room types</a><a class="btn btn-gold" th:href="@{/staff/rooms/new}">Add room</a></div></div><form class="card p-3 mb-4" method="get"><div class="input-group"><input class="form-control" name="q" th:value="${q}" placeholder="Room number or type"><button class="btn btn-success">Search</button></div></form><div class="card"><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Room</th><th>Type</th><th>Capacity</th><th>Nightly price</th><th>Status</th><th></th></tr></thead><tbody><tr th:each="r : ${rooms}"><td class="fw-semibold" th:text="${r.roomNumber}"></td><td th:text="${r.roomType.name}"></td><td th:text="${r.roomType.capacity}"></td><td th:text="${'LKR ' + #numbers.formatDecimal(r.nightlyPrice,1,2)}"></td><td><span class="badge text-bg-secondary" th:text="${r.status}"></span></td><td class="text-end"><div class="d-flex justify-content-end gap-1"><a class="btn btn-sm btn-outline-success" th:href="@{/staff/rooms/{id}/edit(id=${r.id})}">Edit</a><form th:if="${r.status.name() != 'INACTIVE'}" th:action="@{/staff/rooms/{id}/deactivate(id=${r.id})}" method="post"><button class="btn btn-sm btn-outline-danger" data-confirm="Deactivate this room? Historical records will be preserved.">Deactivate</button></form></div></td></tr></tbody></table><div th:if="${rooms.empty}" class="empty-state">No rooms found.</div></div></div></main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Manage rooms')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 section-title">Room management</h1>
+            <p class="text-secondary mb-0">Maintain rooms and operational availability.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-success" th:href="@{/admin/room-types}">Room types</a>
+            <a class="btn btn-gold" th:href="@{/staff/rooms/new}">Add room</a>
+        </div>
+    </div>
+    <form class="card p-3 mb-4" method="get">
+        <div class="input-group">
+            <input class="form-control" name="q" th:value="${q}" placeholder="Room number or type">
+            <button class="btn btn-success">Search</button>
+        </div>
+    </form>
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Room</th><th>Type</th><th>Capacity</th><th>Nightly price</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${rooms}">
+                    <td class="fw-semibold" th:text="${r.roomNumber}"></td>
+                    <td th:text="${r.roomType.name}"></td>
+                    <td th:text="${r.roomType.capacity}"></td>
+                    <td th:text="${'LKR ' + #numbers.formatDecimal(r.nightlyPrice,1,2)}"></td>
+                    <td><span class="badge text-bg-secondary" th:text="${r.status}"></span></td>
+                    <td class="text-end">
+                        <div class="d-flex justify-content-end gap-1 flex-wrap">
+                            <a class="btn btn-sm btn-outline-success" th:href="@{/staff/rooms/{id}/edit(id=${r.id})}">Edit</a>
 
+                            <form th:if="${r.status.name() == 'AVAILABLE'}"
+                                  th:action="@{/staff/rooms/{id}/status(id=${r.id})}" method="post">
+                                <input type="hidden" name="status" value="MAINTENANCE">
+                                <button class="btn btn-sm btn-outline-warning"
+                                        data-confirm="Put this room into maintenance? Active or upcoming reservations will block this action.">
+                                    Maintenance
+                                </button>
+                            </form>
+
+                            <form th:if="${r.status.name() == 'AVAILABLE' || r.status.name() == 'MAINTENANCE'}"
+                                  th:action="@{/staff/rooms/{id}/deactivate(id=${r.id})}" method="post">
+                                <button class="btn btn-sm btn-outline-danger"
+                                        data-confirm="Deactivate this room? Active or upcoming reservations will block this action.">
+                                    Deactivate
+                                </button>
+                            </form>
+
+                            <form th:if="${r.status.name() == 'MAINTENANCE' || r.status.name() == 'INACTIVE'}"
+                                  th:action="@{/staff/rooms/{id}/status(id=${r.id})}" method="post">
+                                <input type="hidden" name="status" value="AVAILABLE">
+                                <button class="btn btn-sm btn-outline-primary">Make available</button>
+                            </form>
+
+                            <span th:if="${r.status.name() == 'OCCUPIED'}" class="small text-secondary align-self-center">
+                                Managed by stay
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${rooms.empty}" class="empty-state">No rooms found.</div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

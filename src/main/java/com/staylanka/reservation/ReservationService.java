@@ -121,7 +121,11 @@ public class ReservationService {
 
     @Transactional
     public void confirm(Long id) {
-        transition(detailed(id), ReservationStatus.CONFIRMED, null);
+        Reservation reservation = detailed(id);
+        if (!reservation.getCheckOutDate().isAfter(LocalDate.now())) {
+            throw new BusinessRuleException("A reservation cannot be confirmed after its check-out date.");
+        }
+        transition(reservation, ReservationStatus.CONFIRMED, null);
     }
 
     @Transactional
@@ -134,7 +138,11 @@ public class ReservationService {
 
     @Transactional
     public void markNoShow(Long id, String reason) {
-        transition(detailed(id), ReservationStatus.NO_SHOW,
+        Reservation reservation = detailed(id);
+        if (LocalDate.now().isBefore(reservation.getCheckInDate())) {
+            throw new BusinessRuleException("A future reservation cannot be marked as no-show.");
+        }
+        transition(reservation, ReservationStatus.NO_SHOW,
                 reason == null || reason.isBlank() ? "Guest did not arrive" : reason.trim());
     }
 

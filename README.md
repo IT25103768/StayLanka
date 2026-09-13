@@ -122,7 +122,7 @@ The code follows `Controller → Service → Repository → database`, organized
 | Reviews | `ReviewService`, completed-stay ownership and uniqueness checks |
 | Guest requests | `GuestRequestService`, `RequestStatusChangedEvent`, `RequestHistoryListener` |
 
-Room uploads accept JPEG, PNG, or WebP files up to 2 MiB and are written beneath `UPLOAD_DIR`. Uploaded files, logs, local configuration, IDE metadata, and build output are ignored by Git.
+Room uploads accept JPEG, PNG, or WebP files up to 2 MiB, validate the actual file signature, and are written beneath `UPLOAD_DIR`. Uploaded files, logs, local configuration, IDE metadata, and build output are ignored by Git.
 
 ## Operational notes
 
@@ -130,4 +130,11 @@ Room uploads accept JPEG, PNG, or WebP files up to 2 MiB and are written beneath
 - Cancellation, rejection, and no-show statuses release future availability.
 - A final overlap check is performed while holding a pessimistic lock on the room to prevent concurrent double booking.
 - Future reservations do not change a room's operational status. Only check-in changes it to `OCCUPIED`; check-out restores `AVAILABLE`.
+- Maintenance and deactivation are blocked while a room has active or upcoming reservations, and ordinary room edits cannot bypass the stay lifecycle.
+- Room-type capacity cannot be reduced below the guest count of an active or upcoming reservation.
+- Hotel business dates use the `Asia/Colombo` timezone consistently.
 - Historical reservations, stays, reviews, and request history are preserved through status changes or safe deactivation.
+
+## Continuous integration
+
+GitHub Actions runs `./mvnw --batch-mode clean verify` on pushes and pull requests to `main`.

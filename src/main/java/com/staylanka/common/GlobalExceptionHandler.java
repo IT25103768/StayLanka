@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -27,6 +28,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public String forbidden(HttpServletRequest request, Model model) {
         return error(model, 403, "Access denied", "You do not have permission to access this resource.", request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    public String uploadTooLarge(HttpServletRequest request, Model model) {
+        return error(model, 413, "Upload too large", "Room images must be no larger than 2 MB.", request);
     }
 
     private String error(Model model, int status, String title, String message, HttpServletRequest request) {
