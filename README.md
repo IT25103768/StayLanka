@@ -11,6 +11,7 @@ StayLanka is a server-rendered hotel reservation management system for customers
 - Admin staff accounts, room types, promotions, review moderation, and operational dashboards
 - Ownership checks, role authorization, BCrypt passwords, CSRF protection, validation, safe deactivation, and friendly error pages
 - Responsive, accessible Thymeleaf interface with pagination, status badges, empty states, and confirmation prompts
+- Fully art-directed light/dark themes with a persistent navbar toggle, system-theme detection, no-flash startup, glass surfaces, adaptive ambient effects, and reduced-motion support
 
 ## Requirements
 
@@ -59,7 +60,12 @@ $env:DB_PASSWORD = 'replace-with-a-local-password'
 $env:UPLOAD_DIR = './uploads'
 ```
 
-The default profile never inserts users or sample data. The `dev` profile inserts sample room types, rooms, and a promotion. It creates administrator and staff accounts only when the corresponding passwords are supplied:
+The default profile never inserts users or sample data. The `dev` profile enables local sample-data seeding automatically. For a fresh development database, the default local accounts are:
+
+- Administrator: `admin@staylanka.lk` / `Admin@12345`
+- Staff: `staff@staylanka.lk` / `Staff@12345`
+
+You can override either account before starting the app:
 
 ```bash
 export DEV_ADMIN_EMAIL='admin@staylanka.lk'
@@ -68,7 +74,7 @@ export DEV_STAFF_EMAIL='staff@staylanka.lk'
 export DEV_STAFF_PASSWORD='choose-a-different-development-password'
 ```
 
-Passwords are BCrypt-hashed before persistence and are never logged. Do not commit real credentials or a populated `.env` file.
+These defaults exist only in `application-dev.yml`; never run the `dev` profile in production. Passwords are BCrypt-hashed before persistence and are never logged. If the seed email already exists in your database, the seeder deliberately does not overwrite that account or password.
 
 ## Run
 
