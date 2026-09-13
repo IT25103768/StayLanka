@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Stay history')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<header class="sl-page-header">
+    <div class="container"><div class="row align-items-center g-3"><div class="col-lg-8"><span class="sl-eyebrow">Guest account</span><h1 class="mb-2">My stay history</h1><p class="text-secondary mb-0">Review current and completed StayLanka stays.</p></div><div class="col-lg-4 d-lg-flex justify-content-lg-end"><a class="btn btn-outline-success" th:href="@{/customer/reviews}"><i class="bi bi-star"></i>My Reviews</a></div></div></div>
+</header>
+<main class="container py-5">
+    <div class="row g-4" th:unless="${stays.empty}">
+        <div class="col-md-6" th:each="stay : ${stays}">
+            <a class="card sl-action-card" th:href="@{/customer/stays/{id}(id=${stay.id})}">
+                <div class="d-flex justify-content-between align-items-start gap-3"><div><span class="small text-secondary" th:text="${stay.reservation.reservationReference}"></span><h2 class="h5 mt-1 mb-1" th:text="${stay.room.roomType.name}"></h2><span class="text-secondary small" th:text="${'Room ' + stay.room.roomNumber}"></span></div><span class="sl-status" th:classappend="${stay.completed ? ' sl-status--checked-out' : ' sl-status--checked-in'}" th:text="${stay.completed ? 'Completed' : 'Current'}"></span></div>
+                <div class="small text-secondary mt-2"><i class="bi bi-box-arrow-in-right me-1"></i><span th:text="${'Checked in ' + #temporals.format(stay.actualCheckIn,'dd MMM yyyy, HH:mm')}"></span></div>
+                <span class="fw-semibold mt-2">View stay <i class="bi bi-arrow-right"></i></span>
+            </a>
+        </div>
+    </div>
+    <div th:if="${stays.empty}" class="card empty-state"><i class="bi bi-suitcase fs-1"></i><h2 class="h4 mt-3">No stay history yet</h2><p>Your active and completed hotel stays will appear here.</p><a class="btn btn-gold mx-auto" th:href="@{/rooms}">Find a Room</a></div>
+    <nav class="mt-4" th:if="${stays.totalPages > 1}" aria-label="Stay history pages"><ul class="pagination justify-content-center"><li class="page-item" th:classappend="${stays.first} ? 'disabled'"><a class="page-link" th:href="@{/customer/stays(page=${stays.number-1})}">Previous</a></li><li class="page-item disabled"><span class="page-link" th:text="${'Page ' + (stays.number+1) + ' of ' + stays.totalPages}"></span></li><li class="page-item" th:classappend="${stays.last} ? 'disabled'"><a class="page-link" th:href="@{/customer/stays(page=${stays.number+1})}">Next</a></li></ul></nav>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Operations dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<header class="sl-page-header">
+    <div class="container">
+        <span class="sl-eyebrow">Hotel operations</span>
+        <h1 class="mb-2">Operations dashboard</h1>
+        <p class="text-secondary mb-0">Current operational counts and direct shortcuts for managing the StayLanka property.</p>
+    </div>
+</header>
+
+<main class="container py-5">
+    <section aria-labelledby="operations-overview">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div><h2 class="h4 section-title mb-1" id="operations-overview">Property overview</h2><p class="text-secondary mb-0">Live operational totals from the existing hotel workflows.</p></div>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-lg">
+                <div class="card metric-card">
+                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Available rooms</span><span class="sl-metric-icon"><i class="bi bi-door-open"></i></span></div>
+                    <span class="metric-value" th:text="${availableRooms}"></span>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card metric-card">
+                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Pending reservations</span><span class="sl-metric-icon"><i class="bi bi-calendar2-event"></i></span></div>
+                    <span class="metric-value" th:text="${pendingReservations}"></span>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card metric-card">
+                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Current stays</span><span class="sl-metric-icon"><i class="bi bi-key"></i></span></div>
+                    <span class="metric-value" th:text="${currentStays}"></span>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card metric-card">
+                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Open requests</span><span class="sl-metric-icon"><i class="bi bi-chat-square-text"></i></span></div>
+                    <span class="metric-value" th:text="${openRequests}"></span>
+                </div>
+            </div>
+            <div class="col-6 col-lg" sec:authorize="hasRole('ADMIN')">
+                <div class="card metric-card">
+                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Reviews pending</span><span class="sl-metric-icon"><i class="bi bi-star"></i></span></div>
+                    <span class="metric-value" th:text="${pendingReviews}"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mt-5" aria-labelledby="operations-actions">
+        <div class="mb-3"><h2 class="h4 section-title mb-1" id="operations-actions">Operations shortcuts</h2><p class="text-secondary mb-0">Move directly into the workflow that needs attention.</p></div>
+        <div class="row g-3">
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/reservations}"><i class="bi bi-calendar-check"></i><strong>Process reservations</strong><span>Confirm, reject, search, filter, and manage reservation status.</span></a></div>
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/check-ins}"><i class="bi bi-door-open"></i><strong>Check guests in</strong><span>View confirmed arrivals and begin active stays.</span></a></div>
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/stays}"><i class="bi bi-key"></i><strong>Current stays</strong><span>Review active stays, charges, and checkout actions.</span></a></div>
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/requests}"><i class="bi bi-chat-square-heart"></i><strong>Handle guest requests</strong><span>Assign, respond to, resolve, and close guest requests.</span></a></div>
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/rooms}"><i class="bi bi-building"></i><strong>Manage rooms</strong><span>Maintain room details, images, prices, and operational status.</span></a></div>
+            <div class="col-md-6 col-xl-4"><a class="card sl-action-card" th:href="@{/staff/customers}"><i class="bi bi-people"></i><strong>Customer lookup</strong><span>Find customer records needed for hotel operations.</span></a></div>
+            <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/promotions}"><i class="bi bi-tag"></i><strong>Manage promotions</strong><span>Create, update, and deactivate reservation offers.</span></a></div>
+            <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/room-types}"><i class="bi bi-layout-text-window-reverse"></i><strong>Manage room types</strong><span>Maintain capacities, bedding, amenities, and base prices.</span></a></div>
+            <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/reviews}"><i class="bi bi-patch-check"></i><strong>Moderate reviews</strong><span>Review pending guest feedback before public display.</span></a></div>
+            <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/staff}"><i class="bi bi-person-badge"></i><strong>Manage staff</strong><span>Create and maintain authorized staff accounts.</span></a></div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

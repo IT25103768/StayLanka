@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Page not found')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-5">
+    <section class="card sl-error-card">
+        <div class="sl-error-code">404</div>
+        <span class="sl-eyebrow mt-3">Page not found</span>
+        <h1 class="h2 section-title">This page isn't part of the StayLanka journey.</h1>
+        <p class="text-secondary">The address may have changed, or the page may no longer be available.</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap mt-3"><a class="btn btn-gold" th:href="@{/}">Return Home</a><a class="btn btn-outline-success" th:href="@{/rooms}">Browse Rooms</a></div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

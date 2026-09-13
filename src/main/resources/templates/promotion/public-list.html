@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Promotions')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<header class="sl-page-header">
+    <div class="container">
+        <span class="sl-eyebrow">StayLanka offers</span>
+        <h1 class="mb-2">Current promotions</h1>
+        <p class="text-secondary mb-0">Use an eligible code during reservation. Every offer is checked against its real validity and stay conditions.</p>
+    </div>
+</header>
+<main class="container py-5">
+    <div class="row g-4" th:unless="${promotions.empty}">
+        <div class="col-md-6" th:each="promotion : ${promotions}">
+            <article class="card sl-offer-card">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                    <span class="sl-offer-code" th:text="${promotion.code}"></span>
+                    <span class="sl-offer-value" th:text="${promotion.type.name() == 'PERCENTAGE' ? #numbers.formatDecimal(promotion.value,1,0) + '% off' : 'LKR ' + #numbers.formatDecimal(promotion.value,1,0) + ' off'}"></span>
+                </div>
+                <h2 class="h3" th:text="${promotion.name}"></h2>
+                <p th:text="${promotion.description}"></p>
+                <div class="row g-2 small mt-2">
+                    <div class="col-sm-6"><span class="d-block text-white-50">Valid through</span><strong th:text="${#temporals.format(promotion.endDate,'dd MMM yyyy')}"></strong></div>
+                    <div class="col-sm-6"><span class="d-block text-white-50">Minimum stay</span><strong th:text="${promotion.minimumNights + (promotion.minimumNights == 1 ? ' night' : ' nights')}"></strong></div>
+                    <div class="col-sm-6" th:if="${promotion.minimumAmount.signum() > 0}"><span class="d-block text-white-50">Minimum booking value</span><strong th:text="${'LKR ' + #numbers.formatDecimal(promotion.minimumAmount,1,0)}"></strong></div>
+                </div>
+            </article>
+        </div>
+    </div>
+    <div th:if="${promotions.empty}" class="card empty-state">
+        <i class="bi bi-tag fs-1"></i><h2 class="h4 mt-3">No active promotions right now</h2><p>Room availability and direct reservations are still open.</p><a class="btn btn-gold mx-auto" th:href="@{/rooms}">Browse Rooms</a>
+    </div>
+    <nav class="mt-5" th:if="${promotions.totalPages > 1}" aria-label="Promotion pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${promotions.first} ? 'disabled'"><a class="page-link" th:href="@{/promotions(page=${promotions.number-1})}">Previous</a></li>
+            <li class="page-item disabled"><span class="page-link" th:text="${'Page ' + (promotions.number+1) + ' of ' + promotions.totalPages}"></span></li>
+            <li class="page-item" th:classappend="${promotions.last} ? 'disabled'"><a class="page-link" th:href="@{/promotions(page=${promotions.number+1})}">Next</a></li>
+        </ul>
+    </nav>
+    <div class="sl-booking-cta mt-5">
+        <div class="row align-items-center g-4"><div class="col-lg-8"><h2 class="mb-2">Found an offer that suits your stay?</h2><p class="mb-0">Check live room availability first. You can enter the promotion code on the reservation form.</p></div><div class="col-lg-4 d-lg-flex justify-content-lg-end"><a class="btn btn-gold btn-lg" th:href="@{/rooms}">Check Availability</a></div></div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

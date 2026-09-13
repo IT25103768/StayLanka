@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Room details')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<main>
+    <section class="sl-section pt-4">
+        <div class="container">
+            <nav aria-label="Breadcrumb">
+                <ol class="breadcrumb sl-breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/rooms}">Rooms</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${room.roomType.name}">Room</li>
+                </ol>
+            </nav>
+
+            <div class="row g-4 g-xl-5">
+                <div class="col-lg-8">
+                    <div id="roomImages" class="carousel slide card sl-room-gallery">
+                        <div class="carousel-inner">
+                            <div th:if="${#lists.isEmpty(images)}" class="carousel-item active">
+                                <img class="d-block w-100" th:src="@{/images/room-default.svg}" th:alt="${room.roomType.name}">
+                            </div>
+                            <div class="carousel-item" th:each="image, stat : ${images}" th:classappend="${stat.first} ? 'active'">
+                                <img class="d-block w-100" th:src="${'/uploads/' + image.storagePath}"
+                                     th:alt="${room.roomType.name + ' image ' + (stat.index + 1)}">
+                            </div>
+                        </div>
+                        <button th:if="${#lists.size(images) > 1}" class="carousel-control-prev" type="button" data-bs-target="#roomImages" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous image</span>
+                        </button>
+                        <button th:if="${#lists.size(images) > 1}" class="carousel-control-next" type="button" data-bs-target="#roomImages" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next image</span>
+                        </button>
+                    </div>
+
+                    <div class="pt-4 pt-lg-5">
+                        <span class="sl-eyebrow">Accommodation</span>
+                        <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-start">
+                            <div>
+                                <h1 class="display-5 fw-bold mb-2" th:text="${room.roomType.name}">Room type</h1>
+                                <p class="text-secondary mb-0" th:text="${'Room ' + room.roomNumber}">Room number</p>
+                            </div>
+                            <div class="sl-price"><span th:text="${'LKR ' + #numbers.formatDecimal(room.nightlyPrice,1,0)}"></span> <small>/ night</small></div>
+                        </div>
+                        <p class="lead text-secondary mt-4" th:text="${room.description ?: room.roomType.description}"></p>
+
+                        <div class="sl-detail-facts mt-4">
+                            <div class="sl-detail-fact"><small>Maximum guests</small><strong th:text="${room.roomType.capacity + ' guests'}"></strong></div>
+                            <div class="sl-detail-fact"><small>Bed configuration</small><strong th:text="${room.roomType.bedInformation}"></strong></div>
+                        </div>
+
+                        <div class="mt-5">
+                            <h2 class="h3 section-title mb-3">Room amenities</h2>
+                            <div class="sl-amenity-tags" th:if="${room.roomType.amenities != null and !room.roomType.amenities.isBlank()}">
+                                <span class="sl-amenity-tag" th:each="amenity : ${#strings.arraySplit(room.roomType.amenities, ',')}"
+                                      th:text="${#strings.trim(amenity)}"></span>
+                            </div>
+                            <p class="text-secondary mb-0" th:if="${room.roomType.amenities == null or room.roomType.amenities.isBlank()}">Room amenity details are available from the StayLanka team.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="col-lg-4">
+                    <div class="card sl-booking-card">
+                        <span class="sl-eyebrow">Plan your stay</span>
+                        <h2 class="h3 section-title">Check this room type for your dates.</h2>
+                        <p class="text-secondary">Availability is confirmed against your selected check-in, check-out, and guest count before you reserve.</p>
+                        <div class="border-top border-bottom py-3 my-2">
+                            <div class="d-flex justify-content-between gap-3 mb-2"><span class="text-secondary">Room</span><strong th:text="${room.roomNumber}"></strong></div>
+                            <div class="d-flex justify-content-between gap-3 mb-2"><span class="text-secondary">Capacity</span><strong th:text="${room.roomType.capacity + ' guests'}"></strong></div>
+                            <div class="d-flex justify-content-between gap-3"><span class="text-secondary">Nightly rate</span><strong th:text="${'LKR ' + #numbers.formatDecimal(room.nightlyPrice,1,0)}"></strong></div>
+                        </div>
+                        <a class="btn btn-gold btn-lg w-100 mt-3" th:href="@{/rooms(roomTypeId=${room.roomType.id})}">Check Availability</a>
+                        <small class="text-secondary text-center mt-3">Your final reservation price is calculated securely by StayLanka when you submit.</small>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section sl-section--cream pt-5">
+        <div class="container">
+            <div class="sl-booking-cta">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <h2 class="mb-2">Ready for your StayLanka escape?</h2>
+                        <p class="mb-0">Choose your travel dates to see live room availability and continue to a direct reservation.</p>
+                    </div>
+                    <div class="col-lg-4 d-lg-flex justify-content-lg-end">
+                        <a class="btn btn-gold btn-lg" th:href="@{/rooms(roomTypeId=${room.roomType.id})}">Check Availability <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

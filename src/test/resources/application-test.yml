@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:staylanka;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  thymeleaf:
+    cache: false
+
+staylanka:
+  uploads:
+    directory: ${java.io.tmpdir}/staylanka-test-uploads
+    max-bytes: 2097152
+  seed:
+    enabled: false
+    admin-email: admin@staylanka.test
+    admin-password:
+    staff-email: staff@staylanka.test
+    staff-password:
+

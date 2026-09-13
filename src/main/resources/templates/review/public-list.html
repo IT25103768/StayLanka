@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Guest reviews')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<header class="sl-page-header">
+    <div class="container">
+        <span class="sl-eyebrow">Verified guest experiences</span>
+        <h1 class="mb-2">What our guests say</h1>
+        <p class="text-secondary mb-0">Approved reviews from completed StayLanka stays.</p>
+    </div>
+</header>
+<main class="container py-5">
+    <div class="row g-4" th:unless="${reviews.empty}">
+        <div class="col-md-6" th:each="review : ${reviews}">
+            <article class="card sl-review-card">
+                <div class="d-flex justify-content-between gap-3">
+                    <span class="sl-review-stars" th:attr="aria-label=${review.rating + ' out of 5 stars'}"><span aria-hidden="true" th:text="${review.rating + ' / 5 ★'}"></span></span>
+                    <small class="text-secondary" th:text="${#temporals.format(review.createdAt,'dd MMM yyyy')}"></small>
+                </div>
+                <blockquote class="sl-review-quote" th:text="${'“' + review.comment + '”'}"></blockquote>
+                <div class="sl-review-meta mt-auto">
+                    <strong th:text="${review.customer.fullName}"></strong><br>
+                    <small class="text-secondary" th:text="${review.stay.room.roomType.name}"></small>
+                </div>
+            </article>
+        </div>
+    </div>
+    <div th:if="${reviews.empty}" class="card empty-state">
+        <i class="bi bi-chat-quote fs-1"></i><h2 class="h4 mt-3">No approved reviews yet</h2><p class="mb-0">Verified reviews will appear here after completed stays and moderation.</p>
+    </div>
+    <nav class="mt-5" th:if="${reviews.totalPages > 1}" aria-label="Review pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${reviews.first} ? 'disabled'"><a class="page-link" th:href="@{/reviews(page=${reviews.number-1})}">Previous</a></li>
+            <li class="page-item disabled"><span class="page-link" th:text="${'Page ' + (reviews.number+1) + ' of ' + reviews.totalPages}"></span></li>
+            <li class="page-item" th:classappend="${reviews.last} ? 'disabled'"><a class="page-link" th:href="@{/reviews(page=${reviews.number+1})}">Next</a></li>
+        </ul>
+    </nav>
+    <div class="text-center mt-5"><a class="btn btn-gold" th:href="@{/rooms}">Explore Rooms</a></div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

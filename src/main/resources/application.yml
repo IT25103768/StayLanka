@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: StayLanka
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/staylanka?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Colombo
+  flyway:
+    enabled: true
+  thymeleaf:
+    cache: false
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 4MB
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+      timeout: 30m
+
+staylanka:
+  uploads:
+    directory: ${UPLOAD_DIR:./uploads}
+    max-bytes: 2097152
+  seed:
+    enabled: false
+    admin-email: ${DEV_ADMIN_EMAIL:admin@staylanka.lk}
+    admin-password: ${DEV_ADMIN_PASSWORD:}
+    staff-email: ${DEV_STAFF_EMAIL:staff@staylanka.lk}
+    staff-password: ${DEV_STAFF_PASSWORD:}
+

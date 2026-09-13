@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Welcome')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<header class="sl-hero">
+    <div class="container sl-hero-content">
+        <div class="row">
+            <div class="col-xl-9">
+                <span class="sl-eyebrow">Welcome to StayLanka</span>
+                <h1>Your island stay, beautifully simple.</h1>
+                <p class="sl-hero-copy">Sri Lankan warmth, thoughtful comfort, and effortless reservations — all in one unforgettable stay.</p>
+                <div class="sl-hero-actions">
+                    <a class="btn btn-gold btn-lg" href="#availability">Check Availability <i class="bi bi-arrow-down-right" aria-hidden="true"></i></a>
+                    <a class="btn btn-outline-light btn-lg" th:href="@{/rooms}">Explore Rooms <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+                <div class="sl-hero-proof" aria-label="Reservation highlights">
+                    <span><i class="bi bi-shield-check" aria-hidden="true"></i> Secure reservations</span>
+                    <span><i class="bi bi-calendar-check" aria-hidden="true"></i> Real-time availability</span>
+                    <span><i class="bi bi-cash-coin" aria-hidden="true"></i> Transparent LKR pricing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section id="availability" class="sl-search-wrap" aria-labelledby="availability-title">
+    <div class="container">
+        <form class="sl-search-panel" th:action="@{/rooms}" method="get" data-date-pair>
+            <div class="sl-search-title" id="availability-title">Find your StayLanka room</div>
+            <div class="row g-3 align-items-end">
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label" for="homeCheckIn">Check-in</label>
+                    <input class="form-control" id="homeCheckIn" type="date" name="checkIn" data-check-in>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <label class="form-label" for="homeCheckOut">Check-out</label>
+                    <input class="form-control" id="homeCheckOut" type="date" name="checkOut" data-check-out>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label" for="homeGuests">Guests</label>
+                    <input class="form-control" id="homeGuests" type="number" name="guests" min="1" value="1" inputmode="numeric">
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label" for="homeRoomType">Room type</label>
+                    <select class="form-select" id="homeRoomType" name="roomTypeId">
+                        <option value="">Any type</option>
+                        <option th:each="type : ${roomTypes}" th:value="${type.id}" th:text="${type.name}"></option>
+                    </select>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-gold" type="submit">Check Availability</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="sl-trust-strip" aria-label="Why guests can book with confidence">
+    <div class="container">
+        <div class="row g-2">
+            <div class="col-6 col-lg-3">
+                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-shield-lock"></i></span><span>Secure reservations</span></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-clock-history"></i></span><span>Real-time room availability</span></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-receipt"></i></span><span>Transparent pricing</span></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-patch-check"></i></span><span>Verified guest reviews</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main>
+    <section class="sl-section" aria-labelledby="featured-rooms-title">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 sl-section-heading sl-section-heading--wide">
+                <div>
+                    <span class="sl-eyebrow">Featured accommodations</span>
+                    <h2 class="sl-section-title" id="featured-rooms-title">A room made for slowing down.</h2>
+                    <p class="sl-section-subtitle mb-0">Explore comfortable stays with clear pricing, practical details, and direct reservation access.</p>
+                </div>
+                <a class="link-success text-decoration-none text-nowrap" th:href="@{/rooms}">View all rooms <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+
+            <div class="row g-4" th:unless="${#lists.isEmpty(featuredRooms)}">
+                <div class="col-md-6 col-lg-4" th:each="room : ${featuredRooms}">
+                    <article class="card sl-room-card">
+                        <div class="sl-room-media">
+                            <img th:src="${featuredRoomImages[room.id] != null ? '/uploads/' + featuredRoomImages[room.id] : '/images/room-default.svg'}"
+                                 th:alt="${room.roomType.name + ' — room ' + room.roomNumber}" loading="lazy">
+                            <span class="sl-room-number" th:text="${'Room ' + room.roomNumber}">Room</span>
+                        </div>
+                        <div class="sl-room-body">
+                            <h3 class="h4 mb-2" th:text="${room.roomType.name}">Room type</h3>
+                            <div class="sl-room-meta mb-3">
+                                <span><i class="bi bi-people"></i><span th:text="${'Up to ' + room.roomType.capacity + ' guests'}"></span></span>
+                                <span><i class="bi bi-moon-stars"></i><span th:text="${room.roomType.bedInformation}"></span></span>
+                            </div>
+                            <p class="text-secondary flex-grow-1" th:text="${room.description ?: room.roomType.description}"></p>
+                            <div class="d-flex justify-content-between align-items-end gap-3 mt-2">
+                                <div class="sl-price"><span th:text="${'LKR ' + #numbers.formatDecimal(room.nightlyPrice, 1, 0)}"></span> <small>/ night</small></div>
+                                <a class="btn btn-outline-success" th:href="@{/rooms/{id}(id=${room.id})}">View Room</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div class="card empty-state" th:if="${#lists.isEmpty(featuredRooms)}">
+                <i class="bi bi-door-closed fs-1"></i>
+                <h3 class="h5 mt-3">Rooms are being prepared</h3>
+                <p class="mb-0">Please check the room browser for current availability.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section sl-section--cream" aria-labelledby="experience-title">
+        <div class="container">
+            <div class="sl-section-heading sl-section-heading--center">
+                <span class="sl-eyebrow">The StayLanka Experience</span>
+                <h2 class="sl-section-title" id="experience-title">Hospitality that feels warm, clear, and effortless.</h2>
+                <p class="sl-section-subtitle">From choosing a room to managing your stay, every part of StayLanka is designed around practical guest comfort.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-sm-6 col-lg-3">
+                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-flower1"></i></span><h3>Sri Lankan Hospitality</h3><p>Warm, thoughtful service inspired by the island and focused on a welcoming stay.</p></article>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-moon-stars"></i></span><h3>Comfortable Rooms</h3><p>Accommodation designed around rest, useful room details, and transparent nightly pricing.</p></article>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-calendar2-check"></i></span><h3>Effortless Reservations</h3><p>Search live availability by dates and guests, then reserve directly through your account.</p></article>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-chat-heart"></i></span><h3>Guest Support</h3><p>Manage reservations, stays, and guest requests conveniently from one customer account.</p></article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section sl-section--white" aria-labelledby="offers-title">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-4">
+                    <span class="sl-eyebrow">Special offers</span>
+                    <h2 class="sl-section-title" id="offers-title">A little more value for your stay.</h2>
+                    <p class="sl-section-subtitle">Eligible promotion codes are applied by the reservation system based on their real validity and stay requirements.</p>
+                    <a th:href="@{/promotions}" class="btn btn-outline-success mt-2">View All Offers <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row g-4" th:unless="${#lists.isEmpty(activePromotions)}">
+                        <div class="col-md-6" th:each="promotion : ${activePromotions}">
+                            <article class="card sl-offer-card">
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                                    <span class="sl-offer-code" th:text="${promotion.code}">CODE</span>
+                                    <span class="sl-offer-value" th:text="${promotion.type.name() == 'PERCENTAGE' ? #numbers.formatDecimal(promotion.value,1,0) + '% off' : 'LKR ' + #numbers.formatDecimal(promotion.value,1,0) + ' off'}"></span>
+                                </div>
+                                <h3 class="h4" th:text="${promotion.name}">Offer</h3>
+                                <p th:text="${promotion.description}"></p>
+                                <small th:text="${'Valid through ' + #temporals.format(promotion.endDate, 'dd MMM yyyy') + ' · Minimum ' + promotion.minimumNights + ' night(s)'}"></small>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="card empty-state" th:if="${#lists.isEmpty(activePromotions)}">
+                        <i class="bi bi-tag fs-1"></i>
+                        <h3 class="h5 mt-3">No active offers right now</h3>
+                        <p class="mb-0">You can still browse rooms and check current availability.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section" aria-labelledby="amenities-title">
+        <div class="container">
+            <div class="sl-section-heading">
+                <span class="sl-eyebrow">Comfort essentials</span>
+                <h2 class="sl-section-title" id="amenities-title">Simple details that make a stay easier.</h2>
+                <p class="sl-section-subtitle">Room-specific amenities are shown on each accommodation. These are common StayLanka comfort themes represented across the room experience.</p>
+            </div>
+            <div class="sl-amenities-grid">
+                <div class="sl-amenity"><i class="bi bi-wifi"></i><span>Wi-Fi</span></div>
+                <div class="sl-amenity"><i class="bi bi-snow"></i><span>Air conditioning</span></div>
+                <div class="sl-amenity"><i class="bi bi-cup-hot"></i><span>Breakfast options</span></div>
+                <div class="sl-amenity"><i class="bi bi-water"></i><span>Ocean-view rooms</span></div>
+                <div class="sl-amenity"><i class="bi bi-tree"></i><span>Garden-view rooms</span></div>
+                <div class="sl-amenity"><i class="bi bi-people"></i><span>Family accommodation</span></div>
+                <div class="sl-amenity"><i class="bi bi-moon"></i><span>Comfortable bedding</span></div>
+                <div class="sl-amenity"><i class="bi bi-chat-square-heart"></i><span>Guest request support</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section sl-section--cream" aria-labelledby="reviews-title" th:unless="${#lists.isEmpty(featuredReviews)}">
+        <div class="container">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 sl-section-heading sl-section-heading--wide">
+                <div>
+                    <span class="sl-eyebrow">Verified stays</span>
+                    <h2 class="sl-section-title" id="reviews-title">What our guests say.</h2>
+                    <p class="sl-section-subtitle mb-0">Verified experiences from completed StayLanka stays.</p>
+                </div>
+                <a class="link-success text-decoration-none text-nowrap" th:href="@{/reviews}">Read all reviews <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="review : ${featuredReviews}">
+                    <article class="card sl-review-card">
+                        <div class="d-flex justify-content-between gap-3">
+                            <span class="sl-review-stars" th:attr="aria-label=${review.rating + ' out of 5 stars'}">
+                                <span aria-hidden="true" th:text="${review.rating + ' / 5 ★'}"></span>
+                            </span>
+                            <small class="text-secondary" th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}"></small>
+                        </div>
+                        <blockquote class="sl-review-quote" th:text="${'“' + review.comment + '”'}"></blockquote>
+                        <div class="sl-review-meta mt-auto">
+                            <strong th:text="${review.customer.fullName}">Guest</strong><br>
+                            <small class="text-secondary" th:text="${review.stay.room.roomType.name}">Room type</small>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sl-section pt-4">
+        <div class="container">
+            <div class="sl-booking-cta">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <span class="sl-eyebrow text-warning">Your next stay</span>
+                        <h2>Ready for your StayLanka escape?</h2>
+                        <p class="mb-0">Choose your dates, see real room availability, and reserve directly with clear LKR pricing.</p>
+                    </div>
+                    <div class="col-lg-4 d-lg-flex justify-content-lg-end">
+                        <a class="btn btn-gold btn-lg" th:href="@{/rooms}">Check Availability <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

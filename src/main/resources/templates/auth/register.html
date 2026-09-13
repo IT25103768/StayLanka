@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create account')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="sl-auth-shell">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-11">
+                <div class="card sl-auth-card">
+                    <div class="row g-0">
+                        <div class="col-lg-4 d-none d-lg-block">
+                            <section class="sl-auth-visual" aria-label="Benefits of a StayLanka account">
+                                <span class="sl-eyebrow text-warning">Guest account</span>
+                                <h2 class="display-6">Keep every part of your stay connected.</h2>
+                                <p>Your customer account gives you one secure place for direct reservations, stay history, guest requests, and verified reviews.</p>
+                                <div class="sl-auth-benefits">
+                                    <span><i class="bi bi-door-open"></i> Reserve available rooms</span>
+                                    <span><i class="bi bi-pencil-square"></i> Manage eligible reservations</span>
+                                    <span><i class="bi bi-clock-history"></i> View your stay history</span>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-lg-8">
+                            <section class="sl-auth-form">
+                                <h1 class="h2 section-title mb-2">Create your StayLanka account</h1>
+                                <p class="text-secondary mb-4">Set up your guest profile to reserve rooms and manage your stay.</p>
+                                <form th:action="@{/register}" th:object="${registrationForm}" method="post" data-submit-feedback>
+                                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                                        <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label required" for="firstName">First name</label>
+                                            <input class="form-control" id="firstName" th:field="*{firstName}" autocomplete="given-name" required>
+                                            <div class="text-danger small mt-1" th:errors="*{firstName}"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label required" for="lastName">Last name</label>
+                                            <input class="form-control" id="lastName" th:field="*{lastName}" autocomplete="family-name" required>
+                                            <div class="text-danger small mt-1" th:errors="*{lastName}"></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label required" for="regEmail">Email</label>
+                                            <input class="form-control" id="regEmail" type="email" th:field="*{email}" autocomplete="email" required>
+                                            <div class="text-danger small mt-1" th:errors="*{email}"></div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label" for="phone">Phone</label>
+                                            <input class="form-control" id="phone" th:field="*{phone}" autocomplete="tel">
+                                            <div class="text-danger small mt-1" th:errors="*{phone}"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label required" for="regPassword">Password</label>
+                                            <div class="sl-input-group">
+                                                <input class="form-control pe-5" id="regPassword" type="password" th:field="*{password}" autocomplete="new-password" required>
+                                                <button class="sl-password-toggle" type="button" data-password-toggle="regPassword" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                                            </div>
+                                            <div class="form-text">At least 8 characters, including a letter and number.</div>
+                                            <div class="text-danger small mt-1" th:errors="*{password}"></div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label required" for="confirmPassword">Confirm password</label>
+                                            <div class="sl-input-group">
+                                                <input class="form-control pe-5" id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password" required>
+                                                <button class="sl-password-toggle" type="button" data-password-toggle="confirmPassword" aria-label="Show password"><i class="bi bi-eye"></i></button>
+                                            </div>
+                                            <div class="text-danger small mt-1" th:errors="*{confirmPassword}"></div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-gold mt-4" type="submit">
+                                        <span class="spinner-border spinner-border-sm sl-spinner" aria-hidden="true"></span>
+                                        <span>Create Account</span>
+                                    </button>
+                                </form>
+                                <p class="small text-secondary mt-4 mb-0">Already have an account? <a class="fw-semibold" th:href="@{/login}">Sign in</a></p>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

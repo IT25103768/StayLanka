@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My profile')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<header class="sl-page-header">
+    <div class="container"><span class="sl-eyebrow">Guest account</span><h1 class="mb-2">My profile</h1><p class="text-secondary mb-0">Keep the personal details used by StayLanka reservations and hotel operations up to date.</p></div>
+</header>
+<main class="container py-5">
+    <div class="row g-4 align-items-start">
+        <aside class="col-lg-4">
+            <div class="card sl-dashboard-card">
+                <div class="sl-feature-icon"><i class="bi bi-person"></i></div>
+                <h2 class="h4 section-title mt-2 mb-1" th:text="${profile.fullName}"></h2>
+                <p class="text-secondary" th:text="${profile.user.email}"></p>
+                <span class="sl-status" th:classappend="${profile.user.active ? ' sl-status--confirmed' : ' sl-status--cancelled'}" th:text="${profile.user.active ? 'Active account' : 'Inactive account'}"></span>
+                <hr>
+                <p class="small text-secondary mb-0"><i class="bi bi-shield-lock me-1"></i>Your identification details are visible only to you and authorized hotel administrators.</p>
+            </div>
+        </aside>
+        <div class="col-lg-8">
+            <div class="card sl-form-card">
+                <div class="mb-4"><h2 class="h4 section-title mb-2">Profile details</h2><p class="text-secondary mb-0">Update only the information that has changed.</p></div>
+                <form th:action="@{/customer/profile}" th:object="${profileForm}" method="post" data-submit-feedback>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label required" for="profileFirstName">First name</label><input class="form-control" id="profileFirstName" th:field="*{firstName}" autocomplete="given-name" required><div class="text-danger small mt-1" th:errors="*{firstName}"></div></div>
+                        <div class="col-md-6"><label class="form-label required" for="profileLastName">Last name</label><input class="form-control" id="profileLastName" th:field="*{lastName}" autocomplete="family-name" required><div class="text-danger small mt-1" th:errors="*{lastName}"></div></div>
+                        <div class="col-md-6"><label class="form-label" for="profilePhone">Phone</label><input class="form-control" id="profilePhone" th:field="*{phone}" autocomplete="tel"><div class="text-danger small mt-1" th:errors="*{phone}"></div></div>
+                        <div class="col-md-6"><label class="form-label" for="profileNationality">Nationality</label><input class="form-control" id="profileNationality" th:field="*{nationality}"><div class="text-danger small mt-1" th:errors="*{nationality}"></div></div>
+                        <div class="col-12"><label class="form-label" for="profileAddress">Address</label><input class="form-control" id="profileAddress" th:field="*{address}" autocomplete="street-address"><div class="text-danger small mt-1" th:errors="*{address}"></div></div>
+                        <div class="col-12"><label class="form-label" for="profileIdentification">NIC / passport number</label><input class="form-control" id="profileIdentification" th:field="*{identificationNumber}"><div class="text-danger small mt-1" th:errors="*{identificationNumber}"></div></div>
+                    </div>
+                    <button class="btn btn-gold mt-4" type="submit"><span class="spinner-border spinner-border-sm sl-spinner" aria-hidden="true"></span><span>Save Profile</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

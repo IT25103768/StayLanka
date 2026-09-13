@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<header class="sl-page-header">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <span class="sl-eyebrow">Guest account</span>
+                <h1 class="mb-2">My StayLanka</h1>
+                <p class="text-secondary mb-0">Your reservations, stays, requests, profile, and reviews in one calm place.</p>
+            </div>
+            <div class="col-lg-4 d-lg-flex justify-content-lg-end">
+                <a class="btn btn-gold" th:href="@{/rooms}"><i class="bi bi-search"></i>Find a Room</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container py-5">
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <section class="card sl-dashboard-card mb-4">
+                <div class="sl-dashboard-card-header">
+                    <div>
+                        <span class="sl-eyebrow mb-1">Bookings</span>
+                        <h2>Recent reservations</h2>
+                    </div>
+                    <a class="fw-semibold text-decoration-none" th:href="@{/customer/reservations}">View all <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div th:if="${#lists.isEmpty(reservations)}" class="empty-state py-4">
+                    <i class="bi bi-calendar2-plus fs-1"></i>
+                    <h3 class="h5 mt-3">No reservations yet</h3>
+                    <p>When you're ready, search current room availability and reserve directly.</p>
+                    <a class="btn btn-gold" th:href="@{/rooms}">Find a Room</a>
+                </div>
+                <div class="list-group list-group-flush" th:unless="${#lists.isEmpty(reservations)}">
+                    <a class="list-group-item list-group-item-action px-0 py-3 border-light" th:each="reservation : ${reservations}" th:href="@{/customer/reservations/{id}(id=${reservation.id})}">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <strong class="text-dark" th:text="${reservation.room.roomType.name}"></strong>
+                                <div class="small text-secondary mt-1" th:text="${reservation.reservationReference + ' · Room ' + reservation.room.roomNumber}"></div>
+                                <div class="small text-secondary mt-1"><i class="bi bi-calendar3 me-1"></i><span th:text="${#temporals.format(reservation.checkInDate,'dd MMM yyyy') + ' – ' + #temporals.format(reservation.checkOutDate,'dd MMM yyyy')}"></span></div>
+                            </div>
+                            <span class="sl-status"
+                                  th:classappend="${' sl-status--' + #strings.toLowerCase(#strings.replace(reservation.status.name(), '_', '-'))}"
+                                  th:text="${#strings.capitalizeWords(#strings.toLowerCase(#strings.replace(reservation.status.name(), '_', ' ')))}"></span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="card sl-dashboard-card">
+                <div class="sl-dashboard-card-header">
+                    <div>
+                        <span class="sl-eyebrow mb-1">Stay history</span>
+                        <h2>Recent stays</h2>
+                    </div>
+                    <a class="fw-semibold text-decoration-none" th:href="@{/customer/stays}">View history <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div th:if="${#lists.isEmpty(stays)}" class="empty-state py-4">No stay history yet.</div>
+                <div class="row g-3" th:unless="${#lists.isEmpty(stays)}">
+                    <div class="col-md-6" th:each="stay : ${stays}">
+                        <a class="sl-feature-card d-block text-decoration-none" th:href="@{/customer/stays/{id}(id=${stay.id})}">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong class="text-dark" th:text="${stay.room.roomType.name}"></strong>
+                                <span class="sl-status" th:classappend="${stay.completed ? ' sl-status--checked-out' : ' sl-status--checked-in'}" th:text="${stay.completed ? 'Completed' : 'Current'}"></span>
+                            </div>
+                            <div class="small text-secondary mt-2" th:text="${stay.reservation.reservationReference + ' · Room ' + stay.room.roomNumber}"></div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-xl-4">
+            <section class="card sl-dashboard-card mb-4">
+                <div class="sl-dashboard-card-header">
+                    <div>
+                        <span class="sl-eyebrow mb-1">Support</span>
+                        <h2>Recent requests</h2>
+                    </div>
+                    <a class="fw-semibold text-decoration-none" th:href="@{/customer/requests}">View all</a>
+                </div>
+                <div th:if="${#lists.isEmpty(requests)}" class="empty-state py-4">
+                    <i class="bi bi-chat-square-heart fs-2"></i>
+                    <p class="mt-2 mb-0">No guest requests yet.</p>
+                </div>
+                <a class="d-block py-3 border-bottom text-decoration-none" th:each="request : ${requests}" th:href="@{/customer/requests/{id}(id=${request.id})}">
+                    <div class="d-flex justify-content-between gap-2 align-items-start">
+                        <strong class="text-dark" th:text="${request.subject}"></strong>
+                        <i class="bi bi-chevron-right text-secondary"></i>
+                    </div>
+                    <small class="text-secondary" th:text="${request.requestReference + ' · ' + #strings.capitalizeWords(#strings.toLowerCase(#strings.replace(request.status.name(), '_', ' ')))}"></small>
+                </a>
+            </section>
+
+            <section class="card sl-dashboard-card">
+                <span class="sl-eyebrow">My account</span>
+                <h2 class="h5 section-title mb-3">Manage your StayLanka details</h2>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-outline-success justify-content-start" th:href="@{/customer/profile}"><i class="bi bi-person"></i>Update Profile</a>
+                    <a class="btn btn-outline-success justify-content-start" th:href="@{/customer/stays}"><i class="bi bi-clock-history"></i>Stay History</a>
+                    <a class="btn btn-outline-success justify-content-start" th:href="@{/customer/requests}"><i class="bi bi-chat-square-text"></i>Guest Requests</a>
+                    <a class="btn btn-outline-success justify-content-start" th:href="@{/customer/reviews}"><i class="bi bi-star"></i>My Reviews</a>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

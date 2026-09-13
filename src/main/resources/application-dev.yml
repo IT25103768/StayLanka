@@ -1,0 +1,8 @@
+staylanka:
+  seed:
+    enabled: true
+
+logging:
+  level:
+    com.staylanka: INFO
+
