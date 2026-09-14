@@ -12,31 +12,82 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface StayRepository extends JpaRepository<Stay, Long> {
+
+    String DETAILED_GRAPH = "reservation.customer.user,room.roomType";
+    String BASIC_GRAPH = "reservation,room.roomType";
+
     boolean existsByReservationId(Long reservationId);
+
     Optional<Stay> findByReservationId(Long reservationId);
 
-    @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
-            "room", "room.roomType"})
-    @Query("select s from Stay s where s.id = :id")
+    /**
+     * Finds a stay with all related customer and room information.
+     */
+    @EntityGraph(attributePaths = {
+            "reservation",
+            "reservation.customer",
+            "reservation.customer.user",
+            "room",
+            "room.roomType"
+    })
+    @Query("SELECT s FROM Stay s WHERE s.id = :id")
     Optional<Stay> findDetailedById(@Param("id") Long id);
 
+    /**
+     * Finds and locks a stay for update.
+     * Used for operations such as check-out where concurrent
+     * modifications must be prevented.
+     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
-            "room", "room.roomType"})
-    @Query("select s from Stay s where s.id = :id")
+    @EntityGraph(attributePaths = {
+            "reservation",
+            "reservation.customer",
+            "reservation.customer.user",
+            "room",
+            "room.roomType"
+    })
+    @Query("SELECT s FROM Stay s WHERE s.id = :id")
     Optional<Stay> findDetailedByIdForUpdate(@Param("id") Long id);
 
-    @EntityGraph(attributePaths = {"reservation", "room", "room.roomType"})
-    Page<Stay> findByReservationCustomerUserEmailIgnoreCase(String email, Pageable pageable);
+    /**
+     * Finds a customer's stay history.
+     */
+    @EntityGraph(attributePaths = {
+            "reservation",
+            "room",
+            "room.roomType"
+    })
+    Page<Stay> findByReservationCustomerUserEmailIgnoreCase(
+            String email,
+            Pageable pageable
+    );
 
-    @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
-            "room", "room.roomType"})
+    /**
+     * Finds currently active stays.
+     */
+    @EntityGraph(attributePaths = {
+            "reservation",
+            "reservation.customer",
+            "reservation.customer.user",
+            "room",
+            "room.roomType"
+    })
     Page<Stay> findByActualCheckOutIsNull(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
-            "room", "room.roomType"})
+    /**
+     * Finds completed stays.
+     */
+    @EntityGraph(attributePaths = {
+            "reservation",
+            "reservation.customer",
+            "reservation.customer.user",
+            "room",
+            "room.roomType"
+    })
     Page<Stay> findByActualCheckOutIsNotNull(Pageable pageable);
 
+    /**
+     * Counts all currently active stays.
+     */
     long countByActualCheckOutIsNull();
 }
-
