@@ -1,12 +1,12 @@
 package com.staylanka.reservation;
 
 public enum ReservationStatus {
+
     PENDING,
     CONFIRMED,
-    CANCELLED,
     REJECTED,
+    CANCELLED,
     CHECKED_IN,
     CHECKED_OUT,
     NO_SHOW
 }
-
