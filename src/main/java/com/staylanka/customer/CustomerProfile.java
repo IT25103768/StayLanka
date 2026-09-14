@@ -36,17 +36,29 @@ public class CustomerProfile extends BaseEntity {
     private String identificationNumber;
 
     protected CustomerProfile() {
+        // Required by JPA
     }
 
-    public CustomerProfile(AppUser user, String firstName, String lastName, String phone) {
+    public CustomerProfile(
+            AppUser user,
+            String firstName,
+            String lastName,
+            String phone) {
+
         this.user = user;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
     }
 
-    public void update(String firstName, String lastName, String phone, String address,
-                       String nationality, String identificationNumber) {
+    public void update(
+            String firstName,
+            String lastName,
+            String phone,
+            String address,
+            String nationality,
+            String identificationNumber) {
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -87,4 +99,3 @@ public class CustomerProfile extends BaseEntity {
         return identificationNumber;
     }
 }
-
