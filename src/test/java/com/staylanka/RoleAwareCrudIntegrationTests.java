@@ -80,7 +80,7 @@ class RoleAwareCrudIntegrationTests {
         requestForm.setSubject("Airport pickup");
         requestForm.setDescription("Please arrange an airport pickup.");
         requestForm.setType(RequestType.SPECIAL_REQUEST);
-        requestForm.setPriority(RequestPriority.NORMAL);
+        requestForm.setPriority(RequestPriority.MEDIUM);
         GuestRequest request = requestService.create(customer, requestForm);
 
         assertThat(requestService.activeStaff()).contains(manager);
