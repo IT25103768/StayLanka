@@ -1,4 +1,4 @@
-ALTER TABLE app_users DROP CHECK ck_app_users_role;
+ALTER TABLE app_users DROP CONSTRAINT ck_app_users_role;
 ALTER TABLE app_users MODIFY role VARCHAR(40) NOT NULL;
 ALTER TABLE app_users ADD CONSTRAINT ck_app_users_role CHECK (
     role IN (
