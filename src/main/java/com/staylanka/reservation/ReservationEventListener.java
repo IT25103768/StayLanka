@@ -8,11 +8,25 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class ReservationEventListener {
-    private static final Logger log = LoggerFactory.getLogger(ReservationEventListener.class);
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    private static final Logger log =
+            LoggerFactory.getLogger(ReservationEventListener.class);
+
+    @TransactionalEventListener(
+            phase = TransactionPhase.AFTER_COMMIT
+    )
     public void onStatusChanged(ReservationStatusChangedEvent event) {
-        log.info("Reservation {} status changed from {} to {}", event.reference(), event.oldStatus(), event.newStatus());
+
+        if (event == null) {
+            log.warn("Received null reservation status change event.");
+            return;
+        }
+
+        log.info(
+                "Reservation status changed: reference={}, oldStatus={}, newStatus={}",
+                event.reference(),
+                event.oldStatus(),
+                event.newStatus()
+        );
     }
 }
-
