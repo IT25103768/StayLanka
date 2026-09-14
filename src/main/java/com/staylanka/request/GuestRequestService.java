@@ -28,6 +28,7 @@ import java.util.Set;
 @Service
 public class GuestRequestService {
     private static final Map<RequestStatus, Set<RequestStatus>> ALLOWED_TRANSITIONS = transitions();
+    private static final Set<Role> REQUEST_STAFF_ROLES = EnumSet.of(Role.INQUIRY_REQUEST_MANAGER, Role.STAFF, Role.ADMIN);
 
     private final GuestRequestRepository requestRepository;
     private final RequestResponseRepository responseRepository;
@@ -130,15 +131,15 @@ public class GuestRequestService {
 
     @Transactional(readOnly = true)
     public List<AppUser> activeStaff() {
-        return userRepository.findByRoleAndActiveTrueOrderByEmailAsc(Role.STAFF);
+        return userRepository.findByRoleInAndActiveTrueOrderByEmailAsc(REQUEST_STAFF_ROLES);
     }
 
     @Transactional
     public void assign(Authentication authentication, Long id, Long staffId) {
         AppUser actor = currentUserService.user(authentication);
         AppUser staff = userRepository.findById(staffId)
-                .filter(user -> user.getRole() == Role.STAFF && user.isActive())
-                .orElseThrow(() -> new NotFoundException("Active staff account was not found."));
+                .filter(user -> REQUEST_STAFF_ROLES.contains(user.getRole()) && user.isActive())
+                .orElseThrow(() -> new NotFoundException("Active request staff account was not found."));
         GuestRequest request = detailed(id);
         if (EnumSet.of(RequestStatus.CLOSED, RequestStatus.CANCELLED).contains(request.getStatus())) {
             throw new BusinessRuleException("A closed or cancelled request cannot be assigned.");
