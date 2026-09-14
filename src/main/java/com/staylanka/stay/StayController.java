@@ -79,7 +79,27 @@ public class StayController {
     @GetMapping("/customer/stays")
     public String customerHistory(Authentication authentication,
                                   @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("stays", stayService.ownHistory(authentication, page));
+        var stays = stayService.ownHistory(authentication, page);
+
+        java.util.Map<Long, Boolean> canReviewByStay = new java.util.HashMap<>();
+        java.util.Map<Long, Boolean> hasReviewByStay = new java.util.HashMap<>();
+
+        for (Stay stay : stays.getContent()) {
+            canReviewByStay.put(
+                    stay.getId(),
+                    reviewService.canReview(authentication, stay.getId())
+            );
+
+            hasReviewByStay.put(
+                    stay.getId(),
+                    reviewService.hasReviewForStay(stay.getId())
+            );
+        }
+
+        model.addAttribute("stays", stays);
+        model.addAttribute("canReviewByStay", canReviewByStay);
+        model.addAttribute("hasReviewByStay", hasReviewByStay);
+
         return "stay/customer-list";
     }
 

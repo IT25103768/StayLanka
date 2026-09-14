@@ -1,90 +1,744 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/layout :: head('Staff dashboard')}"></head>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/layout :: head('Operations dashboard')}"></head>
+
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <div th:replace="~{fragments/layout :: alerts}"></div>
 
 <header class="sl-page-header">
     <div class="container">
-        <span class="sl-eyebrow">StayLanka staff workspace</span>
-        <h1 class="mb-2">Welcome, <span sec:authentication="name"></span></h1>
-        <p class="text-secondary mb-0">Signed in with <strong sec:authentication="principal.authorities"></strong>. Your dashboard only exposes workflows allowed for this module.</p>
+
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+
+            <div>
+                <span class="sl-eyebrow">Hotel operations</span>
+
+                <h1 class="mb-2">
+                    Operations Dashboard
+                </h1>
+
+                <p class="text-secondary mb-0">
+                    Manage daily hotel operations, reservations, guest services and
+                    front-desk activity from one central workspace.
+                </p>
+            </div>
+
+            <div class="d-flex flex-column align-items-lg-end gap-2">
+
+                <span class="badge rounded-pill text-bg-light border px-3 py-2"
+                      sec:authorize="hasRole('ADMIN')">
+
+                    <i class="bi bi-shield-check me-1"></i>
+                    Administrator · Full access
+
+                </span>
+
+                <span class="small text-secondary">
+                    Signed in as
+                    <strong sec:authentication="name"></strong>
+                </span>
+
+            </div>
+
+        </div>
+
     </div>
 </header>
 
+
 <main class="container py-5">
-    <section aria-labelledby="operations-overview">
-        <div class="mb-3">
-            <h2 class="h4 section-title mb-1" id="operations-overview">Module overview</h2>
-            <p class="text-secondary mb-0">Relevant operational totals for your assigned responsibility.</p>
+
+    <!-- ================================================================ -->
+    <!-- OPERATIONS WORKSPACE                                             -->
+    <!-- ================================================================ -->
+
+    <section aria-labelledby="operations-workspace-heading">
+
+        <div class="d-flex flex-column flex-lg-row
+                    justify-content-between align-items-lg-end
+                    gap-2 mb-4">
+
+            <div>
+
+                <span class="sl-eyebrow">
+                    Daily operations
+                </span>
+
+                <h2 class="h3 section-title mb-1"
+                    id="operations-workspace-heading">
+                    Operations Workspace
+                </h2>
+
+                <p class="text-secondary mb-0">
+                    Choose an area below to continue managing the hotel.
+                </p>
+
+            </div>
+
         </div>
-        <div class="row g-3">
-            <div class="col-6 col-lg-3" sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Available rooms</span><span class="sl-metric-icon"><i class="bi bi-door-open"></i></span></div>
-                    <span class="metric-value" th:text="${availableRooms}"></span>
-                </div>
+
+
+        <div class="row g-4">
+
+
+            <!-- ======================================================== -->
+            <!-- ROOMS & AVAILABILITY                                    -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Rooms &amp; inventory
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Rooms &amp; Availability
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-building"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Manage room details, room types, pricing,
+                        availability, maintenance and operational room status.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-3">
+
+                            <span class="small text-secondary">
+                                Available rooms
+                            </span>
+
+                            <strong class="h4 mb-0"
+                                    th:text="${availableRooms}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/staff/rooms}">
+
+                            <i class="bi bi-door-open me-1"></i>
+                            Open Room Management
+
+                        </a>
+
+
+                        <div class="row g-2">
+
+                            <div class="col-6">
+
+                                <a class="btn btn-outline-secondary w-100"
+                                   th:href="@{/admin/room-types}">
+
+                                    Room Types
+
+                                </a>
+
+                            </div>
+
+
+                            <div class="col-6">
+
+                                <a class="btn btn-outline-secondary w-100"
+                                   th:href="@{/staff/rooms/maintenance}">
+
+                                    Maintenance
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
             </div>
-            <div class="col-6 col-lg-3" sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Pending reservations</span><span class="sl-metric-icon"><i class="bi bi-calendar2-event"></i></span></div>
-                    <span class="metric-value" th:text="${pendingReservations}"></span>
-                </div>
+
+
+            <!-- ======================================================== -->
+            <!-- RESERVATIONS                                            -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Reservations
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Reservation Management
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-calendar2-check"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Search bookings and manage confirmations,
+                        amendments, cancellations, booking status
+                        and guest reservation details.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-3">
+
+                            <span class="small text-secondary">
+                                Pending reservations
+                            </span>
+
+                            <strong class="h4 mb-0"
+                                    th:text="${pendingReservations}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/staff/reservations}">
+
+                            <i class="bi bi-calendar-check me-1"></i>
+                            Manage Reservations
+
+                        </a>
+
+                    </div>
+
+                </article>
+
             </div>
-            <div class="col-6 col-lg-3" sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Current stays</span><span class="sl-metric-icon"><i class="bi bi-key"></i></span></div>
-                    <span class="metric-value" th:text="${currentStays}"></span>
-                </div>
+
+
+            <!-- ======================================================== -->
+            <!-- GUEST PROFILES                                          -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('PROFILE_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Guest services
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Guest Profiles
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-person-vcard"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Search guest records, maintain profile information,
+                        create walk-in guest profiles and manage account status.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="bi bi-shield-lock"></i>
+
+                            <span class="small text-secondary">
+                                Guest information is protected
+                                by role-based access.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/staff/customers}">
+
+                            <i class="bi bi-people me-1"></i>
+                            Open Guest Profiles
+
+                        </a>
+
+
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/admin/customers/new}">
+
+                            <i class="bi bi-person-plus me-1"></i>
+                            Create Walk-In Profile
+
+                        </a>
+
+                    </div>
+
+                </article>
+
             </div>
-            <div class="col-6 col-lg-3" sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Open requests</span><span class="sl-metric-icon"><i class="bi bi-chat-square-text"></i></span></div>
-                    <span class="metric-value" th:text="${openRequests}"></span>
-                </div>
+
+
+            <!-- ======================================================== -->
+            <!-- FRONT DESK & STAYS                                      -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Front desk
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Check-In, Check-Out &amp; Stays
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-key"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Process guest arrivals, manage active stays,
+                        room changes, additional charges and guest departures.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-3">
+
+                            <span class="small text-secondary">
+                                Current stays
+                            </span>
+
+                            <strong class="h4 mb-0"
+                                    th:text="${currentStays}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/staff/check-ins}">
+
+                            <i class="bi bi-box-arrow-in-right me-1"></i>
+                            Arrivals &amp; Check-In
+
+                        </a>
+
+
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/staff/stays}">
+
+                            <i class="bi bi-key me-1"></i>
+                            Manage Stays &amp; Departures
+
+                        </a>
+
+                    </div>
+
+                </article>
+
             </div>
-            <div class="col-6 col-lg-3" sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Reviews pending</span><span class="sl-metric-icon"><i class="bi bi-star"></i></span></div>
-                    <span class="metric-value" th:text="${pendingReviews}"></span>
-                </div>
+
+
+            <!-- ======================================================== -->
+            <!-- PROMOTIONS & REVIEWS                                    -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Marketing &amp; reputation
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Promotions &amp; Reviews
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-stars"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Create and manage promotional offers,
+                        control campaign availability and moderate
+                        verified guest reviews.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-3">
+
+                            <span class="small text-secondary">
+                                Reviews awaiting moderation
+                            </span>
+
+                            <strong class="h4 mb-0"
+                                    th:text="${pendingReviews}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/admin/promotions}">
+
+                            <i class="bi bi-tag me-1"></i>
+                            Manage Promotions
+
+                        </a>
+
+
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/admin/reviews}">
+
+                            <i class="bi bi-star me-1"></i>
+                            Review Moderation
+
+                        </a>
+
+                    </div>
+
+                </article>
+
             </div>
-            <div class="col-12 col-lg-6" sec:authorize="hasRole('PROFILE_MANAGER')">
-                <div class="card metric-card">
-                    <div class="d-flex justify-content-between gap-2"><span class="small text-secondary">Customer profile management</span><span class="sl-metric-icon"><i class="bi bi-person-vcard"></i></span></div>
-                    <span class="small text-secondary">Search customer records, review profile details, and manage account lifecycle.</span>
-                </div>
+
+
+            <!-- ======================================================== -->
+            <!-- GUEST REQUESTS                                          -->
+            <!-- ======================================================== -->
+
+            <div class="col-12 col-md-6 col-xl-4"
+                 sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')">
+
+                <article class="card h-100 p-4 sl-dashboard-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start gap-3 mb-3">
+
+                        <div>
+
+                            <span class="small text-uppercase
+                                         text-secondary fw-semibold">
+                                Guest relations
+                            </span>
+
+                            <h3 class="h5 mt-2 mb-0">
+                                Inquiries &amp; Special Requests
+                            </h3>
+
+                        </div>
+
+                        <span class="sl-metric-icon"
+                              aria-hidden="true">
+
+                            <i class="bi bi-chat-square-heart"></i>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="text-secondary small flex-grow-1">
+                        Track guest inquiries and special requests,
+                        assign ownership, respond, prioritise and manage
+                        them through resolution.
+                    </p>
+
+
+                    <div class="border rounded-3 p-3 mb-3 bg-body-tertiary">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center gap-3">
+
+                            <span class="small text-secondary">
+                                Open guest requests
+                            </span>
+
+                            <strong class="h4 mb-0"
+                                    th:text="${openRequests}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="d-grid gap-2">
+
+                        <a class="btn btn-gold"
+                           th:href="@{/staff/requests}">
+
+                            <i class="bi bi-chat-square-text me-1"></i>
+                            Manage Guest Requests
+
+                        </a>
+
+                    </div>
+
+                </article>
+
             </div>
+
+
         </div>
+
     </section>
 
-    <section class="mt-5" aria-labelledby="operations-actions">
+
+    <!-- ================================================================ -->
+    <!-- ADMINISTRATION                                                   -->
+    <!-- ================================================================ -->
+
+    <section class="mt-5"
+             aria-labelledby="admin-tools-heading"
+             sec:authorize="hasRole('ADMIN')">
+
         <div class="mb-3">
-            <h2 class="h4 section-title mb-1" id="operations-actions">Quick actions</h2>
-            <p class="text-secondary mb-0">Only actions authorized for your module are shown.</p>
+
+            <span class="sl-eyebrow">
+                Administration
+            </span>
+
+            <h2 class="h4 section-title mb-1"
+                id="admin-tools-heading">
+                System Administration
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Manage staff access and controlled administrative tools.
+            </p>
+
         </div>
+
+
         <div class="row g-3">
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/rooms}"><i class="bi bi-building"></i><strong>Manage rooms</strong><span>Maintain room details, prices, availability, and operational status.</span></a></div>
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/admin/room-types}"><i class="bi bi-layout-text-window-reverse"></i><strong>Manage room types</strong><span>Maintain capacity, bedding, amenities, and base rates.</span></a></div>
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/reservations}"><i class="bi bi-calendar-check"></i><strong>Manage reservations</strong><span>Search booking references and manage reservation lifecycle.</span></a></div>
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('PROFILE_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/customers}"><i class="bi bi-people"></i><strong>Manage customer profiles</strong><span>Find customer records and manage profile status.</span></a></div>
+            <div class="col-12 col-md-6 col-xl-4">
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/check-ins}"><i class="bi bi-door-open"></i><strong>Check guests in</strong><span>View eligible arrivals and begin active stays.</span></a></div>
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/stays}"><i class="bi bi-key"></i><strong>Manage stays</strong><span>Review active stays, charges, and checkout actions.</span></a></div>
+                <a class="card sl-action-card"
+                   th:href="@{/admin/staff}">
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/admin/promotions}"><i class="bi bi-tag"></i><strong>Manage promotions</strong><span>Create, update, deactivate, and schedule offers.</span></a></div>
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/admin/reviews}"><i class="bi bi-patch-check"></i><strong>Moderate reviews</strong><span>Review verified-stay feedback before public display.</span></a></div>
+                    <i class="bi bi-person-badge"></i>
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')"><a class="card sl-action-card" th:href="@{/staff/requests}"><i class="bi bi-chat-square-heart"></i><strong>Handle guest requests</strong><span>Assign, reprioritize, respond, resolve, and close requests.</span></a></div>
+                    <strong>
+                        Staff &amp; Access Management
+                    </strong>
 
-            <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/staff}"><i class="bi bi-person-badge"></i><strong>Manage staff</strong><span>Maintain administrative and staff accounts.</span></a></div>
+                    <span>
+                        Maintain staff accounts and assigned
+                        hotel-system access.
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <div class="col-12 col-md-6 col-xl-4">
+
+                <a class="card sl-action-card"
+                   th:href="@{/admin/purge}">
+
+                    <i class="bi bi-database-gear"></i>
+
+                    <strong>
+                        Data Administration
+                    </strong>
+
+                    <span>
+                        Access controlled record-removal tools
+                        for supported hotel records.
+                    </span>
+
+                </a>
+
+            </div>
+
+
         </div>
+
     </section>
-<section class="container py-4"><h2 class="h4">Operational summary</h2><p class="small">Live database totals. A zero review average means no approved reviews.</p><dl class="row"><div class="col-6 col-lg-3 mb-3" th:each="metric:${summary}"><dt class="text-secondary" th:text="${metric.key}"></dt><dd class="display-6" th:text="${metric.value}"></dd></div></dl></section></main>
+
+
+    <!-- ================================================================ -->
+    <!-- HOTEL SNAPSHOT                                                   -->
+    <!-- ================================================================ -->
+
+    <section class="mt-5"
+             aria-labelledby="summary-heading"
+             sec:authorize="hasRole('ADMIN')">
+
+        <div class="card p-4">
+
+            <div class="mb-3">
+
+                <span class="sl-eyebrow">
+                    Live overview
+                </span>
+
+                <h2 class="h5 mb-1"
+                    id="summary-heading">
+                    Hotel Snapshot
+                </h2>
+
+                <p class="small text-secondary mb-0">
+                    Current operational totals across StayLanka.
+                </p>
+
+            </div>
+
+
+            <dl class="row mb-0">
+
+                <div class="col-6 col-lg-3 mb-3"
+                     th:each="metric : ${summary}">
+
+                    <dt class="small text-secondary"
+                        th:text="${metric.key}">
+                        Metric
+                    </dt>
+
+                    <dd class="h3 mb-0"
+                        th:text="${metric.value}">
+                        0
+                    </dd>
+
+                </div>
+
+            </dl>
+
+        </div>
+
+    </section>
+
+</main>
+
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
 </html>

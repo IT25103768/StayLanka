@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Audit history')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Audit history</span><h1>Audit history</h1></header>
+<p>Committed operations only. Passwords, tokens and guest notes are not recorded here.</p><div class="table-responsive"><table class="table"><thead><tr><th>Time</th><th>Actor</th><th>Entity</th><th>ID</th><th>Action</th><th>Summary</th></tr></thead><tbody><tr th:each="event:${events}"><td th:each="value:${event}" th:text="${value}"></td></tr></tbody></table></div><p th:if="${#lists.isEmpty(events)}" class="empty-state">No audit events yet.</p><nav aria-label="Audit pages"><a class="btn btn-outline-success" th:if="${page>0}" th:href="@{/admin/audit(page=${page-1})}">Previous</a> <a class="btn btn-outline-success" th:if="${#lists.size(events)==50}" th:href="@{/admin/audit(page=${page+1})}">Next</a></nav>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

@@ -79,7 +79,91 @@
             </div>
         </div>
     </div>
-</nav><aside class="sl-operations-rail" sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')" aria-label="Hotel operations"><small>HOTEL OPERATIONS</small><a th:href="@{/dashboard}">Overview</a><a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')" th:href="@{/staff/rooms}">Rooms</a><a sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" th:href="@{/staff/reservations}">Reservations</a><a sec:authorize="hasAnyRole('PROFILE_MANAGER','ADMIN')" th:href="@{/staff/customers}">Guest profiles</a><a sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')" th:href="@{/staff/check-ins}">Arrivals</a><a sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')" th:href="@{/staff/stays}">Stays & departures</a><a sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')" th:href="@{/admin/promotions}">Promotions</a><a sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')" th:href="@{/admin/reviews}">Reviews</a><a sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/requests}">Guest requests</a><a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')" th:href="@{/staff/rooms/maintenance}">Maintenance calendar</a><hr><a th:href="@{/notifications}">Notifications</a><a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/audit}">Audit history</a><a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/recovery}">Account recovery</a><a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/purge}" class="text-danger">Permanent deletion</a></aside></th:block>
+</nav>
+
+    <!--
+        Internal hotel navigation is rendered only for operational routes.
+        This keeps guest-facing pages full width even when staff/admin users
+        are signed in and browsing the public website.
+    -->
+    <aside th:if="${operationsPage}"
+           class="sl-operations-rail"
+           sec:authorize="isAuthenticated() and !hasRole('CUSTOMER')"
+           aria-label="Hotel operations">
+
+        <small>HOTEL OPERATIONS</small>
+
+        <a th:href="@{/dashboard}">Overview</a>
+
+        <a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')"
+           th:href="@{/staff/rooms}">
+            Rooms
+        </a>
+
+        <a sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')"
+           th:href="@{/staff/reservations}">
+            Reservations
+        </a>
+
+        <a sec:authorize="hasAnyRole('PROFILE_MANAGER','ADMIN')"
+           th:href="@{/staff/customers}">
+            Guest profiles
+        </a>
+
+        <a sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')"
+           th:href="@{/staff/check-ins}">
+            Arrivals
+        </a>
+
+        <a sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')"
+           th:href="@{/staff/stays}">
+            Stays & departures
+        </a>
+
+        <a sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')"
+           th:href="@{/admin/promotions}">
+            Promotions
+        </a>
+
+        <a sec:authorize="hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')"
+           th:href="@{/admin/reviews}">
+            Reviews
+        </a>
+
+        <a sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')"
+           th:href="@{/staff/requests}">
+            Guest requests
+        </a>
+
+        <a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')"
+           th:href="@{/staff/rooms/maintenance}">
+            Maintenance calendar
+        </a>
+
+        <hr>
+
+        <a th:href="@{/notifications}">
+            Notifications
+        </a>
+
+        <a sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/audit}">
+            Audit history
+        </a>
+
+        <a sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/recovery}">
+            Account recovery
+        </a>
+
+        <a sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/purge}"
+           class="text-danger">
+            Permanent deletion
+        </a>
+
+    </aside>
+</th:block>
 
 <div th:fragment="alerts" class="container sl-alerts" aria-live="polite">
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show sl-alert" role="status" data-auto-dismiss="5500"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span th:text="${success}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>

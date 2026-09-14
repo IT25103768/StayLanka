@@ -1,8 +1,12 @@
-# Local development conveniences only. Do not enable the dev profile in production.
+# Local development/demo configuration only.
+# Never enable the dev profile in production.
+
 staylanka:
   seed:
     enabled: true
+
     admin-email: ${DEV_ADMIN_EMAIL:admin@staylanka.lk}
-    admin-password: ${DEV_ADMIN_PASSWORD:}
+    admin-password: ${DEV_ADMIN_PASSWORD:Admin1234}
+
     staff-email: ${DEV_STAFF_EMAIL:staff@staylanka.lk}
-    staff-password: ${DEV_STAFF_PASSWORD:}
+    staff-password: ${DEV_STAFF_PASSWORD:Staff1234}

@@ -4,21 +4,111 @@
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <div th:replace="~{fragments/layout :: alerts}"></div>
-<header class="sl-page-header"><div class="container"><div class="row align-items-center g-3"><div class="col-lg-8"><span class="sl-eyebrow">Guest account</span><h1 class="mb-2">My reviews</h1><p class="text-secondary mb-0">Reviews are linked to completed stays. Editing an approved review returns it to moderation.</p></div><div class="col-lg-4 d-lg-flex justify-content-lg-end"><a class="btn btn-outline-success" th:href="@{/customer/stays}"><i class="bi bi-clock-history"></i>Stay History</a></div></div></div></header>
+
+<header class="sl-page-header">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <span class="sl-eyebrow">Guest account</span>
+                <h1 class="mb-2">My Reviews</h1>
+                <p class="text-secondary mb-0">
+                    Write reviews for completed stays, update your feedback, or permanently delete a review you no longer want to keep.
+                </p>
+            </div>
+
+            <div class="col-lg-4 d-lg-flex justify-content-lg-end gap-2">
+                <a class="btn btn-gold" th:href="@{/customer/stays}">
+                    <i class="bi bi-pencil-square me-1"></i> Write a Review
+                </a>
+                <a class="btn btn-outline-success" th:href="@{/customer/stays}">
+                    <i class="bi bi-clock-history me-1"></i> Stay History
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
 <main class="container py-5">
+
+    <div class="alert alert-light border mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Reviews can only be created for your own completed stays. New or edited reviews return to
+        <strong>Pending</strong> until they are approved by the Promotion &amp; Review Manager.
+    </div>
+
     <div class="row g-4" th:unless="${reviews.empty}">
         <div class="col-md-6" th:each="review : ${reviews}">
-            <article class="card sl-review-card">
-                <div class="d-flex justify-content-between gap-3"><span class="sl-review-stars" th:text="${review.rating + ' / 5 ★'}"></span><span class="sl-status" th:classappend="${' sl-status--' + #strings.toLowerCase(review.status.name())}" th:text="${#strings.capitalize(#strings.toLowerCase(review.status.name()))}"></span></div>
-                <blockquote class="sl-review-quote" th:text="${'“' + review.comment + '”'}"></blockquote>
-                <small class="text-secondary" th:text="${review.stay.room.roomType.name}"></small>
-                <div class="d-flex gap-2 mt-3"><a class="btn btn-sm btn-outline-success" th:href="@{/customer/reviews/{id}/edit(id=${review.id})}">Edit</a><form th:action="@{/customer/reviews/{id}/delete(id=${review.id})}" method="post"><button class="btn btn-sm btn-outline-danger" type="submit" data-confirm="Hide this review while retaining its history?">Hide</button></form></div>
+            <article class="card sl-review-card h-100">
+
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <span class="sl-review-stars" th:text="${review.rating + ' / 5 ★'}">5 / 5 ★</span>
+
+                    <span class="sl-status"
+                          th:classappend="${' sl-status--' + #strings.toLowerCase(review.status.name())}"
+                          th:text="${#strings.capitalize(#strings.toLowerCase(review.status.name()))}">
+                        Pending
+                    </span>
+                </div>
+
+                <blockquote class="sl-review-quote" th:text="${'“' + review.comment + '”'}">
+                    Review
+                </blockquote>
+
+                <div class="mt-auto">
+                    <strong th:text="${review.stay.room.roomType.name}">Room type</strong><br>
+                    <small class="text-secondary"
+                           th:text="${'Room ' + review.stay.room.roomNumber + ' · ' + review.stay.reservation.reservationReference}">
+                        Room
+                    </small>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a class="btn btn-sm btn-outline-success"
+                       th:href="@{/customer/reviews/{id}/edit(id=${review.id})}">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+
+                    <form th:action="@{/customer/reviews/{id}/delete(id=${review.id})}"
+                          method="post">
+                        <button class="btn btn-sm btn-outline-danger"
+                                type="submit"
+                                data-confirm="Permanently delete this review? This action cannot be undone.">
+                            <i class="bi bi-trash3 me-1"></i> Delete
+                        </button>
+                    </form>
+                </div>
+
             </article>
         </div>
     </div>
-    <div th:if="${reviews.empty}" class="card empty-state"><i class="bi bi-star fs-1"></i><h2 class="h4 mt-3">No reviews submitted</h2><p>Completed stays that are eligible for review can be found in your stay history.</p><a class="btn btn-outline-success mx-auto" th:href="@{/customer/stays}">View Stay History</a></div>
-    <nav class="mt-4" th:if="${reviews.totalPages > 1}" aria-label="Review pages"><ul class="pagination justify-content-center"><li class="page-item" th:classappend="${reviews.first} ? 'disabled'"><a class="page-link" th:href="@{/customer/reviews(page=${reviews.number-1})}">Previous</a></li><li class="page-item disabled"><span class="page-link" th:text="${'Page ' + (reviews.number+1) + ' of ' + reviews.totalPages}"></span></li><li class="page-item" th:classappend="${reviews.last} ? 'disabled'"><a class="page-link" th:href="@{/customer/reviews(page=${reviews.number+1})}">Next</a></li></ul></nav>
+
+    <div th:if="${reviews.empty}" class="card empty-state">
+        <i class="bi bi-star fs-1"></i>
+        <h2 class="h4 mt-3">No reviews yet</h2>
+        <p>
+            After you check out, your completed stay will show a Write Review button.
+        </p>
+        <a class="btn btn-gold mx-auto" th:href="@{/customer/stays}">
+            View Completed Stays
+        </a>
+    </div>
+
+    <nav class="mt-4" th:if="${reviews.totalPages > 1}" aria-label="Review pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${reviews.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/customer/reviews(page=${reviews.number-1})}">Previous</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link" th:text="${'Page ' + (reviews.number+1) + ' of ' + reviews.totalPages}"></span>
+            </li>
+            <li class="page-item" th:classappend="${reviews.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/customer/reviews(page=${reviews.number+1})}">Next</a>
+            </li>
+        </ul>
+    </nav>
+
 </main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>

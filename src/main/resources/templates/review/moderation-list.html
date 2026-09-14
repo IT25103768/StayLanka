@@ -1,1 +1,160 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head('Review moderation')}"></head><body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div><main class="container py-4"><div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 section-title">Review moderation</h1><p class="text-secondary mb-0">Only approved reviews appear publicly.</p></div><form method="get"><select class="form-select" name="status" onchange="this.form.submit()"><option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == selectedStatus}"></option></select></form></div><div class="row g-3"><div class="col-lg-6" th:each="r : ${reviews}"><div class="card p-4"><div class="d-flex justify-content-between"><span class="stars" th:text="${r.rating + ' / 5 ★'}"></span><span class="badge text-bg-secondary" th:text="${r.status}"></span></div><p class="mt-3" th:text="${r.comment}"></p><small class="text-secondary" th:text="${r.customer.fullName + ' · ' + r.stay.room.roomType.name}"></small><div class="d-flex gap-2 mt-3"><form th:action="@{/admin/reviews/{id}/approve(id=${r.id})}" method="post"><button class="btn btn-sm btn-success">Approve</button></form><form th:action="@{/admin/reviews/{id}/reject(id=${r.id})}" method="post"><button class="btn btn-sm btn-outline-danger">Reject</button></form></div></div></div></div><div th:if="${reviews.empty}" class="card empty-state">No reviews in this moderation state.</div></main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Review moderation')}"></head>
+<body>
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<header class="sl-page-header">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <span class="sl-eyebrow">Promotion &amp; Review Management</span>
+                <h1 class="mb-2">Review Moderation</h1>
+                <p class="text-secondary mb-0">
+                    Review guest feedback, approve suitable reviews for the public website,
+                    reject reviews, or permanently delete them when necessary.
+                </p>
+            </div>
+
+            <div class="col-lg-4">
+                <form method="get" class="d-flex gap-2 justify-content-lg-end">
+                    <label class="visually-hidden" for="reviewStatus">Review status</label>
+                    <select class="form-select"
+                            id="reviewStatus"
+                            name="status"
+                            onchange="this.form.submit()">
+                        <option th:each="s : ${statuses}"
+                                th:value="${s}"
+                                th:text="${#strings.capitalize(#strings.toLowerCase(s.name()))}"
+                                th:selected="${s == selectedStatus}">
+                        </option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container py-5">
+
+    <div class="row g-4" th:unless="${reviews.empty}">
+        <div class="col-lg-6" th:each="r : ${reviews}">
+            <article class="card p-4">
+
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <span class="sl-review-stars"
+                          th:text="${r.rating + ' / 5 ★'}">
+                        5 / 5 ★
+                    </span>
+
+                    <span class="sl-status"
+                          th:classappend="${' sl-status--' + #strings.toLowerCase(r.status.name())}"
+                          th:text="${#strings.capitalize(#strings.toLowerCase(r.status.name()))}">
+                        Pending
+                    </span>
+                </div>
+
+                <blockquote class="sl-review-quote mt-3 mb-3"
+                            th:text="${'“' + r.comment + '”'}">
+                    Review comment
+                </blockquote>
+
+                <!-- ACTIONS ARE INTENTIONALLY BEFORE THE META SECTION
+                     so they cannot be pushed outside the card by flex styling. -->
+                <div class="border-top border-bottom py-3 my-3">
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <form th:action="@{/admin/reviews/{id}/approve(id=${r.id})}"
+                              method="post"
+                              class="m-0">
+                            <button class="btn btn-sm btn-success"
+                                    type="submit">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Approve
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/reviews/{id}/reject(id=${r.id})}"
+                              method="post"
+                              class="m-0">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    type="submit"
+                                    data-confirm="Reject this review? It will not be visible publicly.">
+                                <i class="bi bi-x-circle me-1"></i>
+                                Reject
+                            </button>
+                        </form>
+
+                        <form th:action="@{/admin/reviews/{id}/delete(id=${r.id})}"
+                              method="post"
+                              class="m-0">
+                            <button class="btn btn-sm btn-outline-danger"
+                                    type="submit"
+                                    data-confirm="Permanently delete this review from the database? This action cannot be undone.">
+                                <i class="bi bi-trash3 me-1"></i>
+                                Delete Permanently
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+
+                <div class="small text-secondary">
+                    <div>
+                        <i class="bi bi-person me-1"></i>
+                        <span th:text="${r.customer.fullName}">Guest</span>
+                    </div>
+
+                    <div class="mt-1">
+                        <i class="bi bi-door-open me-1"></i>
+                        <span th:text="${r.stay.room.roomType.name + ' · Room ' + r.stay.room.roomNumber}">
+                            Room
+                        </span>
+                    </div>
+                </div>
+
+            </article>
+        </div>
+    </div>
+
+    <div th:if="${reviews.empty}" class="card empty-state">
+        <i class="bi bi-chat-square-heart fs-1"></i>
+        <h2 class="h4 mt-3">No reviews in this status</h2>
+        <p class="mb-0">Choose another moderation status to view more reviews.</p>
+    </div>
+
+    <nav class="mt-4"
+         th:if="${reviews.totalPages > 1}"
+         aria-label="Moderation pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item"
+                th:classappend="${reviews.first} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin/reviews(status=${selectedStatus},page=${reviews.number-1})}">
+                    Previous
+                </a>
+            </li>
+
+            <li class="page-item disabled">
+                <span class="page-link"
+                      th:text="${'Page ' + (reviews.number+1) + ' of ' + reviews.totalPages}">
+                </span>
+            </li>
+
+            <li class="page-item"
+                th:classappend="${reviews.last} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/admin/reviews(status=${selectedStatus},page=${reviews.number+1})}">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

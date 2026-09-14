@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Set a new password')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Set a new password</span><h1>Set a new password</h1></header>
+<form th:action="@{/reset-password}" method="post" class="card p-4 sl-narrow"><label for="token" class="form-label">Single-use recovery token</label><input id="token" name="token" required maxlength="100" autocomplete="off" class="form-control"><label for="password" class="form-label mt-3">New password</label><input id="password" name="password" type="password" minlength="8" maxlength="72" required autocomplete="new-password" class="form-control"><p class="small">8–72 bytes with at least one letter and number.</p><label for="confirmation" class="form-label">Repeat new password</label><input id="confirmation" name="confirmation" type="password" required autocomplete="new-password" class="form-control"><button class="btn btn-gold mt-3">Change password</button></form>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

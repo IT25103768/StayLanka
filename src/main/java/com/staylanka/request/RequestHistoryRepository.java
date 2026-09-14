@@ -8,5 +8,7 @@ import java.util.List;
 public interface RequestHistoryRepository extends JpaRepository<RequestHistory, Long> {
     @EntityGraph(attributePaths = "changedBy")
     List<RequestHistory> findByRequestIdOrderByCreatedAtAsc(Long requestId);
+
+    void deleteByRequestId(Long requestId);
 }
 

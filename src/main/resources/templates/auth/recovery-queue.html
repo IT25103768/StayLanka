@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Verified account recovery')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Verified account recovery</span><h1>Verified account recovery</h1></header>
+<div th:if="${issuedToken}" class="alert alert-warning"><strong>Copy once and deliver privately after verification.</strong><p>Expires in 30 minutes. Direct the account owner to /reset-password. Do not put this token in email subjects, logs, or public messages.</p><code th:text="${issuedToken}"></code></div><p>Verify the account owner's identity independently. Knowledge of an email address alone is not sufficient.</p><div class="table-responsive"><table class="table"><thead><tr><th>Account</th><th>Requested</th><th>Verified delivery</th></tr></thead><tbody><tr th:each="r:${requests}"><td th:text="${r[1]}"></td><td th:text="${r[2]}"></td><td><form th:action="@{/admin/recovery}" method="post"><input type="hidden" name="userId" th:value="${r[0]}"><label><input type="checkbox" name="verified" value="true" required> I independently verified this account owner</label><button class="btn btn-outline-success">Issue token</button></form></td></tr></tbody></table></div>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

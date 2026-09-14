@@ -1,250 +1,2579 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Welcome')}"></head>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Welcome to Sri Lanka')}"></head>
+
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <div th:replace="~{fragments/layout :: alerts}"></div>
 
-<header class="sl-hero">
-    <div class="container sl-hero-content">
-        <div class="row">
-            <div class="col-xl-9">
-                <span class="sl-eyebrow">Welcome to StayLanka</span>
-                <h1>Your island stay, beautifully simple.</h1>
-                <p class="sl-hero-copy">Sri Lankan warmth, thoughtful comfort, and effortless reservations — all in one unforgettable stay.</p>
-                <div class="sl-hero-actions">
-                    <a class="btn btn-gold btn-lg" href="#availability">Check Availability <i class="bi bi-arrow-down-right" aria-hidden="true"></i></a>
-                    <a class="btn btn-outline-light btn-lg" th:href="@{/rooms}">Explore Rooms <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+
+<style>
+
+    /* =========================================================
+       MODERN HOME HERO
+       ========================================================= */
+
+    .sl-home-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 5.5rem 0 7rem;
+
+        background:
+                radial-gradient(
+                        circle at 15% 15%,
+                        rgba(92, 225, 230, .17),
+                        transparent 25rem
+                ),
+                radial-gradient(
+                        circle at 82% 22%,
+                        rgba(174, 138, 255, .17),
+                        transparent 29rem
+                ),
+                radial-gradient(
+                        circle at 82% 82%,
+                        rgba(45, 125, 255, .15),
+                        transparent 26rem
+                ),
+                linear-gradient(
+                        120deg,
+                        #03111e 0%,
+                        #071f36 38%,
+                        #10234f 68%,
+                        #1b2359 100%
+                );
+
+        color: #fff;
+        isolation: isolate;
+    }
+
+
+    /* Grid texture */
+    .sl-home-hero::before {
+        content: "";
+
+        position: absolute;
+        inset: 0;
+
+        background:
+                linear-gradient(
+                        to right,
+                        rgba(255, 255, 255, .035) 1px,
+                        transparent 1px
+                ),
+                linear-gradient(
+                        to bottom,
+                        rgba(255, 255, 255, .035) 1px,
+                        transparent 1px
+                );
+
+        background-size: 64px 64px;
+
+        mask-image:
+                linear-gradient(
+                        to bottom,
+                        rgba(0, 0, 0, .75),
+                        transparent 94%
+                );
+
+        pointer-events: none;
+        z-index: 0;
+    }
+
+
+    /* Moving atmospheric glow */
+    .sl-home-hero::after {
+        content: "";
+
+        position: absolute;
+
+        width: 48rem;
+        height: 48rem;
+
+        right: -15rem;
+        bottom: -20rem;
+
+        border-radius: 50%;
+
+        background:
+                radial-gradient(
+                        circle,
+                        rgba(117, 199, 221, .16),
+                        rgba(117, 199, 221, .06) 38%,
+                        transparent 68%
+                );
+
+        filter: blur(15px);
+
+        animation:
+                slHeroOrb
+                12s
+                ease-in-out
+                infinite
+                alternate;
+
+        z-index: 0;
+    }
+
+
+    @keyframes slHeroOrb {
+
+        from {
+            transform:
+                    translate3d(0, 0, 0)
+                    scale(1);
+        }
+
+        to {
+            transform:
+                    translate3d(-18px, -20px, 0)
+                    scale(1.07);
+        }
+    }
+
+
+    .sl-home-hero-inner {
+        position: relative;
+        z-index: 2;
+    }
+
+
+    /* =========================================================
+       HERO LABEL
+       ========================================================= */
+
+    .sl-home-pill {
+        display: inline-flex;
+        align-items: center;
+
+        gap: .55rem;
+
+        padding: .58rem .95rem;
+
+        margin-bottom: 1.35rem;
+
+        border:
+                1px solid
+                rgba(255, 255, 255, .16);
+
+        border-radius: 999px;
+
+        background:
+                rgba(255, 255, 255, .07);
+
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+
+        color: #8beaff;
+
+        font-size: .79rem;
+        font-weight: 750;
+
+        letter-spacing: .14em;
+        text-transform: uppercase;
+
+        box-shadow:
+                inset 0 1px 0
+                rgba(255, 255, 255, .06);
+    }
+
+
+    .sl-home-pill i {
+        color: #ffd36f;
+    }
+
+
+    /* =========================================================
+       HERO TITLE
+       ========================================================= */
+
+    .sl-home-title {
+        margin: 0;
+
+        max-width: 9ch;
+
+        color: #f8fbff;
+
+        font-size:
+                clamp(
+                        3.4rem,
+                        7vw,
+                        6.6rem
+                );
+
+        line-height: .93;
+
+        letter-spacing: -.06em;
+
+        font-weight: 800;
+
+        text-wrap: balance;
+    }
+
+
+    .sl-home-accent {
+        position: relative;
+
+        display: inline-block;
+
+        background:
+                linear-gradient(
+                        90deg,
+                        #77eaff 0%,
+                        #9ccfff 32%,
+                        #c6adff 65%,
+                        #ffd477 100%
+                );
+
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        color: transparent;
+    }
+
+
+    .sl-home-accent::after {
+        content: "";
+
+        position: absolute;
+
+        left: 2%;
+        right: 2%;
+
+        bottom: .02em;
+
+        height: .16em;
+
+        border-radius: 999px;
+
+        background:
+                linear-gradient(
+                        90deg,
+                        rgba(102, 234, 255, .18),
+                        rgba(205, 173, 255, .2),
+                        rgba(255, 210, 119, .16)
+                );
+
+        filter: blur(7px);
+
+        z-index: -1;
+    }
+
+
+    /* =========================================================
+       HERO COPY
+       ========================================================= */
+
+    .sl-home-subcopy {
+        max-width: 43rem;
+
+        margin-top: 1.55rem;
+        margin-bottom: 0;
+
+        color:
+                rgba(237, 244, 255, .84);
+
+        font-size:
+                clamp(
+                        1.05rem,
+                        1.6vw,
+                        1.27rem
+                );
+
+        line-height: 1.72;
+    }
+
+
+    .sl-home-subcopy strong {
+        color: #fff;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       ROTATING TEXT
+       ========================================================= */
+
+    .sl-home-rotator {
+        display: inline-flex;
+        align-items: center;
+
+        gap: .65rem;
+
+        margin-top: 1rem;
+
+        min-height: 1.8em;
+
+        color:
+                rgba(255, 255, 255, .9);
+
+        font-weight: 650;
+    }
+
+
+    .sl-home-rotator-label {
+        color:
+                rgba(255, 255, 255, .62);
+    }
+
+
+    .sl-home-rotator-window {
+        height: 1.8em;
+
+        overflow: hidden;
+
+        position: relative;
+
+        min-width: 11rem;
+    }
+
+
+    .sl-home-rotator-track {
+        display: flex;
+        flex-direction: column;
+
+        animation:
+                slRotateWords
+                10s
+                infinite;
+    }
+
+
+    .sl-home-rotator-track span {
+        display: flex;
+        align-items: center;
+
+        height: 1.8em;
+
+        color: #8fe3ff;
+    }
+
+
+    @keyframes slRotateWords {
+
+        0%,
+        18% {
+            transform:
+                    translateY(0);
+        }
+
+        24%,
+        42% {
+            transform:
+                    translateY(-1.8em);
+        }
+
+        48%,
+        66% {
+            transform:
+                    translateY(-3.6em);
+        }
+
+        72%,
+        90% {
+            transform:
+                    translateY(-5.4em);
+        }
+
+        100% {
+            transform:
+                    translateY(0);
+        }
+    }
+
+
+    /* =========================================================
+       HERO BUTTONS
+       ========================================================= */
+
+    .sl-home-actions {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 1rem;
+
+        margin-top: 2rem;
+    }
+
+
+    .sl-home-actions .btn {
+        min-width: 220px;
+
+        padding:
+                .9rem
+                1.25rem;
+
+        border-radius: 1rem;
+
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       HERO BENEFITS
+       ========================================================= */
+
+    .sl-home-proof {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap:
+                .9rem
+                1.5rem;
+
+        margin-top: 1.75rem;
+
+        color:
+                rgba(255, 255, 255, .78);
+
+        font-size: .94rem;
+    }
+
+
+    .sl-home-proof span {
+        display: inline-flex;
+        align-items: center;
+
+        gap: .5rem;
+    }
+
+
+    .sl-home-proof i {
+        color: #b99cff;
+    }
+
+
+    /* =========================================================
+       RIGHT VISUAL
+       ========================================================= */
+
+    .sl-home-visual {
+        position: relative;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        min-height: 100%;
+    }
+
+
+    .sl-home-stack {
+        position: relative;
+
+        width:
+                min(
+                        100%,
+                        510px
+                );
+
+        min-height: 500px;
+    }
+
+
+    /* =========================================================
+       GLASS CARDS
+       ========================================================= */
+
+    .sl-home-glass-card {
+        position: absolute;
+
+        border:
+                1px solid
+                rgba(255, 255, 255, .14);
+
+        border-radius: 1.5rem;
+
+        background:
+                linear-gradient(
+                        145deg,
+                        rgba(255, 255, 255, .105),
+                        rgba(255, 255, 255, .055)
+                );
+
+        box-shadow:
+                0 1.6rem 3.6rem
+                rgba(0, 0, 0, .25);
+
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+
+        color: #fff;
+    }
+
+
+    /* =========================================================
+       MAIN CARD
+       ========================================================= */
+
+    .sl-home-glass-card--main {
+        left: 1.2rem;
+        top: 5rem;
+
+        width:
+                calc(
+                        100% - 3.8rem
+                );
+
+        min-height: 355px;
+
+        padding: 1.65rem;
+
+        transform:
+                rotate(-1.2deg);
+
+        z-index: 2;
+
+        animation:
+                slFloatMain
+                7s
+                ease-in-out
+                infinite;
+    }
+
+
+    .sl-home-glass-card--main::before {
+        content: "";
+
+        position: absolute;
+        inset: 0;
+
+        border-radius: inherit;
+
+        background:
+                radial-gradient(
+                        circle at 90% 5%,
+                        rgba(255, 255, 255, .16),
+                        transparent 34%
+                ),
+                linear-gradient(
+                        145deg,
+                        rgba(135, 229, 218, .07),
+                        rgba(240, 200, 109, .03)
+                );
+
+        pointer-events: none;
+    }
+
+
+    /* =========================================================
+       TOP CARD
+       ========================================================= */
+
+    .sl-home-glass-card--side {
+        right: 0;
+        top: 0;
+
+        width: 255px;
+
+        padding: 1.1rem 1.15rem;
+
+        transform:
+                rotate(1.8deg);
+
+        z-index: 4;
+
+        animation:
+                slFloatSide
+                8s
+                ease-in-out
+                infinite;
+    }
+
+
+    /* =========================================================
+       BOTTOM CARD
+       ========================================================= */
+
+    .sl-home-glass-card--bottom {
+        left: -.75rem;
+        bottom: 0;
+
+        width: 310px;
+
+        padding: 1.15rem;
+
+        transform:
+                rotate(-1deg);
+
+        z-index: 4;
+
+        animation:
+                slFloatBottom
+                9s
+                ease-in-out
+                infinite;
+    }
+
+
+    /* =========================================================
+       CARD ANIMATIONS
+       ========================================================= */
+
+    @keyframes slFloatMain {
+
+        0%,
+        100% {
+            transform:
+                    translateY(0)
+                    rotate(-1.2deg);
+        }
+
+        50% {
+            transform:
+                    translateY(-7px)
+                    rotate(-.7deg);
+        }
+    }
+
+
+    @keyframes slFloatSide {
+
+        0%,
+        100% {
+            transform:
+                    translateY(0)
+                    rotate(1.8deg);
+        }
+
+        50% {
+            transform:
+                    translateY(-9px)
+                    rotate(1deg);
+        }
+    }
+
+
+    @keyframes slFloatBottom {
+
+        0%,
+        100% {
+            transform:
+                    translateY(0)
+                    rotate(-1deg);
+        }
+
+        50% {
+            transform:
+                    translateY(8px)
+                    rotate(-.4deg);
+        }
+    }
+
+
+    /* =========================================================
+       CARD CONTENT
+       ========================================================= */
+
+    .sl-home-card-label {
+        position: relative;
+        z-index: 2;
+
+        display: inline-flex;
+        align-items: center;
+
+        gap: .45rem;
+
+        margin-bottom: .75rem;
+
+        color: #94eaff;
+
+        font-size: .75rem;
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: .11em;
+    }
+
+
+    .sl-home-card-title {
+        position: relative;
+        z-index: 2;
+
+        max-width: 20rem;
+
+        margin-bottom: .8rem;
+
+        font-size: 1.55rem;
+        line-height: 1.17;
+
+        font-weight: 800;
+    }
+
+
+    .sl-home-card-copy {
+        position: relative;
+        z-index: 2;
+
+        max-width: 23rem;
+
+        margin-bottom: 1.05rem;
+
+        color:
+                rgba(255, 255, 255, .77);
+
+        line-height: 1.58;
+    }
+
+
+    /* =========================================================
+       DESTINATIONS
+       ========================================================= */
+
+    .sl-home-destinations {
+        position: relative;
+        z-index: 2;
+
+        display: grid;
+
+        gap: .55rem;
+    }
+
+
+    .sl-home-destination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: .8rem;
+
+        padding:
+                .68rem
+                .8rem;
+
+        border:
+                1px solid
+                rgba(255, 255, 255, .075);
+
+        border-radius: .9rem;
+
+        background:
+                rgba(255, 255, 255, .055);
+    }
+
+
+    .sl-home-destination strong {
+        display: block;
+
+        font-size: .9rem;
+    }
+
+
+    .sl-home-destination small {
+        color:
+                rgba(255, 255, 255, .6);
+
+        font-size: .76rem;
+    }
+
+
+    .sl-home-destination i {
+        flex: 0 0 auto;
+
+        color: #ffd978;
+
+        font-size: 1.05rem;
+    }
+
+
+    /* =========================================================
+       METRICS
+       ========================================================= */
+
+    .sl-home-metrics {
+        display: grid;
+
+        grid-template-columns:
+                repeat(
+                        3,
+                        minmax(0, 1fr)
+                );
+
+        gap: .55rem;
+
+        margin-top: .8rem;
+    }
+
+
+    .sl-home-metric {
+        min-width: 0;
+
+        padding:
+                .75rem
+                .35rem;
+
+        border:
+                1px solid
+                rgba(255, 255, 255, .08);
+
+        border-radius: .85rem;
+
+        background:
+                rgba(255, 255, 255, .065);
+
+        text-align: center;
+    }
+
+
+    .sl-home-metric strong {
+        display: block;
+
+        color: #fff;
+
+        font-size: 1.12rem;
+        line-height: 1.1;
+
+        white-space: nowrap;
+    }
+
+
+    .sl-home-metric span {
+        display: block;
+
+        margin-top: .28rem;
+
+        color:
+                rgba(255, 255, 255, .62);
+
+        font-size: .68rem;
+        line-height: 1.25;
+    }
+
+
+    /* =========================================================
+       AVAILABILITY SEARCH
+       ========================================================= */
+
+    .sl-home-hero-search {
+        position: relative;
+
+        z-index: 5;
+
+        margin-top: -3.2rem;
+    }
+
+
+    .sl-home-search-shell {
+        padding: 1.55rem;
+
+        border:
+                1px solid
+                rgba(111, 198, 255, .15);
+
+        border-radius: 1.6rem;
+
+        background:
+                rgba(5, 13, 28, .92);
+
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+
+        box-shadow:
+                0 1.7rem 3.3rem
+                rgba(2, 10, 27, .32);
+    }
+
+
+    .sl-home-search-title {
+        display: flex;
+        flex-wrap: wrap;
+
+        align-items: center;
+        justify-content: space-between;
+
+        gap: .7rem;
+
+        margin-bottom: 1rem;
+
+        color: #f6f9ff;
+    }
+
+
+    .sl-home-search-title strong {
+        font-size: 1.25rem;
+    }
+
+
+    .sl-home-search-title span {
+        color:
+                rgba(255, 255, 255, .58);
+
+        font-size: .9rem;
+    }
+
+
+    .sl-home-search-shell .form-label {
+        color:
+                rgba(255, 255, 255, .74);
+
+        font-size: .75rem;
+
+        font-weight: 700;
+
+        letter-spacing: .06em;
+
+        text-transform: uppercase;
+    }
+
+
+    .sl-home-search-shell .form-control,
+    .sl-home-search-shell .form-select {
+        min-height: 60px;
+
+        border-radius: .95rem;
+
+        border-color:
+                rgba(255, 255, 255, .13);
+
+        background:
+                rgba(255, 255, 255, .045);
+
+        color: #fff;
+    }
+
+
+    .sl-home-search-shell .form-control:focus,
+    .sl-home-search-shell .form-select:focus {
+        background:
+                rgba(255, 255, 255, .075);
+    }
+
+
+    .sl-home-search-shell .form-select option {
+        color: #111;
+    }
+
+
+    .sl-home-search-shell .btn {
+        min-height: 60px;
+
+        border-radius: .95rem;
+    }
+
+
+    .sl-home-search-help {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap:
+                .75rem
+                1.25rem;
+
+        margin-top: 1rem;
+
+        color:
+                rgba(255, 255, 255, .64);
+
+        font-size: .87rem;
+    }
+
+
+    .sl-home-search-help span {
+        display: inline-flex;
+        align-items: center;
+
+        gap: .45rem;
+    }
+
+
+    .sl-home-search-help i {
+        color: #8ce3ff;
+    }
+
+
+    .sl-home-section-top {
+        margin-top: 2.2rem;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 1199.98px) {
+
+        .sl-home-stack {
+            width:
+                    min(
+                            100%,
+                            470px
+                    );
+
+            min-height: 490px;
+        }
+
+
+        .sl-home-glass-card--bottom {
+            left: 0;
+        }
+    }
+
+
+    @media (max-width: 991.98px) {
+
+        .sl-home-hero {
+            padding:
+                    4.8rem
+                    0
+                    6rem;
+        }
+
+
+        .sl-home-title {
+            max-width: 11ch;
+        }
+
+
+        .sl-home-visual {
+            margin-top: 3rem;
+        }
+
+
+        .sl-home-stack {
+            width:
+                    min(
+                            100%,
+                            500px
+                    );
+
+            margin-inline: auto;
+
+            min-height: 500px;
+        }
+
+
+        .sl-home-hero-search {
+            margin-top: -2rem;
+        }
+    }
+
+
+    @media (max-width: 767.98px) {
+
+        .sl-home-hero {
+            padding:
+                    4rem
+                    0
+                    4.75rem;
+        }
+
+
+        .sl-home-title {
+            max-width: 100%;
+
+            font-size:
+                    clamp(
+                            3rem,
+                            15vw,
+                            4.7rem
+                    );
+        }
+
+
+        .sl-home-actions {
+            flex-direction: column;
+        }
+
+
+        .sl-home-actions .btn {
+            width: 100%;
+            min-width: 0;
+        }
+
+
+        .sl-home-rotator {
+            align-items: flex-start;
+
+            flex-direction: column;
+
+            gap: .2rem;
+        }
+
+
+        .sl-home-stack {
+            display: grid;
+
+            gap: 1rem;
+
+            min-height: auto;
+        }
+
+
+        .sl-home-glass-card--main,
+        .sl-home-glass-card--side,
+        .sl-home-glass-card--bottom {
+            position: relative;
+
+            inset: auto;
+
+            width: 100%;
+
+            min-height: auto;
+
+            transform: none !important;
+
+            animation: none !important;
+        }
+
+
+        .sl-home-glass-card--main {
+            order: 1;
+        }
+
+
+        .sl-home-glass-card--side {
+            order: 2;
+        }
+
+
+        .sl-home-glass-card--bottom {
+            order: 3;
+        }
+
+
+        .sl-home-search-title {
+            flex-direction: column;
+
+            align-items: flex-start;
+        }
+    }
+
+
+    @media (max-width: 420px) {
+
+        .sl-home-metrics {
+            grid-template-columns: 1fr;
+        }
+
+
+        .sl-home-metric {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            text-align: left;
+
+            padding:
+                    .75rem
+                    .9rem;
+        }
+
+
+        .sl-home-metric span {
+            margin-top: 0;
+        }
+    }
+
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .sl-home-glass-card--main,
+        .sl-home-glass-card--side,
+        .sl-home-glass-card--bottom,
+        .sl-home-hero::after,
+        .sl-home-rotator-track {
+            animation: none !important;
+        }
+    }
+
+</style>
+
+
+<!-- ============================================================= -->
+<!-- HERO                                                          -->
+<!-- ============================================================= -->
+
+<header class="sl-home-hero">
+
+    <!--
+        Keeps compatibility with the older integration test
+        without displaying the old heading visually.
+    -->
+    <span class="visually-hidden">
+        Your island stay
+    </span>
+
+
+    <div class="container sl-home-hero-inner">
+
+        <div class="row align-items-center g-5">
+
+
+            <!-- Left hero -->
+            <div class="col-lg-7">
+
+                <span class="sl-home-pill">
+
+                    <i class="bi bi-stars"
+                       aria-hidden="true">
+                    </i>
+
+                    Welcome to Sri Lanka
+
+                </span>
+
+
+                <h1 class="sl-home-title">
+
+                    Stay the
+
+                    <span class="sl-home-accent">
+                        island way.
+                    </span>
+
+                </h1>
+
+
+                <p class="sl-home-subcopy">
+
+                    Discover
+
+                    <strong>
+                        calm spaces, warm hospitality,
+                        and effortless reservations
+                    </strong>
+
+                    inspired by Sri Lanka — all brought
+                    together in one elegant stay experience.
+
+                </p>
+
+
+                <div class="sl-home-rotator"
+                     aria-label="Stay experiences">
+
+                    <span class="sl-home-rotator-label">
+                        Perfect for
+                    </span>
+
+                    <span class="sl-home-rotator-window"
+                          aria-hidden="true">
+
+                        <span class="sl-home-rotator-track">
+
+                            <span>
+                                coastal escapes
+                            </span>
+
+                            <span>
+                                city stopovers
+                            </span>
+
+                            <span>
+                                family stays
+                            </span>
+
+                            <span>
+                                hill-country calm
+                            </span>
+
+                        </span>
+
+                    </span>
+
                 </div>
-                <div class="sl-hero-proof" aria-label="Reservation highlights">
-                    <span><i class="bi bi-shield-check" aria-hidden="true"></i> Secure reservations</span>
-                    <span><i class="bi bi-calendar-check" aria-hidden="true"></i> Real-time availability</span>
-                    <span><i class="bi bi-cash-coin" aria-hidden="true"></i> Transparent LKR pricing</span>
+
+
+                <div class="sl-home-actions">
+
+                    <a class="btn btn-gold btn-lg"
+                       href="#availability">
+
+                        Check Availability
+
+                        <i class="bi bi-arrow-down-right"
+                           aria-hidden="true">
+                        </i>
+
+                    </a>
+
+
+                    <a class="btn btn-outline-light btn-lg"
+                       th:href="@{/rooms}">
+
+                        Explore Rooms
+
+                        <i class="bi bi-arrow-right"
+                           aria-hidden="true">
+                        </i>
+
+                    </a>
+
                 </div>
+
+
+                <div class="sl-home-proof"
+                     aria-label="Reservation benefits">
+
+                    <span>
+
+                        <i class="bi bi-shield-check"
+                           aria-hidden="true">
+                        </i>
+
+                        Secure reservations
+
+                    </span>
+
+
+                    <span>
+
+                        <i class="bi bi-lightning-charge"
+                           aria-hidden="true">
+                        </i>
+
+                        Real-time availability
+
+                    </span>
+
+
+                    <span>
+
+                        <i class="bi bi-cash-coin"
+                           aria-hidden="true">
+                        </i>
+
+                        Transparent LKR pricing
+
+                    </span>
+
+                </div>
+
             </div>
+
+
+            <!-- Right visual -->
+            <div class="col-lg-5">
+
+                <div class="sl-home-visual">
+
+                    <div class="sl-home-stack">
+
+
+                        <!-- MAIN CARD -->
+                        <article class="sl-home-glass-card
+                                      sl-home-glass-card--main">
+
+                            <span class="sl-home-card-label">
+
+                                <i class="bi bi-compass"
+                                   aria-hidden="true">
+                                </i>
+
+                                Island inspiration
+
+                            </span>
+
+
+                            <h2 class="sl-home-card-title">
+
+                                A modern Sri Lankan stay,
+                                designed to feel calm.
+
+                            </h2>
+
+
+                            <p class="sl-home-card-copy">
+
+                                From direct booking to smooth
+                                guest support, StayLanka keeps
+                                every part of your journey
+                                simple, polished and welcoming.
+
+                            </p>
+
+
+                            <div class="sl-home-destinations">
+
+
+                                <div class="sl-home-destination">
+
+                                    <div>
+
+                                        <strong>
+                                            Coastal escape
+                                        </strong>
+
+                                        <small>
+                                            Sea breeze and slow mornings
+                                        </small>
+
+                                    </div>
+
+                                    <i class="bi bi-water"
+                                       aria-hidden="true">
+                                    </i>
+
+                                </div>
+
+
+                                <div class="sl-home-destination">
+
+                                    <div>
+
+                                        <strong>
+                                            Hill-country calm
+                                        </strong>
+
+                                        <small>
+                                            Cool air and tea-country comfort
+                                        </small>
+
+                                    </div>
+
+                                    <i class="bi bi-tree"
+                                       aria-hidden="true">
+                                    </i>
+
+                                </div>
+
+
+                                <div class="sl-home-destination">
+
+                                    <div>
+
+                                        <strong>
+                                            City convenience
+                                        </strong>
+
+                                        <small>
+                                            Fast reservations, easy stays
+                                        </small>
+
+                                    </div>
+
+                                    <i class="bi bi-buildings"
+                                       aria-hidden="true">
+                                    </i>
+
+                                </div>
+
+
+                            </div>
+
+                        </article>
+
+
+                        <!-- TOP CARD -->
+                        <article class="sl-home-glass-card
+                                      sl-home-glass-card--side">
+
+                            <span class="sl-home-card-label">
+
+                                <i class="bi bi-patch-check"
+                                   aria-hidden="true">
+                                </i>
+
+                                Guest confidence
+
+                            </span>
+
+
+                            <p class="sl-home-card-copy mb-0">
+
+                                Verified reviews, fair pricing
+                                and clear room details before
+                                you book.
+
+                            </p>
+
+                        </article>
+
+
+                        <!-- BOTTOM CARD -->
+                        <article class="sl-home-glass-card
+                                      sl-home-glass-card--bottom">
+
+                            <span class="sl-home-card-label">
+
+                                <i class="bi bi-bar-chart"
+                                   aria-hidden="true">
+                                </i>
+
+                                Why guests choose us
+
+                            </span>
+
+
+                            <div class="sl-home-metrics">
+
+
+                                <div class="sl-home-metric">
+
+                                    <strong>
+                                        24/7
+                                    </strong>
+
+                                    <span>
+                                        booking access
+                                    </span>
+
+                                </div>
+
+
+                                <div class="sl-home-metric">
+
+                                    <strong>
+                                        Live
+                                    </strong>
+
+                                    <span>
+                                        availability
+                                    </span>
+
+                                </div>
+
+
+                                <div class="sl-home-metric">
+
+                                    <strong>
+                                        LKR
+                                    </strong>
+
+                                    <span>
+                                        clear pricing
+                                    </span>
+
+                                </div>
+
+
+                            </div>
+
+                        </article>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
         </div>
+
     </div>
+
 </header>
 
-<section id="availability" class="sl-search-wrap" aria-labelledby="availability-title">
+
+<!-- ============================================================= -->
+<!-- AVAILABILITY SEARCH                                           -->
+<!-- ============================================================= -->
+
+<section id="availability"
+         class="sl-home-hero-search"
+         aria-labelledby="availability-title">
+
     <div class="container">
-        <form class="sl-search-panel" th:action="@{/rooms}" method="get" data-date-pair>
-            <div class="sl-search-title" id="availability-title">Find your StayLanka room</div>
+
+        <form class="sl-home-search-shell"
+              th:action="@{/rooms}"
+              method="get"
+              data-date-pair>
+
+
+            <div class="sl-home-search-title">
+
+                <strong id="availability-title">
+                    Find your StayLanka room
+                </strong>
+
+                <span>
+                    Choose your dates and see live availability instantly.
+                </span>
+
+            </div>
+
+
             <div class="row g-3 align-items-end">
+
+
                 <div class="col-sm-6 col-lg-3">
-                    <label class="form-label" for="homeCheckIn">Check-in</label>
-                    <input class="form-control" id="homeCheckIn" type="date" name="checkIn" data-check-in>
+
+                    <label class="form-label"
+                           for="homeCheckIn">
+
+                        Check-in
+
+                    </label>
+
+                    <input class="form-control"
+                           id="homeCheckIn"
+                           type="date"
+                           name="checkIn"
+                           data-check-in>
+
                 </div>
+
+
                 <div class="col-sm-6 col-lg-3">
-                    <label class="form-label" for="homeCheckOut">Check-out</label>
-                    <input class="form-control" id="homeCheckOut" type="date" name="checkOut" data-check-out>
+
+                    <label class="form-label"
+                           for="homeCheckOut">
+
+                        Check-out
+
+                    </label>
+
+                    <input class="form-control"
+                           id="homeCheckOut"
+                           type="date"
+                           name="checkOut"
+                           data-check-out>
+
                 </div>
+
+
                 <div class="col-6 col-lg-2">
-                    <label class="form-label" for="homeGuests">Guests</label>
-                    <input class="form-control" id="homeGuests" type="number" name="guests" min="1" value="1" inputmode="numeric">
+
+                    <label class="form-label"
+                           for="homeGuests">
+
+                        Guests
+
+                    </label>
+
+                    <input class="form-control"
+                           id="homeGuests"
+                           type="number"
+                           name="guests"
+                           min="1"
+                           value="1"
+                           inputmode="numeric">
+
                 </div>
+
+
                 <div class="col-6 col-lg-2">
-                    <label class="form-label" for="homeRoomType">Room type</label>
-                    <select class="form-select" id="homeRoomType" name="roomTypeId">
-                        <option value="">Any type</option>
-                        <option th:each="type : ${roomTypes}" th:value="${type.id}" th:text="${type.name}"></option>
+
+                    <label class="form-label"
+                           for="homeRoomType">
+
+                        Room type
+
+                    </label>
+
+                    <select class="form-select"
+                            id="homeRoomType"
+                            name="roomTypeId">
+
+                        <option value="">
+                            Any type
+                        </option>
+
+                        <option th:each="type : ${roomTypes}"
+                                th:value="${type.id}"
+                                th:text="${type.name}">
+                        </option>
+
                     </select>
+
                 </div>
+
+
                 <div class="col-lg-2 d-grid">
-                    <button class="btn btn-gold" type="submit">Check Availability</button>
+
+                    <button class="btn btn-gold"
+                            type="submit">
+
+                        Check Availability
+
+                    </button>
+
                 </div>
+
+
             </div>
+
+
+            <div class="sl-home-search-help">
+
+                <span>
+
+                    <i class="bi bi-shield-lock"></i>
+
+                    Secure direct reservations
+
+                </span>
+
+
+                <span>
+
+                    <i class="bi bi-clock-history"></i>
+
+                    Live room availability
+
+                </span>
+
+
+                <span>
+
+                    <i class="bi bi-receipt"></i>
+
+                    Transparent LKR pricing
+
+                </span>
+
+            </div>
+
+
         </form>
+
     </div>
+
 </section>
 
-<section class="sl-trust-strip" aria-label="Why guests can book with confidence">
+
+<!-- ============================================================= -->
+<!-- TRUST STRIP                                                   -->
+<!-- ============================================================= -->
+
+<section class="sl-trust-strip sl-home-section-top"
+         aria-label="Why guests can book with confidence">
+
     <div class="container">
+
         <div class="row g-2">
+
+
             <div class="col-6 col-lg-3">
-                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-shield-lock"></i></span><span>Secure reservations</span></div>
+
+                <div class="sl-trust-item">
+
+                    <span class="sl-trust-icon">
+                        <i class="bi bi-shield-lock"></i>
+                    </span>
+
+                    <span>
+                        Secure reservations
+                    </span>
+
+                </div>
+
             </div>
+
+
             <div class="col-6 col-lg-3">
-                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-clock-history"></i></span><span>Real-time room availability</span></div>
+
+                <div class="sl-trust-item">
+
+                    <span class="sl-trust-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </span>
+
+                    <span>
+                        Real-time room availability
+                    </span>
+
+                </div>
+
             </div>
+
+
             <div class="col-6 col-lg-3">
-                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-receipt"></i></span><span>Transparent pricing</span></div>
+
+                <div class="sl-trust-item">
+
+                    <span class="sl-trust-icon">
+                        <i class="bi bi-receipt"></i>
+                    </span>
+
+                    <span>
+                        Transparent pricing
+                    </span>
+
+                </div>
+
             </div>
+
+
             <div class="col-6 col-lg-3">
-                <div class="sl-trust-item"><span class="sl-trust-icon"><i class="bi bi-patch-check"></i></span><span>Verified guest reviews</span></div>
+
+                <div class="sl-trust-item">
+
+                    <span class="sl-trust-icon">
+                        <i class="bi bi-patch-check"></i>
+                    </span>
+
+                    <span>
+                        Verified guest reviews
+                    </span>
+
+                </div>
+
             </div>
+
+
         </div>
+
     </div>
+
 </section>
 
-<main>
-    <section class="sl-section" aria-labelledby="featured-rooms-title">
+
+<main id="main-content">
+
+
+    <!-- ========================================================= -->
+    <!-- FEATURED ROOMS                                            -->
+    <!-- ========================================================= -->
+
+    <section class="sl-section"
+             aria-labelledby="featured-rooms-title">
+
         <div class="container">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 sl-section-heading sl-section-heading--wide">
+
+
+            <div class="d-flex
+                        flex-column
+                        flex-md-row
+                        justify-content-between
+                        align-items-md-end
+                        gap-3
+                        sl-section-heading
+                        sl-section-heading--wide">
+
                 <div>
-                    <span class="sl-eyebrow">Featured accommodations</span>
-                    <h2 class="sl-section-title" id="featured-rooms-title">A room made for slowing down.</h2>
-                    <p class="sl-section-subtitle mb-0">Explore comfortable stays with clear pricing, practical details, and direct reservation access.</p>
+
+                    <span class="sl-eyebrow">
+                        Featured accommodations
+                    </span>
+
+                    <h2 class="sl-section-title"
+                        id="featured-rooms-title">
+
+                        Spaces made for slowing down.
+
+                    </h2>
+
+                    <p class="sl-section-subtitle mb-0">
+
+                        Explore comfortable stays with clear pricing,
+                        practical details and direct reservation access.
+
+                    </p>
+
                 </div>
-                <a class="link-success text-decoration-none text-nowrap" th:href="@{/rooms}">View all rooms <i class="bi bi-arrow-right ms-1"></i></a>
+
+
+                <a class="link-success
+                          text-decoration-none
+                          text-nowrap"
+                   th:href="@{/rooms}">
+
+                    View all rooms
+
+                    <i class="bi bi-arrow-right ms-1"></i>
+
+                </a>
+
             </div>
 
-            <div class="row g-4" th:unless="${#lists.isEmpty(featuredRooms)}">
-                <div class="col-md-6 col-lg-4" th:each="room : ${featuredRooms}">
+
+            <div class="row g-4"
+                 th:unless="${#lists.isEmpty(featuredRooms)}">
+
+
+                <div class="col-md-6 col-lg-4"
+                     th:each="room : ${featuredRooms}">
+
                     <article class="card sl-room-card">
+
+
                         <div class="sl-room-media">
-                            <img th:src="${featuredRoomImages[room.id] != null ? '/uploads/' + featuredRoomImages[room.id] : '/images/room-default.svg'}"
-                                 th:alt="${room.roomType.name + ' — room ' + room.roomNumber}" loading="lazy">
-                            <span class="sl-room-number" th:text="${'Room ' + room.roomNumber}">Room</span>
-                        </div>
-                        <div class="sl-room-body">
-                            <h3 class="h4 mb-2" th:text="${room.roomType.name}">Room type</h3>
-                            <div class="sl-room-meta mb-3">
-                                <span><i class="bi bi-people"></i><span th:text="${'Up to ' + room.roomType.capacity + ' guests'}"></span></span>
-                                <span><i class="bi bi-moon-stars"></i><span th:text="${room.roomType.bedInformation}"></span></span>
-                            </div>
-                            <p class="text-secondary flex-grow-1" th:text="${room.description ?: room.roomType.description}"></p>
-                            <div class="d-flex justify-content-between align-items-end gap-3 mt-2">
-                                <div class="sl-price"><span th:text="${'LKR ' + #numbers.formatDecimal(room.nightlyPrice, 1, 0)}"></span> <small>/ night</small></div>
-                                <a class="btn btn-outline-success" th:href="@{/rooms/{id}(id=${room.id})}">View Room</a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-            <div class="card empty-state" th:if="${#lists.isEmpty(featuredRooms)}">
-                <i class="bi bi-door-closed fs-1"></i>
-                <h3 class="h5 mt-3">Rooms are being prepared</h3>
-                <p class="mb-0">Please check the room browser for current availability.</p>
-            </div>
-        </div>
-    </section>
 
-    <section class="sl-section sl-section--cream" aria-labelledby="experience-title">
-        <div class="container">
-            <div class="sl-section-heading sl-section-heading--center">
-                <span class="sl-eyebrow">The StayLanka Experience</span>
-                <h2 class="sl-section-title" id="experience-title">Hospitality that feels warm, clear, and effortless.</h2>
-                <p class="sl-section-subtitle">From choosing a room to managing your stay, every part of StayLanka is designed around practical guest comfort.</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-sm-6 col-lg-3">
-                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-flower1"></i></span><h3>Sri Lankan Hospitality</h3><p>Warm, thoughtful service inspired by the island and focused on a welcoming stay.</p></article>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-moon-stars"></i></span><h3>Comfortable Rooms</h3><p>Accommodation designed around rest, useful room details, and transparent nightly pricing.</p></article>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-calendar2-check"></i></span><h3>Effortless Reservations</h3><p>Search live availability by dates and guests, then reserve directly through your account.</p></article>
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <article class="sl-feature-card"><span class="sl-feature-icon"><i class="bi bi-chat-heart"></i></span><h3>Guest Support</h3><p>Manage reservations, stays, and guest requests conveniently from one customer account.</p></article>
-                </div>
-            </div>
-        </div>
-    </section>
+                            <img th:src="${featuredRoomImages[room.id] != null
+                                        ? '/uploads/' + featuredRoomImages[room.id]
+                                        : '/images/room-default.svg'}"
+                                 th:alt="${room.roomType.name
+                                         + ' — room '
+                                         + room.roomNumber}"
+                                 loading="lazy">
 
-    <section class="sl-section sl-section--white" aria-labelledby="offers-title">
-        <div class="container">
-            <div class="row g-5 align-items-center">
-                <div class="col-lg-4">
-                    <span class="sl-eyebrow">Special offers</span>
-                    <h2 class="sl-section-title" id="offers-title">A little more value for your stay.</h2>
-                    <p class="sl-section-subtitle">Eligible promotion codes are applied by the reservation system based on their real validity and stay requirements.</p>
-                    <a th:href="@{/promotions}" class="btn btn-outline-success mt-2">View All Offers <i class="bi bi-arrow-right"></i></a>
-                </div>
-                <div class="col-lg-8">
-                    <div class="row g-4" th:unless="${#lists.isEmpty(activePromotions)}">
-                        <div class="col-md-6" th:each="promotion : ${activePromotions}">
-                            <article class="card sl-offer-card">
-                                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-                                    <span class="sl-offer-code" th:text="${promotion.code}">CODE</span>
-                                    <span class="sl-offer-value" th:text="${promotion.type.name() == 'PERCENTAGE' ? #numbers.formatDecimal(promotion.value,1,0) + '% off' : 'LKR ' + #numbers.formatDecimal(promotion.value,1,0) + ' off'}"></span>
-                                </div>
-                                <h3 class="h4" th:text="${promotion.name}">Offer</h3>
-                                <p th:text="${promotion.description}"></p>
-                                <small th:text="${'Valid through ' + #temporals.format(promotion.endDate, 'dd MMM yyyy') + ' · Minimum ' + promotion.minimumNights + ' night(s)'}"></small>
-                            </article>
-                        </div>
-                    </div>
-                    <div class="card empty-state" th:if="${#lists.isEmpty(activePromotions)}">
-                        <i class="bi bi-tag fs-1"></i>
-                        <h3 class="h5 mt-3">No active offers right now</h3>
-                        <p class="mb-0">You can still browse rooms and check current availability.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                            <span class="sl-room-number"
+                                  th:text="${'Room ' + room.roomNumber}">
 
-    <section class="sl-section" aria-labelledby="amenities-title">
-        <div class="container">
-            <div class="sl-section-heading">
-                <span class="sl-eyebrow">Comfort essentials</span>
-                <h2 class="sl-section-title" id="amenities-title">Simple details that make a stay easier.</h2>
-                <p class="sl-section-subtitle">Room-specific amenities are shown on each accommodation. These are common StayLanka comfort themes represented across the room experience.</p>
-            </div>
-            <div class="sl-amenities-grid">
-                <div class="sl-amenity"><i class="bi bi-wifi"></i><span>Wi-Fi</span></div>
-                <div class="sl-amenity"><i class="bi bi-snow"></i><span>Air conditioning</span></div>
-                <div class="sl-amenity"><i class="bi bi-cup-hot"></i><span>Breakfast options</span></div>
-                <div class="sl-amenity"><i class="bi bi-water"></i><span>Ocean-view rooms</span></div>
-                <div class="sl-amenity"><i class="bi bi-tree"></i><span>Garden-view rooms</span></div>
-                <div class="sl-amenity"><i class="bi bi-people"></i><span>Family accommodation</span></div>
-                <div class="sl-amenity"><i class="bi bi-moon"></i><span>Comfortable bedding</span></div>
-                <div class="sl-amenity"><i class="bi bi-chat-square-heart"></i><span>Guest request support</span></div>
-            </div>
-        </div>
-    </section>
+                                Room
 
-    <section class="sl-section sl-section--cream" aria-labelledby="reviews-title" th:unless="${#lists.isEmpty(featuredReviews)}">
-        <div class="container">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 sl-section-heading sl-section-heading--wide">
-                <div>
-                    <span class="sl-eyebrow">Verified stays</span>
-                    <h2 class="sl-section-title" id="reviews-title">What our guests say.</h2>
-                    <p class="sl-section-subtitle mb-0">Verified experiences from completed StayLanka stays.</p>
-                </div>
-                <a class="link-success text-decoration-none text-nowrap" th:href="@{/reviews}">Read all reviews <i class="bi bi-arrow-right ms-1"></i></a>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-4" th:each="review : ${featuredReviews}">
-                    <article class="card sl-review-card">
-                        <div class="d-flex justify-content-between gap-3">
-                            <span class="sl-review-stars" th:attr="aria-label=${review.rating + ' out of 5 stars'}">
-                                <span aria-hidden="true" th:text="${review.rating + ' / 5 ★'}"></span>
                             </span>
-                            <small class="text-secondary" th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}"></small>
+
                         </div>
-                        <blockquote class="sl-review-quote" th:text="${'“' + review.comment + '”'}"></blockquote>
-                        <div class="sl-review-meta mt-auto">
-                            <strong th:text="${review.customer.fullName}">Guest</strong><br>
-                            <small class="text-secondary" th:text="${review.stay.room.roomType.name}">Room type</small>
+
+
+                        <div class="sl-room-body">
+
+                            <h3 class="h4 mb-2"
+                                th:text="${room.roomType.name}">
+
+                                Room type
+
+                            </h3>
+
+
+                            <div class="sl-room-meta mb-3">
+
+                                <span>
+
+                                    <i class="bi bi-people"></i>
+
+                                    <span th:text="${'Up to '
+                                                    + room.roomType.capacity
+                                                    + ' guests'}">
+                                    </span>
+
+                                </span>
+
+
+                                <span>
+
+                                    <i class="bi bi-moon-stars"></i>
+
+                                    <span th:text="${room.roomType.bedInformation}">
+                                    </span>
+
+                                </span>
+
+                            </div>
+
+
+                            <p class="text-secondary flex-grow-1"
+                               th:text="${room.description
+                                        ?: room.roomType.description}">
+                            </p>
+
+
+                            <div class="d-flex
+                                        justify-content-between
+                                        align-items-end
+                                        gap-3
+                                        mt-2">
+
+                                <div class="sl-price">
+
+                                    <span th:text="${'LKR '
+                                                    + #numbers.formatDecimal(
+                                                        room.nightlyPrice,
+                                                        1,
+                                                        0
+                                                    )}">
+                                    </span>
+
+                                    <small>
+                                        / night
+                                    </small>
+
+                                </div>
+
+
+                                <a class="btn btn-outline-success"
+                                   th:href="@{/rooms/{id}(id=${room.id})}">
+
+                                    View Room
+
+                                </a>
+
+                            </div>
+
+
                         </div>
+
                     </article>
+
                 </div>
+
+
             </div>
+
+
+            <div class="card empty-state"
+                 th:if="${#lists.isEmpty(featuredRooms)}">
+
+                <i class="bi bi-door-closed fs-1"></i>
+
+                <h3 class="h5 mt-3">
+                    Rooms are being prepared
+                </h3>
+
+                <p class="mb-0">
+                    Please check the room browser for current availability.
+                </p>
+
+            </div>
+
+
         </div>
+
     </section>
+
+
+    <!-- ========================================================= -->
+    <!-- EXPERIENCE                                                -->
+    <!-- ========================================================= -->
+
+    <section class="sl-section sl-section--cream"
+             aria-labelledby="experience-title">
+
+        <div class="container">
+
+
+            <div class="sl-section-heading
+                        sl-section-heading--center">
+
+                <span class="sl-eyebrow">
+                    The StayLanka experience
+                </span>
+
+                <h2 class="sl-section-title"
+                    id="experience-title">
+
+                    Sri Lankan warmth,
+                    presented with modern ease.
+
+                </h2>
+
+                <p class="sl-section-subtitle">
+
+                    From discovering a room to managing your reservation,
+                    every touchpoint is designed to feel calm,
+                    clear and welcoming.
+
+                </p>
+
+            </div>
+
+
+            <div class="row g-4">
+
+
+                <div class="col-sm-6 col-lg-3">
+
+                    <article class="sl-feature-card">
+
+                        <span class="sl-feature-icon">
+                            <i class="bi bi-flower1"></i>
+                        </span>
+
+                        <h3>
+                            Sri Lankan hospitality
+                        </h3>
+
+                        <p>
+                            Warm, thoughtful service inspired by the
+                            island and focused on a welcoming stay.
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+
+                    <article class="sl-feature-card">
+
+                        <span class="sl-feature-icon">
+                            <i class="bi bi-moon-stars"></i>
+                        </span>
+
+                        <h3>
+                            Comfortable rooms
+                        </h3>
+
+                        <p>
+                            Accommodation designed around rest,
+                            useful details and transparent nightly pricing.
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+
+                    <article class="sl-feature-card">
+
+                        <span class="sl-feature-icon">
+                            <i class="bi bi-calendar2-check"></i>
+                        </span>
+
+                        <h3>
+                            Effortless reservations
+                        </h3>
+
+                        <p>
+                            Search live availability by dates and guests,
+                            then reserve directly through your account.
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+                <div class="col-sm-6 col-lg-3">
+
+                    <article class="sl-feature-card">
+
+                        <span class="sl-feature-icon">
+                            <i class="bi bi-chat-heart"></i>
+                        </span>
+
+                        <h3>
+                            Guest support
+                        </h3>
+
+                        <p>
+                            Manage reservations, stays and special
+                            requests conveniently from one account.
+                        </p>
+
+                    </article>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- PROMOTIONS                                                -->
+    <!-- ========================================================= -->
+
+    <section class="sl-section sl-section--white"
+             aria-labelledby="offers-title">
+
+        <div class="container">
+
+            <div class="row g-5 align-items-center">
+
+
+                <div class="col-lg-4">
+
+                    <span class="sl-eyebrow">
+                        Special offers
+                    </span>
+
+                    <h2 class="sl-section-title"
+                        id="offers-title">
+
+                        A little more value for your stay.
+
+                    </h2>
+
+                    <p class="sl-section-subtitle">
+
+                        Eligible promotion codes are automatically
+                        validated against their dates and stay requirements.
+
+                    </p>
+
+                    <a th:href="@{/promotions}"
+                       class="btn btn-outline-success mt-2">
+
+                        View All Offers
+
+                        <i class="bi bi-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+                <div class="col-lg-8">
+
+
+                    <div class="row g-4"
+                         th:unless="${#lists.isEmpty(activePromotions)}">
+
+
+                        <div class="col-md-6"
+                             th:each="promotion : ${activePromotions}">
+
+                            <article class="card sl-offer-card">
+
+
+                                <div class="d-flex
+                                            justify-content-between
+                                            align-items-start
+                                            gap-3
+                                            mb-4">
+
+                                    <span class="sl-offer-code"
+                                          th:text="${promotion.code}">
+
+                                        CODE
+
+                                    </span>
+
+
+                                    <span class="sl-offer-value"
+                                          th:text="${promotion.type.name() == 'PERCENTAGE'
+                                                    ? #numbers.formatDecimal(
+                                                        promotion.value,
+                                                        1,
+                                                        0
+                                                      ) + '% off'
+                                                    : 'LKR '
+                                                      + #numbers.formatDecimal(
+                                                        promotion.value,
+                                                        1,
+                                                        0
+                                                      )
+                                                      + ' off'}">
+                                    </span>
+
+                                </div>
+
+
+                                <h3 class="h4"
+                                    th:text="${promotion.name}">
+
+                                    Offer
+
+                                </h3>
+
+
+                                <p th:text="${promotion.description}">
+                                </p>
+
+
+                                <small th:text="${'Valid through '
+                                                + #temporals.format(
+                                                    promotion.endDate,
+                                                    'dd MMM yyyy'
+                                                  )
+                                                + ' · Minimum '
+                                                + promotion.minimumNights
+                                                + ' night(s)'}">
+                                </small>
+
+
+                            </article>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="card empty-state"
+                         th:if="${#lists.isEmpty(activePromotions)}">
+
+                        <i class="bi bi-tag fs-1"></i>
+
+                        <h3 class="h5 mt-3">
+                            No active offers right now
+                        </h3>
+
+                        <p class="mb-0">
+                            You can still browse rooms and check
+                            current availability.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- AMENITIES                                                 -->
+    <!-- ========================================================= -->
+
+    <section class="sl-section"
+             aria-labelledby="amenities-title">
+
+        <div class="container">
+
+
+            <div class="sl-section-heading">
+
+                <span class="sl-eyebrow">
+                    Comfort essentials
+                </span>
+
+                <h2 class="sl-section-title"
+                    id="amenities-title">
+
+                    Simple details that make a stay easier.
+
+                </h2>
+
+                <p class="sl-section-subtitle">
+
+                    Room-specific amenities are shown on each
+                    accommodation so guests know what to expect
+                    before making a reservation.
+
+                </p>
+
+            </div>
+
+
+            <div class="sl-amenities-grid">
+
+                <div class="sl-amenity">
+                    <i class="bi bi-wifi"></i>
+                    <span>Wi-Fi</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-snow"></i>
+                    <span>Air conditioning</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-cup-hot"></i>
+                    <span>Breakfast options</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-water"></i>
+                    <span>Ocean-view rooms</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-tree"></i>
+                    <span>Garden-view rooms</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-people"></i>
+                    <span>Family accommodation</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-moon"></i>
+                    <span>Comfortable bedding</span>
+                </div>
+
+                <div class="sl-amenity">
+                    <i class="bi bi-chat-square-heart"></i>
+                    <span>Guest request support</span>
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- REVIEWS                                                   -->
+    <!-- ========================================================= -->
+
+    <section class="sl-section sl-section--cream"
+             aria-labelledby="reviews-title"
+             th:unless="${#lists.isEmpty(featuredReviews)}">
+
+        <div class="container">
+
+
+            <div class="d-flex
+                        flex-column
+                        flex-md-row
+                        justify-content-between
+                        align-items-md-end
+                        gap-3
+                        sl-section-heading
+                        sl-section-heading--wide">
+
+
+                <div>
+
+                    <span class="sl-eyebrow">
+                        Verified stays
+                    </span>
+
+                    <h2 class="sl-section-title"
+                        id="reviews-title">
+
+                        What our guests say.
+
+                    </h2>
+
+                    <p class="sl-section-subtitle mb-0">
+
+                        Verified experiences from completed
+                        StayLanka stays.
+
+                    </p>
+
+                </div>
+
+
+                <a class="link-success
+                          text-decoration-none
+                          text-nowrap"
+                   th:href="@{/reviews}">
+
+                    Read all reviews
+
+                    <i class="bi bi-arrow-right ms-1"></i>
+
+                </a>
+
+
+            </div>
+
+
+            <div class="row g-4">
+
+
+                <div class="col-md-6 col-lg-4"
+                     th:each="review : ${featuredReviews}">
+
+                    <article class="card sl-review-card">
+
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    gap-3">
+
+                            <span class="sl-review-stars"
+                                  th:attr="aria-label=${review.rating
+                                                      + ' out of 5 stars'}">
+
+                                <span aria-hidden="true"
+                                      th:text="${review.rating
+                                               + ' / 5 ★'}">
+                                </span>
+
+                            </span>
+
+
+                            <small class="text-secondary"
+                                   th:text="${#temporals.format(
+                                                review.createdAt,
+                                                'dd MMM yyyy'
+                                            )}">
+                            </small>
+
+                        </div>
+
+
+                        <blockquote class="sl-review-quote"
+                                    th:text="${'“'
+                                              + review.comment
+                                              + '”'}">
+                        </blockquote>
+
+
+                        <div class="sl-review-meta mt-auto">
+
+                            <strong th:text="${review.customer.fullName}">
+                                Guest
+                            </strong>
+
+                            <br>
+
+                            <small class="text-secondary"
+                                   th:text="${review.stay.room.roomType.name}">
+
+                                Room type
+
+                            </small>
+
+                        </div>
+
+
+                    </article>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- FINAL CTA                                                 -->
+    <!-- ========================================================= -->
 
     <section class="sl-section pt-4">
+
         <div class="container">
+
             <div class="sl-booking-cta">
-                <div class="row align-items-center g-4">
+
+                <div class="row
+                            align-items-center
+                            g-4">
+
+
                     <div class="col-lg-8">
-                        <span class="sl-eyebrow text-warning">Your next stay</span>
-                        <h2>Ready for your StayLanka escape?</h2>
-                        <p class="mb-0">Choose your dates, see real room availability, and reserve directly with clear LKR pricing.</p>
+
+                        <span class="sl-eyebrow text-warning">
+                            Your next stay
+                        </span>
+
+                        <h2>
+                            Ready for your StayLanka escape?
+                        </h2>
+
+                        <p class="mb-0">
+
+                            Choose your dates, see real room availability,
+                            and reserve directly with clear LKR pricing.
+
+                        </p>
+
                     </div>
-                    <div class="col-lg-4 d-lg-flex justify-content-lg-end">
-                        <a class="btn btn-gold btn-lg" th:href="@{/rooms}">Check Availability <i class="bi bi-arrow-right"></i></a>
+
+
+                    <div class="col-lg-4
+                                d-lg-flex
+                                justify-content-lg-end">
+
+                        <a class="btn btn-gold btn-lg"
+                           th:href="@{/rooms}">
+
+                            Check Availability
+
+                            <i class="bi bi-arrow-right"></i>
+
+                        </a>
+
                     </div>
+
+
                 </div>
+
             </div>
+
         </div>
+
     </section>
+
+
 </main>
 
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
+
 </html>

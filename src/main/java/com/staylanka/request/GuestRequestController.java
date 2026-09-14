@@ -192,6 +192,13 @@ public class GuestRequestController {
         requestService.archive(authentication,id);flash.addFlashAttribute("success","Request archived; history retained.");return "redirect:/staff/requests/"+id;
     }
 
+    @PostMapping("/staff/requests/{id}/delete")
+    public String deletePermanently(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        requestService.deletePermanently(id);
+        redirectAttributes.addFlashAttribute("success", "Inquiry / special request permanently deleted.");
+        return "redirect:/staff/requests";
+    }
+
     private void prepareCustomerForm(Authentication authentication, Model model,
                                      GuestRequestForm form, Long requestId) {
         model.addAttribute("guestRequestForm", form);

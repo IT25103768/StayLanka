@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Permanent deletion')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Permanent deletion</span><h1>Permanent deletion</h1></header>
+<p>Lifecycle actions retain history. Use this separate administrative area only for approved permanent removal.</p>
+<div class="alert alert-danger">This permanently removes data from the database and cannot be undone.</div>
+<form method="get"><label for="type" class="form-label">Module</label><select id="type" name="type" class="form-select"><option th:each="t:${types}" th:value="${t}" th:text="${t}" th:selected="${t==type}"></option></select><button class="btn btn-outline-success mt-2">Show records</button></form>
+<p class="text-secondary mt-3">Showing the latest 100 records. Linked history and active records are protected.</p>
+<div class="table-responsive"><table class="table"><caption>Records in the selected module</caption><thead><tr><th>ID</th><th>Reference</th><th>Confirmation</th></tr></thead><tbody>
+<tr th:each="row:${rows}"><td th:text="${row[0]}"></td><td th:text="${row[1]}"></td><td>
+<form th:action="@{/admin/purge}" method="post"><input type="hidden" name="type" th:value="${type}"><input type="hidden" name="id" th:value="${row[0]}">
+<label class="form-label" th:for="${'confirm-'+row[0]}" th:text="${'Type DELETE '+type+' '+row[0]}"></label>
+<input class="form-control" name="confirmation" th:id="${'confirm-'+row[0]}" required autocomplete="off">
+<button type="submit" class="btn btn-danger mt-2" data-confirm="This permanently removes data from the database and cannot be undone.">Permanently Delete</button></form></td></tr>
+</tbody></table></div><p th:if="${#lists.isEmpty(rows)}" class="empty-state">No records in this module.</p>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

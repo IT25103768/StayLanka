@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Your notifications')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Your notifications</span><h1>Your notifications</h1></header>
+<p>Booking and guest-service updates are delivered here. These are in-app notices, not emails or SMS.</p><p th:if="${#lists.isEmpty(items)}" class="empty-state">You're all caught up. New updates will appear here.</p><article class="card p-4 mb-3" th:each="item:${items}"><small th:text="${item[3]}"></small><h2 class="h5 mt-2" th:text="${item[1]}"></h2><div class="d-flex gap-2"><a class="btn btn-outline-success" th:href="${item[2]}">View details</a><form th:if="${item[4]==null}" th:action="@{/notifications/{id}/read(id=${item[0]})}" method="post"><button class="btn btn-outline-secondary">Mark read</button></form><span th:unless="${item[4]==null}" class="badge text-bg-secondary">Read</span></div></article>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

@@ -15,90 +15,260 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class PromotionController {
+
     private final PromotionService promotionService;
 
-    public PromotionController(PromotionService promotionService) {
+    public PromotionController(
+            PromotionService promotionService
+    ) {
         this.promotionService = promotionService;
     }
 
     @GetMapping("/promotions")
-    public String active(@RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("promotions", promotionService.active(page));
+    public String active(
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        model.addAttribute(
+                "promotions",
+                promotionService.active(page)
+        );
+
         return "promotion/public-list";
     }
 
     @GetMapping("/admin/promotions")
     public String manage(Model model) {
-        model.addAttribute("promotions", promotionService.all());
+        model.addAttribute(
+                "promotions",
+                promotionService.all()
+        );
+
         return "promotion/manage-list";
     }
 
     @GetMapping("/admin/promotions/new")
     public String createForm(Model model) {
-        prepare(model, new PromotionForm(), null);
+        prepare(
+                model,
+                new PromotionForm(),
+                null
+        );
+
         return "promotion/form";
     }
 
     @PostMapping("/admin/promotions")
-    public String create(@Valid @ModelAttribute PromotionForm promotionForm, BindingResult bindingResult,
-                         Model model, RedirectAttributes redirectAttributes) {
+    public String create(
+            @Valid @ModelAttribute PromotionForm promotionForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            prepare(model, promotionForm, null);
+            prepare(
+                    model,
+                    promotionForm,
+                    null
+            );
+
             return "promotion/form";
         }
+
         try {
-            promotionService.create(promotionForm);
+            promotionService.create(
+                    promotionForm
+            );
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("code", "duplicate", ex.getMessage());
-            prepare(model, promotionForm, null);
+
+            bindingResult.rejectValue(
+                    "code",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            prepare(
+                    model,
+                    promotionForm,
+                    null
+            );
+
             return "promotion/form";
+
         } catch (BusinessRuleException ex) {
-            bindingResult.reject("promotion.invalid", ex.getMessage());
-            prepare(model, promotionForm, null);
+
+            bindingResult.reject(
+                    "promotion.invalid",
+                    ex.getMessage()
+            );
+
+            prepare(
+                    model,
+                    promotionForm,
+                    null
+            );
+
             return "promotion/form";
         }
-        redirectAttributes.addFlashAttribute("success", "Promotion created.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Promotion created."
+        );
+
         return "redirect:/admin/promotions";
     }
 
     @GetMapping("/admin/promotions/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        prepare(model, PromotionForm.from(promotionService.get(id)), id);
+    public String editForm(
+            @PathVariable Long id,
+            Model model
+    ) {
+
+        prepare(
+                model,
+                PromotionForm.from(
+                        promotionService.get(id)
+                ),
+                id
+        );
+
         return "promotion/form";
     }
 
     @PostMapping("/admin/promotions/{id}")
-    public String update(@PathVariable Long id, @Valid @ModelAttribute PromotionForm promotionForm,
-                         BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    public String update(
+            @PathVariable Long id,
+            @Valid @ModelAttribute PromotionForm promotionForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            prepare(model, promotionForm, id);
+            prepare(
+                    model,
+                    promotionForm,
+                    id
+            );
+
             return "promotion/form";
         }
+
         try {
-            promotionService.update(id, promotionForm);
+            promotionService.update(
+                    id,
+                    promotionForm
+            );
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("code", "duplicate", ex.getMessage());
-            prepare(model, promotionForm, id);
+
+            bindingResult.rejectValue(
+                    "code",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            prepare(
+                    model,
+                    promotionForm,
+                    id
+            );
+
             return "promotion/form";
+
         } catch (BusinessRuleException ex) {
-            bindingResult.reject("promotion.invalid", ex.getMessage());
-            prepare(model, promotionForm, id);
+
+            bindingResult.reject(
+                    "promotion.invalid",
+                    ex.getMessage()
+            );
+
+            prepare(
+                    model,
+                    promotionForm,
+                    id
+            );
+
             return "promotion/form";
         }
-        redirectAttributes.addFlashAttribute("success", "Promotion updated.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Promotion updated."
+        );
+
         return "redirect:/admin/promotions";
     }
 
     @PostMapping("/admin/promotions/{id}/toggle-active")
-    public String toggle(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String toggle(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+
         promotionService.toggle(id);
-        redirectAttributes.addFlashAttribute("success", "Promotion status updated.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Promotion status updated."
+        );
+
         return "redirect:/admin/promotions";
     }
 
-    private void prepare(Model model, PromotionForm form, Long id) {
-        model.addAttribute("promotionForm", form);
-        model.addAttribute("promotionTypes", PromotionType.values());
-        model.addAttribute("promotionId", id);
+    /*
+     * Permanently delete an unused promotion.
+     *
+     * SecurityConfig already limits /admin/promotions/** to
+     * PROMOTION_REVIEW_MANAGER and ADMIN.
+     */
+    @PostMapping("/admin/promotions/{id}/delete")
+    public String deletePermanently(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+            promotionService.deletePermanently(id);
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Promotion permanently deleted."
+            );
+
+        } catch (BusinessRuleException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
+        }
+
+        return "redirect:/admin/promotions";
+    }
+
+    private void prepare(
+            Model model,
+            PromotionForm form,
+            Long id
+    ) {
+
+        model.addAttribute(
+                "promotionForm",
+                form
+        );
+
+        model.addAttribute(
+                "promotionTypes",
+                PromotionType.values()
+        );
+
+        model.addAttribute(
+                "promotionId",
+                id
+        );
     }
 }

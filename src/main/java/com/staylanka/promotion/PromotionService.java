@@ -6,6 +6,7 @@ import com.staylanka.common.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,108 +18,314 @@ import java.util.Map;
 
 @Service
 public class PromotionService {
-    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
-    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
-    private final PromotionRepository promotionRepository;
-    private final Map<PromotionType, DiscountStrategy> strategies = new EnumMap<>(PromotionType.class);
 
-    public PromotionService(PromotionRepository promotionRepository, List<DiscountStrategy> discountStrategies) {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.staylanka.common.AuditService audit;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.staylanka.common.InputRules rules;
+
+    private final PromotionRepository promotionRepository;
+    private final PromotionUsageRepository promotionUsageRepository;
+    private final Map<PromotionType, DiscountStrategy> strategies =
+            new EnumMap<>(PromotionType.class);
+
+    public PromotionService(
+            PromotionRepository promotionRepository,
+            PromotionUsageRepository promotionUsageRepository,
+            List<DiscountStrategy> discountStrategies
+    ) {
         this.promotionRepository = promotionRepository;
-        discountStrategies.forEach(strategy -> strategies.put(strategy.supports(), strategy));
+        this.promotionUsageRepository = promotionUsageRepository;
+
+        discountStrategies.forEach(
+                strategy -> strategies.put(
+                        strategy.supports(),
+                        strategy
+                )
+        );
     }
 
     @Transactional(readOnly = true)
     public Page<Promotion> active(int page) {
         LocalDate today = LocalDate.now();
-        return promotionRepository.findByActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                today, today, PageRequest.of(Math.max(page, 0), 12, Sort.by("endDate").ascending()));
+
+        return promotionRepository
+                .findByActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                        today,
+                        today,
+                        PageRequest.of(
+                                Math.max(page, 0),
+                                12,
+                                Sort.by("endDate").ascending()
+                        )
+                );
     }
 
     @Transactional(readOnly = true)
     public List<Promotion> all() {
-        return promotionRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        return promotionRepository.findAll(
+                Sort.by(
+                        Sort.Direction.DESC,
+                        "createdAt"
+                )
+        );
     }
 
     @Transactional(readOnly = true)
     public Promotion get(Long id) {
-        return promotionRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Promotion was not found."));
+        return promotionRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new NotFoundException(
+                                "Promotion was not found."
+                        )
+                );
     }
 
     @Transactional
     public Promotion create(PromotionForm form) {
         validate(form);
-        if (promotionRepository.existsByCodeIgnoreCase(form.getCode())) {
-            throw new ConflictException("This promotion code is already in use.");
+
+        if (promotionRepository.existsByCodeIgnoreCase(
+                form.getCode()
+        )) {
+            throw new ConflictException(
+                    "This promotion code is already in use."
+            );
         }
-        Promotion created = promotionRepository.save(new Promotion(form.getCode().trim().toUpperCase(), form.getName().trim(),
-                trimToNull(form.getDescription()), form.getType(), form.getValue(), form.getStartDate(),
-                form.getEndDate(), form.getMinimumNights(), form.getMinimumAmount()));
-        audit.record(created, "CREATE");
+
+        Promotion created = promotionRepository.save(
+                new Promotion(
+                        form.getCode().trim().toUpperCase(),
+                        form.getName().trim(),
+                        trimToNull(form.getDescription()),
+                        form.getType(),
+                        form.getValue(),
+                        form.getStartDate(),
+                        form.getEndDate(),
+                        form.getMinimumNights(),
+                        form.getMinimumAmount()
+                )
+        );
+
+        audit.record(
+                created,
+                "CREATE"
+        );
+
         return created;
     }
 
     @Transactional
-    public void update(Long id, PromotionForm form) {
+    public void update(
+            Long id,
+            PromotionForm form
+    ) {
         validate(form);
+
         Promotion promotion = get(id);
-        if (promotionRepository.existsByCodeIgnoreCaseAndIdNot(form.getCode(), id)) {
-            throw new ConflictException("This promotion code is already in use.");
+
+        if (promotionRepository
+                .existsByCodeIgnoreCaseAndIdNot(
+                        form.getCode(),
+                        id
+                )) {
+
+            throw new ConflictException(
+                    "This promotion code is already in use."
+            );
         }
-        promotion.update(form.getCode().trim().toUpperCase(), form.getName().trim(), trimToNull(form.getDescription()),
-                form.getType(), form.getValue(), form.getStartDate(), form.getEndDate(),
-                form.getMinimumNights(), form.getMinimumAmount());
-        audit.record(promotion, "UPDATE");
+
+        promotion.update(
+                form.getCode().trim().toUpperCase(),
+                form.getName().trim(),
+                trimToNull(form.getDescription()),
+                form.getType(),
+                form.getValue(),
+                form.getStartDate(),
+                form.getEndDate(),
+                form.getMinimumNights(),
+                form.getMinimumAmount()
+        );
+
+        audit.record(
+                promotion,
+                "UPDATE"
+        );
     }
 
     @Transactional
     public void toggle(Long id) {
         Promotion promotion = get(id);
-        promotion.setActive(!promotion.isActive());
-        audit.record(promotion, "STATUS_CHANGE");
+
+        promotion.setActive(
+                !promotion.isActive()
+        );
+
+        audit.record(
+                promotion,
+                "STATUS_CHANGE"
+        );
+    }
+
+    /*
+     * Permanently deletes an UNUSED promotion.
+     *
+     * A promotion that has already been applied to a reservation is kept
+     * because removing it would destroy part of the reservation's historical
+     * promotion information. Such promotions can still be deactivated.
+     */
+    @Transactional
+    @PreAuthorize(
+            "hasAnyRole('PROMOTION_REVIEW_MANAGER','ADMIN')"
+    )
+    public void deletePermanently(Long id) {
+
+        Promotion promotion = get(id);
+
+        if (promotionUsageRepository
+                .existsByPromotionId(id)) {
+
+            throw new BusinessRuleException(
+                    "This promotion has already been used by a reservation and cannot be permanently deleted. Deactivate it instead."
+            );
+        }
+
+        Long promotionId = promotion.getId();
+        String promotionCode = promotion.getCode();
+
+        audit.record(
+                "Promotion",
+                promotionId,
+                "HARD_DELETE",
+                "Promotion " + promotionCode
+                        + " permanently deleted"
+        );
+
+        promotionRepository.delete(
+                promotion
+        );
+
+        promotionRepository.flush();
     }
 
     @Transactional(readOnly = true)
-    public PromotionResult apply(String code, BigDecimal grossAmount, long nights) {
+    public PromotionResult apply(
+            String code,
+            BigDecimal grossAmount,
+            long nights
+    ) {
+
         if (code == null || code.isBlank()) {
-            return new PromotionResult(null, BigDecimal.ZERO);
+            return new PromotionResult(
+                    null,
+                    BigDecimal.ZERO
+            );
         }
-        Promotion promotion = promotionRepository.findByCodeIgnoreCase(code.trim())
-                .orElseThrow(() -> new BusinessRuleException("Promotion code is invalid."));
+
+        Promotion promotion = promotionRepository
+                .findByCodeIgnoreCase(
+                        code.trim()
+                )
+                .orElseThrow(
+                        () -> new BusinessRuleException(
+                                "Promotion code is invalid."
+                        )
+                );
+
         LocalDate today = LocalDate.now();
-        if (!promotion.isActive() || today.isBefore(promotion.getStartDate()) || today.isAfter(promotion.getEndDate())) {
-            throw new BusinessRuleException("Promotion is inactive or outside its valid dates.");
+
+        if (!promotion.isActive()
+                || today.isBefore(
+                        promotion.getStartDate()
+                )
+                || today.isAfter(
+                        promotion.getEndDate()
+                )) {
+
+            throw new BusinessRuleException(
+                    "Promotion is inactive or outside its valid dates."
+            );
         }
+
         if (nights < promotion.getMinimumNights()) {
-            throw new BusinessRuleException("This promotion requires at least " + promotion.getMinimumNights() + " nights.");
+            throw new BusinessRuleException(
+                    "This promotion requires at least "
+                            + promotion.getMinimumNights()
+                            + " nights."
+            );
         }
-        if (grossAmount.compareTo(promotion.getMinimumAmount()) < 0) {
-            throw new BusinessRuleException("Reservation amount does not meet this promotion's minimum.");
+
+        if (grossAmount.compareTo(
+                promotion.getMinimumAmount()
+        ) < 0) {
+
+            throw new BusinessRuleException(
+                    "Reservation amount does not meet this promotion's minimum."
+            );
         }
-        DiscountStrategy strategy = strategies.get(promotion.getType());
+
+        DiscountStrategy strategy = strategies.get(
+                promotion.getType()
+        );
+
         if (strategy == null) {
-            throw new BusinessRuleException("Promotion calculation is unavailable.");
+            throw new BusinessRuleException(
+                    "Promotion calculation is unavailable."
+            );
         }
-        BigDecimal discount = strategy.calculate(grossAmount, promotion.getValue())
-                .max(BigDecimal.ZERO).min(grossAmount);
-        return new PromotionResult(promotion, discount);
+
+        BigDecimal discount = strategy
+                .calculate(
+                        grossAmount,
+                        promotion.getValue()
+                )
+                .max(BigDecimal.ZERO)
+                .min(grossAmount);
+
+        return new PromotionResult(
+                promotion,
+                discount
+        );
     }
 
     private void validate(PromotionForm form) {
         rules.validate(form);
-        if (form.getEndDate() != null && form.getStartDate() != null && form.getEndDate().isBefore(form.getStartDate())) {
-            throw new BusinessRuleException("Promotion end date cannot be before the start date.");
+
+        if (form.getEndDate() != null
+                && form.getStartDate() != null
+                && form.getEndDate().isBefore(
+                        form.getStartDate()
+                )) {
+
+            throw new BusinessRuleException(
+                    "Promotion end date cannot be before the start date."
+            );
         }
-        if (form.getType() == PromotionType.PERCENTAGE && form.getValue() != null
-                && form.getValue().compareTo(BigDecimal.valueOf(100)) > 0) {
-            throw new BusinessRuleException("A percentage discount cannot exceed 100%.");
+
+        if (form.getType()
+                == PromotionType.PERCENTAGE
+                && form.getValue() != null
+                && form.getValue().compareTo(
+                        BigDecimal.valueOf(100)
+                ) > 0) {
+
+            throw new BusinessRuleException(
+                    "A percentage discount cannot exceed 100%."
+            );
         }
     }
 
     private String trimToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+        return value == null || value.isBlank()
+                ? null
+                : value.trim();
     }
 
-    public record PromotionResult(Promotion promotion, BigDecimal discount) {
+    public record PromotionResult(
+            Promotion promotion,
+            BigDecimal discount
+    ) {
     }
 }

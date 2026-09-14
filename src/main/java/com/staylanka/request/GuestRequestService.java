@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -226,6 +227,33 @@ public class GuestRequestService {
         request.setArchived(true);
         audit.record(request, "ARCHIVE");
         eventPublisher.publishEvent(new RequestStatusChangedEvent(request,currentUserService.user(authentication),request.getStatus(),request.getStatus(),"Request archived"));
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')")
+    public void deletePermanently(Long id) {
+        GuestRequest request = detailed(id);
+
+        Long requestId = request.getId();
+        String reference = request.getRequestReference();
+
+        // request_history and request_responses both use ON DELETE RESTRICT,
+        // so they must be removed before the parent guest request.
+        historyRepository.deleteByRequestId(requestId);
+        historyRepository.flush();
+
+        responseRepository.deleteByRequestId(requestId);
+        responseRepository.flush();
+
+        audit.record(
+                "GuestRequest",
+                requestId,
+                "HARD_DELETE",
+                "Request " + reference + " permanently deleted"
+        );
+
+        requestRepository.delete(request);
+        requestRepository.flush();
     }
 
     @Transactional(readOnly = true)

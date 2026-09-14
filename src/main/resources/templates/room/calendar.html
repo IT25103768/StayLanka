@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Availability calendar')}"></head>
+<body><nav th:replace="~{fragments/layout :: navbar}"></nav><div th:replace="~{fragments/layout :: alerts}"></div>
+<main id="main-content" class="container py-5"><header class="mb-4"><span class="sl-eyebrow">StayLanka / Availability calendar</span><h1>Availability calendar</h1></header>
+<h2 class="h4" th:text="${room.roomNumber+' · '+room.roomType.name}"></h2><p>Live nightly availability. A search or calendar does not hold inventory; availability is rechecked when booking.</p><form method="get"><label for="from" class="form-label">First date</label><input type="date" name="from" id="from" th:value="${from}" required class="form-control"><button class="btn btn-outline-success mt-2">Show 31 days</button></form><div class="sl-calendar mt-4"><article th:each="day:${days}" class="sl-calendar-day" th:classappend="${day.state=='Available'?'is-available':'is-blocked'}"><time th:text="${day.date}"></time><strong th:text="${day.state}"></strong></article></div><a class="btn btn-gold mt-4" th:href="@{/customer/reservations/new(roomId=${room.id})}">Choose booking dates</a>
+</main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>

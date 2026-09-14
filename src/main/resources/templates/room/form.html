@@ -1,63 +1,360 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/layout :: head(${roomId == null ? 'Add room' : 'Edit room'})}"></head>
+
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <div th:replace="~{fragments/layout :: alerts}"></div>
+
 <main class="container py-5">
+
     <div class="row justify-content-center">
+
         <div class="col-lg-8">
+
+            <!-- ========================================================= -->
+            <!-- ROOM FORM                                                 -->
+            <!-- ========================================================= -->
+
             <div class="card p-4">
-                <h1 class="h3 section-title" th:text="${roomId == null ? 'Add room' : 'Edit room'}"></h1>
-                <p class="text-secondary small" th:if="${roomId != null}">
-                    Operational status is managed from the room list so it cannot bypass check-in/check-out rules.
-                </p>
+
+                <div class="mb-4">
+
+                    <span class="sl-eyebrow"
+                          th:text="${roomId == null ? 'Room management' : 'Room details'}">
+                        Room management
+                    </span>
+
+                    <h1 class="h3 section-title mb-2"
+                        th:text="${roomId == null ? 'Add new room' : 'Edit room'}">
+                        Add new room
+                    </h1>
+
+                    <p class="text-secondary mb-0"
+                       th:if="${roomId == null}">
+                        Add a room to the hotel and set its type,
+                        nightly rate and guest information.
+                    </p>
+
+                    <p class="text-secondary mb-0"
+                       th:if="${roomId != null}">
+                        Update this room's information.
+                        Room availability and status can be managed
+                        from the room management page.
+                    </p>
+
+                </div>
+
+
                 <form enctype="multipart/form-data"
-                      th:action="${roomId == null ? '/staff/rooms' : '/staff/rooms/' + roomId}"
-                      th:object="${roomForm}" method="post">
-                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger"
-                         th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+                      th:action="${roomId == null
+                                ? '/staff/rooms'
+                                : '/staff/rooms/' + roomId}"
+                      th:object="${roomForm}"
+                      method="post">
+
+                    <!-- Global validation errors -->
+                    <div th:if="${#fields.hasGlobalErrors()}"
+                         class="alert alert-danger"
+                         role="alert">
+
+                        <div th:each="err : ${#fields.globalErrors()}"
+                             th:text="${err}">
+                            Unable to save room.
+                        </div>
+
+                    </div>
+
+
                     <div class="row g-3">
+
+                        <!-- ================================================= -->
+                        <!-- ROOM NUMBER                                       -->
+                        <!-- ================================================= -->
+
                         <div class="col-md-4">
-                            <label class="form-label required">Room number</label>
-                            <input class="form-control" th:field="*{roomNumber}">
-                            <div class="text-danger small" th:errors="*{roomNumber}"></div>
+
+                            <label class="form-label required"
+                                   for="roomNumber">
+                                Room number
+                            </label>
+
+                            <input class="form-control"
+                                   id="roomNumber"
+                                   type="text"
+                                   th:field="*{roomNumber}"
+                                   placeholder="e.g. 101"
+                                   autocomplete="off">
+
+                            <div class="text-danger small mt-1"
+                                 th:errors="*{roomNumber}">
+                            </div>
+
                         </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ROOM TYPE                                         -->
+                        <!-- ================================================= -->
+
                         <div class="col-md-8">
-                            <label class="form-label required">Room type</label>
-                            <select class="form-select" th:field="*{roomTypeId}">
-                                <option value="">Choose type</option>
-                                <option th:each="t : ${roomTypes}" th:value="${t.id}"
-                                        th:text="${t.name + (t.active ? '' : ' (inactive)')}"></option>
+
+                            <label class="form-label required"
+                                   for="roomTypeId">
+                                Room type
+                            </label>
+
+                            <select class="form-select"
+                                    id="roomTypeId"
+                                    th:field="*{roomTypeId}">
+
+                                <option value="">
+                                    Select a room type
+                                </option>
+
+                                <option th:each="type : ${roomTypes}"
+                                        th:value="${type.id}"
+                                        th:text="${type.name
+                                                + (type.active
+                                                ? ''
+                                                : ' (Unavailable)')}">
+                                </option>
+
                             </select>
-                            <div class="text-danger small" th:errors="*{roomTypeId}"></div>
+
+                            <div class="text-danger small mt-1"
+                                 th:errors="*{roomTypeId}">
+                            </div>
+
                         </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- NIGHTLY PRICE                                     -->
+                        <!-- ================================================= -->
+
                         <div class="col-md-6">
-                            <label class="form-label required">Nightly price (LKR)</label>
-                            <input class="form-control" type="number" step="0.01" th:field="*{nightlyPrice}">
-                            <div class="text-danger small" th:errors="*{nightlyPrice}"></div>
+
+                            <label class="form-label required"
+                                   for="nightlyPrice">
+                                Nightly rate
+                            </label>
+
+                            <div class="input-group">
+
+                                <span class="input-group-text">
+                                    LKR
+                                </span>
+
+                                <input class="form-control"
+                                       id="nightlyPrice"
+                                       type="number"
+                                       min="0"
+                                       step="0.01"
+                                       th:field="*{nightlyPrice}"
+                                       placeholder="0.00">
+
+                            </div>
+
+                            <div class="text-danger small mt-1"
+                                 th:errors="*{nightlyPrice}">
+                            </div>
+
                         </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- DESCRIPTION                                       -->
+                        <!-- ================================================= -->
+
                         <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
-                            <div class="text-danger small" th:errors="*{description}"></div>
+
+                            <label class="form-label"
+                                   for="description">
+                                Room description
+                            </label>
+
+                            <textarea class="form-control"
+                                      id="description"
+                                      rows="4"
+                                      th:field="*{description}"
+                                      placeholder="Describe the room, view, facilities or other useful guest information.">
+                            </textarea>
+
+                            <div class="text-danger small mt-1"
+                                 th:errors="*{description}">
+                            </div>
+
                         </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- IMAGE                                             -->
+                        <!-- ================================================= -->
+
                         <div class="col-12">
-                            <label class="form-label">Room image</label>
-                            <input class="form-control" type="file" accept="image/jpeg,image/png,image/webp"
+
+                            <label class="form-label"
+                                   for="image">
+                                Room photo
+                            </label>
+
+                            <input class="form-control"
+                                   id="image"
+                                   type="file"
+                                   accept="image/jpeg,image/png,image/webp"
                                    th:field="*{image}">
-                            <div class="form-text">JPEG, PNG, or WebP; maximum 2 MB. File contents are validated on upload.</div>
+
+                            <div class="form-text">
+                                Upload a JPEG, PNG or WebP image up to 2 MB.
+                            </div>
+
                         </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- EXISTING ROOM IMAGES                              -->
+                        <!-- ================================================= -->
+
+                        <div class="col-12"
+                             th:if="${roomId != null
+                                    and images != null
+                                    and !images.isEmpty()}">
+
+                            <label class="form-label">
+                                Current room photo
+                            </label>
+
+                            <div class="row g-3">
+
+                                <div class="col-sm-6 col-md-4"
+                                     th:each="roomImage : ${images}">
+
+                                    <div class="card h-100 overflow-hidden">
+
+                                        <img th:src="@{'/uploads/' + ${roomImage.storagePath}}"
+                                             class="img-fluid"
+                                             style="height: 160px; object-fit: cover;"
+                                             alt="Room photo">
+
+                                        <div class="card-body p-2"
+                                             th:if="${roomImage.primaryImage}">
+
+                                            <span class="badge text-bg-success">
+                                                Main photo
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="d-flex gap-2 mt-4">
-                        <button class="btn btn-gold" type="submit">Save room</button>
-                        <a class="btn btn-outline-secondary" th:href="@{/staff/rooms}">Cancel</a>
+
+
+                    <!-- ===================================================== -->
+                    <!-- FORM ACTIONS                                          -->
+                    <!-- ===================================================== -->
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+
+                        <button class="btn btn-gold"
+                                type="submit">
+
+                            <i class="bi bi-check-lg me-1"></i>
+
+                            <span th:text="${roomId == null
+                                           ? 'Add Room'
+                                           : 'Save Changes'}">
+                                Save
+                            </span>
+
+                        </button>
+
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/staff/rooms}">
+
+                            Cancel
+
+                        </a>
+
                     </div>
+
                 </form>
+
             </div>
+
+
+            <!-- ========================================================= -->
+            <!-- DELETE ROOM                                               -->
+            <!-- ========================================================= -->
+
+            <div th:if="${roomId != null}"
+                 sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')"
+                 class="card border-danger mt-4">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex align-items-start gap-3">
+
+                        <div class="text-danger fs-4">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+
+                        <div class="flex-grow-1">
+
+                            <h2 class="h5 text-danger mb-2">
+                                Delete room
+                            </h2>
+
+                            <p class="text-secondary mb-3">
+                                Permanently delete this room and its related
+                                records. This action cannot be undone.
+                                Rooms with active bookings or current stays
+                                cannot be deleted.
+                            </p>
+
+                            <form th:action="@{/staff/rooms/{id}/delete(id=${roomId})}"
+                                  method="post"
+                                  class="m-0">
+
+                                <button class="btn btn-danger"
+                                        type="submit"
+                                        data-confirm="Are you sure you want to permanently delete this room? This action cannot be undone.">
+
+                                    <i class="bi bi-trash3 me-1"></i>
+
+                                    Delete Room Permanently
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
+
     </div>
+
 </main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
 </html>

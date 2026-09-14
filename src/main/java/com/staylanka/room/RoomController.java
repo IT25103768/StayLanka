@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class RoomController {
+
     private final RoomService roomService;
 
     public RoomController(RoomService roomService) {
@@ -23,16 +24,25 @@ public class RoomController {
     }
 
     @GetMapping("/rooms")
-    public String rooms(@Valid @ModelAttribute("search") RoomSearchForm search,
-                        BindingResult bindingResult,
-                        @RequestParam(defaultValue = "") String q,
-                        @RequestParam(defaultValue = "0") int page, Model model) {
+    public String rooms(
+            @Valid
+            @ModelAttribute("search")
+            RoomSearchForm search,
+            BindingResult bindingResult,
+            @RequestParam(name = "q", defaultValue = "") String q,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            Model model
+    ) {
         Page<Room> rooms;
+
         if (search.hasDates() && !bindingResult.hasErrors()) {
             try {
                 rooms = roomService.available(search, page);
             } catch (BusinessRuleException ex) {
-                bindingResult.reject("dates.invalid", ex.getMessage());
+                bindingResult.reject(
+                        "dates.invalid",
+                        ex.getMessage()
+                );
                 rooms = Page.empty();
             }
         } else if (search.hasDates()) {
@@ -40,184 +50,569 @@ public class RoomController {
         } else {
             rooms = roomService.browsePublic(q, page);
         }
+
         model.addAttribute("rooms", rooms);
-        model.addAttribute("roomImages", roomService.primaryImagePaths(rooms.getContent()));
-        model.addAttribute("roomTypes", roomService.activeTypes());
-        model.addAttribute("q", q);
+
+        model.addAttribute(
+                "roomImages",
+                roomService.primaryImagePaths(
+                        rooms.getContent()
+                )
+        );
+
+        model.addAttribute(
+                "roomTypes",
+                roomService.activeTypes()
+        );
+
+        model.addAttribute(
+                "q",
+                q
+        );
+
         return "room/search";
     }
 
     @GetMapping("/rooms/{id}")
-    public String room(@PathVariable Long id, Model model) {
-        model.addAttribute("room", roomService.getPublic(id));
-        model.addAttribute("images", roomService.images(id));
+    public String room(
+            @PathVariable("id") Long id,
+            Model model
+    ) {
+        model.addAttribute(
+                "room",
+                roomService.getPublic(id)
+        );
+
+        model.addAttribute(
+                "images",
+                roomService.images(id)
+        );
+
         return "room/detail";
     }
 
     @GetMapping("/staff/rooms")
-    public String manageRooms(@RequestParam(defaultValue = "") String q,
-                              @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("rooms", roomService.browse(q, page));
-        model.addAttribute("q", q);
+    public String manageRooms(
+            @RequestParam(
+                    name = "q",
+                    defaultValue = ""
+            )
+            String q,
+
+            @RequestParam(
+                    name = "page",
+                    defaultValue = "0"
+            )
+            int page,
+
+            Model model
+    ) {
+
+        model.addAttribute(
+                "rooms",
+                roomService.browse(q, page)
+        );
+
+        model.addAttribute(
+                "q",
+                q
+        );
+
         return "room/manage-list";
     }
 
     @GetMapping("/staff/rooms/new")
-    public String newRoom(Model model) {
-        prepareRoomForm(model, new RoomForm(), null);
+    public String newRoom(
+            Model model
+    ) {
+        prepareRoomForm(
+                model,
+                new RoomForm(),
+                null
+        );
+
         return "room/form";
     }
 
     @PostMapping("/staff/rooms")
-    public String createRoom(@Valid @ModelAttribute RoomForm roomForm, BindingResult bindingResult,
-                             Model model, RedirectAttributes redirectAttributes) {
+    public String createRoom(
+            @Valid
+            @ModelAttribute("roomForm")
+            RoomForm roomForm,
+
+            BindingResult bindingResult,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            prepareRoomForm(model, roomForm, null);
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    null
+            );
+
             return "room/form";
         }
+
         try {
-            Room room = roomService.create(roomForm);
-            redirectAttributes.addFlashAttribute("success", "Room created successfully.");
-            return "redirect:/staff/rooms/" + room.getId() + "/edit";
+
+            Room room =
+                    roomService.create(
+                            roomForm
+                    );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Room created successfully."
+            );
+
+            return "redirect:/staff/rooms/"
+                    + room.getId()
+                    + "/edit";
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
-            prepareRoomForm(model, roomForm, null);
+
+            bindingResult.rejectValue(
+                    "roomNumber",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    null
+            );
+
             return "room/form";
+
         } catch (BusinessRuleException ex) {
-            bindingResult.reject("room.invalid", ex.getMessage());
-            prepareRoomForm(model, roomForm, null);
+
+            bindingResult.reject(
+                    "room.invalid",
+                    ex.getMessage()
+            );
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    null
+            );
+
             return "room/form";
         }
     }
 
     @GetMapping("/staff/rooms/{id}/edit")
-    public String editRoom(@PathVariable Long id, Model model) {
-        Room room = roomService.get(id);
-        prepareRoomForm(model, RoomForm.from(room), id);
+    public String editRoom(
+            @PathVariable("id")
+            Long id,
+
+            Model model
+    ) {
+
+        Room room =
+                roomService.get(id);
+
+        prepareRoomForm(
+                model,
+                RoomForm.from(room),
+                id
+        );
+
         return "room/form";
     }
 
     @PostMapping("/staff/rooms/{id}")
-    public String updateRoom(@PathVariable Long id, @Valid @ModelAttribute RoomForm roomForm,
-                             BindingResult bindingResult, Model model,
-                             RedirectAttributes redirectAttributes) {
+    public String updateRoom(
+            @PathVariable("id")
+            Long id,
+
+            @Valid
+            @ModelAttribute("roomForm")
+            RoomForm roomForm,
+
+            BindingResult bindingResult,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            prepareRoomForm(model, roomForm, id);
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    id
+            );
+
             return "room/form";
         }
+
         try {
-            roomService.update(id, roomForm);
+
+            roomService.update(
+                    id,
+                    roomForm
+            );
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("roomNumber", "duplicate", ex.getMessage());
-            prepareRoomForm(model, roomForm, id);
+
+            bindingResult.rejectValue(
+                    "roomNumber",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    id
+            );
+
             return "room/form";
+
         } catch (BusinessRuleException ex) {
-            bindingResult.reject("room.invalid", ex.getMessage());
-            prepareRoomForm(model, roomForm, id);
+
+            bindingResult.reject(
+                    "room.invalid",
+                    ex.getMessage()
+            );
+
+            prepareRoomForm(
+                    model,
+                    roomForm,
+                    id
+            );
+
             return "room/form";
         }
-        redirectAttributes.addFlashAttribute("success", "Room updated successfully.");
-        return "redirect:/staff/rooms/" + id + "/edit";
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Room updated successfully."
+        );
+
+        return "redirect:/staff/rooms/"
+                + id
+                + "/edit";
     }
 
-    @PostMapping("/staff/rooms/{id}/deactivate")
-    public String deactivate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    /*
+     * REAL CRUD DELETE.
+     *
+     * This is not a deactivate operation.
+     * The RoomService physically removes
+     * the room from the database.
+     */
+    @PostMapping("/staff/rooms/{id}/delete")
+    public String deleteRoom(
+            @PathVariable("id")
+            Long id,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         try {
-            roomService.deactivate(id);
-            redirectAttributes.addFlashAttribute("success", "Room deactivated safely.");
+
+            roomService.deletePermanently(id);
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Room permanently deleted from the database."
+            );
+
         } catch (BusinessRuleException ex) {
-            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
         }
+
         return "redirect:/staff/rooms";
     }
 
     @PostMapping("/staff/rooms/{id}/status")
-    public String changeStatus(@PathVariable Long id, @RequestParam RoomStatus status,
-                               RedirectAttributes redirectAttributes) {
+    public String changeStatus(
+            @PathVariable("id")
+            Long id,
+
+            @RequestParam("status")
+            RoomStatus status,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         try {
-            roomService.changeOperationalStatus(id, status);
-            redirectAttributes.addFlashAttribute("success", "Room status updated successfully.");
+
+            roomService.changeOperationalStatus(
+                    id,
+                    status
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Room status updated successfully."
+            );
+
         } catch (BusinessRuleException ex) {
-            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
         }
+
         return "redirect:/staff/rooms";
     }
 
+    /*
+     * ======================================================
+     * ROOM TYPES
+     * ======================================================
+     */
+
     @GetMapping("/admin/room-types")
-    public String roomTypes(Model model) {
-        model.addAttribute("roomTypes", roomService.allTypes());
+    public String roomTypes(
+            Model model
+    ) {
+
+        model.addAttribute(
+                "roomTypes",
+                roomService.allTypes()
+        );
+
         return "room/type-list";
     }
 
     @GetMapping("/admin/room-types/new")
-    public String newType(Model model) {
-        model.addAttribute("roomTypeForm", new RoomTypeForm());
-        model.addAttribute("typeId", null);
+    public String newType(
+            Model model
+    ) {
+
+        model.addAttribute(
+                "roomTypeForm",
+                new RoomTypeForm()
+        );
+
+        model.addAttribute(
+                "typeId",
+                null
+        );
+
         return "room/type-form";
     }
 
     @PostMapping("/admin/room-types")
-    public String createType(@Valid @ModelAttribute RoomTypeForm roomTypeForm,
-                             BindingResult bindingResult, Model model,
-                             RedirectAttributes redirectAttributes) {
+    public String createType(
+            @Valid
+            @ModelAttribute("roomTypeForm")
+            RoomTypeForm roomTypeForm,
+
+            BindingResult bindingResult,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            model.addAttribute("typeId", null);
+
+            model.addAttribute(
+                    "typeId",
+                    null
+            );
+
             return "room/type-form";
         }
+
         try {
-            roomService.createType(roomTypeForm);
+
+            roomService.createType(
+                    roomTypeForm
+            );
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("name", "duplicate", ex.getMessage());
-            model.addAttribute("typeId", null);
+
+            bindingResult.rejectValue(
+                    "name",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            model.addAttribute(
+                    "typeId",
+                    null
+            );
+
             return "room/type-form";
         }
-        redirectAttributes.addFlashAttribute("success", "Room type created.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Room type created."
+        );
+
         return "redirect:/admin/room-types";
     }
 
     @GetMapping("/admin/room-types/{id}/edit")
-    public String editType(@PathVariable Long id, Model model) {
-        model.addAttribute("roomTypeForm", RoomTypeForm.from(roomService.getType(id)));
-        model.addAttribute("typeId", id);
+    public String editType(
+            @PathVariable("id")
+            Long id,
+
+            Model model
+    ) {
+
+        model.addAttribute(
+                "roomTypeForm",
+                RoomTypeForm.from(
+                        roomService.getType(id)
+                )
+        );
+
+        model.addAttribute(
+                "typeId",
+                id
+        );
+
         return "room/type-form";
     }
 
     @PostMapping("/admin/room-types/{id}")
-    public String updateType(@PathVariable Long id, @Valid @ModelAttribute RoomTypeForm roomTypeForm,
-                             BindingResult bindingResult, Model model,
-                             RedirectAttributes redirectAttributes) {
+    public String updateType(
+            @PathVariable("id")
+            Long id,
+
+            @Valid
+            @ModelAttribute("roomTypeForm")
+            RoomTypeForm roomTypeForm,
+
+            BindingResult bindingResult,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
         if (bindingResult.hasErrors()) {
-            model.addAttribute("typeId", id);
+
+            model.addAttribute(
+                    "typeId",
+                    id
+            );
+
             return "room/type-form";
         }
+
         try {
-            roomService.updateType(id, roomTypeForm);
+
+            roomService.updateType(
+                    id,
+                    roomTypeForm
+            );
+
         } catch (ConflictException ex) {
-            bindingResult.rejectValue("name", "duplicate", ex.getMessage());
-            model.addAttribute("typeId", id);
+
+            bindingResult.rejectValue(
+                    "name",
+                    "duplicate",
+                    ex.getMessage()
+            );
+
+            model.addAttribute(
+                    "typeId",
+                    id
+            );
+
             return "room/type-form";
+
         } catch (BusinessRuleException ex) {
-            bindingResult.reject("roomType.invalid", ex.getMessage());
-            model.addAttribute("typeId", id);
+
+            bindingResult.reject(
+                    "roomType.invalid",
+                    ex.getMessage()
+            );
+
+            model.addAttribute(
+                    "typeId",
+                    id
+            );
+
             return "room/type-form";
         }
-        redirectAttributes.addFlashAttribute("success", "Room type updated.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Room type updated."
+        );
+
         return "redirect:/admin/room-types";
     }
 
     @PostMapping("/admin/room-types/{id}/toggle-active")
-    public String toggleType(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        roomService.toggleType(id);
-        redirectAttributes.addFlashAttribute("success", "Room type status updated.");
+    public String toggleType(
+            @PathVariable("id")
+            Long id,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+
+            roomService.toggleType(id);
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Room type status updated."
+            );
+
+        } catch (BusinessRuleException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    ex.getMessage()
+            );
+        }
+
         return "redirect:/admin/room-types";
     }
 
-    private void prepareRoomForm(Model model, RoomForm form, Long id) {
-        model.addAttribute("roomForm", form);
-        model.addAttribute("roomTypes", id == null ? roomService.activeTypes() : roomService.allTypes());
-        model.addAttribute("roomId", id);
+    private void prepareRoomForm(
+            Model model,
+            RoomForm form,
+            Long id
+    ) {
+
+        model.addAttribute(
+                "roomForm",
+                form
+        );
+
+        model.addAttribute(
+                "roomTypes",
+                id == null
+                        ? roomService.activeTypes()
+                        : roomService.allTypes()
+        );
+
+        model.addAttribute(
+                "roomId",
+                id
+        );
+
         if (id != null) {
-            model.addAttribute("images", roomService.images(id));
+
+            model.addAttribute(
+                    "images",
+                    roomService.images(id)
+            );
         }
     }
 }

@@ -17,116 +17,293 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ReviewController {
+
     private final ReviewService reviewService;
     private final StayService stayService;
 
-    public ReviewController(ReviewService reviewService, StayService stayService) {
+    public ReviewController(
+            ReviewService reviewService,
+            StayService stayService
+    ) {
         this.reviewService = reviewService;
         this.stayService = stayService;
     }
 
+    /* =========================================================
+       PUBLIC REVIEWS
+       ========================================================= */
+
     @GetMapping("/reviews")
-    public String publicReviews(@RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("reviews", reviewService.approved(page));
+    public String publicReviews(
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        model.addAttribute(
+                "reviews",
+                reviewService.approved(page)
+        );
+
         return "review/public-list";
     }
 
+    /* =========================================================
+       CUSTOMER REVIEWS
+       ========================================================= */
+
     @GetMapping("/customer/reviews")
-    public String own(Authentication authentication, @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("reviews", reviewService.own(authentication, page));
+    public String own(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        model.addAttribute(
+                "reviews",
+                reviewService.own(authentication, page)
+        );
+
         return "review/customer-list";
     }
 
     @GetMapping("/customer/reviews/new")
-    public String createForm(Authentication authentication, @RequestParam Long stayId, Model model) {
+    public String createForm(
+            Authentication authentication,
+            @RequestParam Long stayId,
+            Model model
+    ) {
         if (!reviewService.canReview(authentication, stayId)) {
-            throw new BusinessRuleException("This stay is not eligible for a new review.");
+            throw new BusinessRuleException(
+                    "This stay is not eligible for a new review."
+            );
         }
-        model.addAttribute("stay", stayService.own(authentication, stayId));
+
+        model.addAttribute(
+                "stay",
+                stayService.own(authentication, stayId)
+        );
         model.addAttribute("stayId", stayId);
         model.addAttribute("reviewId", null);
         model.addAttribute("reviewForm", new ReviewForm());
+
         return "review/form";
     }
 
     @PostMapping("/customer/reviews")
-    public String create(Authentication authentication, @RequestParam Long stayId,
-                         @Valid @ModelAttribute ReviewForm reviewForm, BindingResult bindingResult,
-                         Model model, RedirectAttributes redirectAttributes) {
+    public String create(
+            Authentication authentication,
+            @RequestParam Long stayId,
+            @Valid @ModelAttribute ReviewForm reviewForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("stay", stayService.own(authentication, stayId));
-            model.addAttribute("stayId", stayId);
-            model.addAttribute("reviewId", null);
+            prepareCreateForm(
+                    authentication,
+                    stayId,
+                    model
+            );
             return "review/form";
         }
+
         try {
-            reviewService.create(authentication, stayId, reviewForm);
+            reviewService.create(
+                    authentication,
+                    stayId,
+                    reviewForm
+            );
+
         } catch (BusinessRuleException | ConflictException ex) {
-            bindingResult.reject("review.invalid", ex.getMessage());
-            model.addAttribute("stay", stayService.own(authentication, stayId));
-            model.addAttribute("stayId", stayId);
-            model.addAttribute("reviewId", null);
+            bindingResult.reject(
+                    "review.invalid",
+                    ex.getMessage()
+            );
+
+            prepareCreateForm(
+                    authentication,
+                    stayId,
+                    model
+            );
+
             return "review/form";
         }
-        redirectAttributes.addFlashAttribute("success", "Review submitted for moderation.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Review submitted. It is now waiting for manager approval."
+        );
+
         return "redirect:/customer/reviews";
     }
 
     @GetMapping("/customer/reviews/{id}/edit")
-    public String editForm(Authentication authentication, @PathVariable Long id, Model model) {
+    public String editForm(
+            Authentication authentication,
+            @PathVariable Long id,
+            Model model
+    ) {
         Review review = reviewService.ownReview(authentication, id);
+
         model.addAttribute("stay", review.getStay());
         model.addAttribute("stayId", review.getStay().getId());
         model.addAttribute("reviewId", id);
         model.addAttribute("reviewForm", ReviewForm.from(review));
+
         return "review/form";
     }
 
     @PostMapping("/customer/reviews/{id}")
-    public String update(Authentication authentication, @PathVariable Long id,
-                         @Valid @ModelAttribute ReviewForm reviewForm, BindingResult bindingResult,
-                         Model model, RedirectAttributes redirectAttributes) {
+    public String update(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @ModelAttribute ReviewForm reviewForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
         if (bindingResult.hasErrors()) {
             Review review = reviewService.ownReview(authentication, id);
+
             model.addAttribute("stay", review.getStay());
             model.addAttribute("stayId", review.getStay().getId());
             model.addAttribute("reviewId", id);
+
             return "review/form";
         }
-        reviewService.update(authentication, id, reviewForm);
-        redirectAttributes.addFlashAttribute("success", "Review updated and returned to moderation.");
+
+        try {
+            reviewService.update(
+                    authentication,
+                    id,
+                    reviewForm
+            );
+
+        } catch (BusinessRuleException ex) {
+            Review review = reviewService.ownReview(authentication, id);
+
+            bindingResult.reject(
+                    "review.invalid",
+                    ex.getMessage()
+            );
+
+            model.addAttribute("stay", review.getStay());
+            model.addAttribute("stayId", review.getStay().getId());
+            model.addAttribute("reviewId", id);
+
+            return "review/form";
+        }
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Review updated. The edited review is waiting for manager approval again."
+        );
+
         return "redirect:/customer/reviews";
     }
 
     @PostMapping("/customer/reviews/{id}/delete")
-    public String delete(Authentication authentication, @PathVariable Long id,
-                         RedirectAttributes redirectAttributes) {
-        reviewService.delete(authentication, id);
-        redirectAttributes.addFlashAttribute("success", "Review hidden; history retained.");
+    public String deleteOwnPermanently(
+            Authentication authentication,
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        reviewService.deleteOwnPermanently(authentication, id);
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Your review was permanently deleted."
+        );
+
         return "redirect:/customer/reviews";
     }
 
+    /* =========================================================
+       PROMOTION & REVIEW MANAGER / ADMIN MODERATION
+       ========================================================= */
+
     @GetMapping("/admin/reviews")
-    public String moderation(@RequestParam(required = false) ReviewStatus status,
-                             @RequestParam(defaultValue = "0") int page, Model model) {
-        ReviewStatus selected = status == null ? ReviewStatus.PENDING : status;
-        model.addAttribute("reviews", reviewService.moderate(selected, page));
-        model.addAttribute("statuses", ReviewStatus.values());
-        model.addAttribute("selectedStatus", selected);
+    public String moderation(
+            @RequestParam(required = false) ReviewStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        ReviewStatus selected =
+                status == null
+                        ? ReviewStatus.PENDING
+                        : status;
+
+        model.addAttribute(
+                "reviews",
+                reviewService.moderate(selected, page)
+        );
+
+        model.addAttribute(
+                "statuses",
+                ReviewStatus.values()
+        );
+
+        model.addAttribute(
+                "selectedStatus",
+                selected
+        );
+
         return "review/moderation-list";
     }
 
     @PostMapping("/admin/reviews/{id}/approve")
-    public String approve(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String approve(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
         reviewService.approve(id);
-        redirectAttributes.addFlashAttribute("success", "Review approved.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Review approved and published."
+        );
+
         return "redirect:/admin/reviews";
     }
 
     @PostMapping("/admin/reviews/{id}/reject")
-    public String reject(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String reject(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
         reviewService.reject(id);
-        redirectAttributes.addFlashAttribute("success", "Review rejected.");
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Review rejected and hidden from the public website."
+        );
+
         return "redirect:/admin/reviews";
+    }
+
+    @PostMapping("/admin/reviews/{id}/delete")
+    public String deletePermanently(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes
+    ) {
+        reviewService.deletePermanently(id);
+
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Review permanently deleted."
+        );
+
+        return "redirect:/admin/reviews";
+    }
+
+    private void prepareCreateForm(
+            Authentication authentication,
+            Long stayId,
+            Model model
+    ) {
+        model.addAttribute(
+                "stay",
+                stayService.own(authentication, stayId)
+        );
+        model.addAttribute("stayId", stayId);
+        model.addAttribute("reviewId", null);
     }
 }

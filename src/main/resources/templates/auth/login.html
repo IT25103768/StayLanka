@@ -1,63 +1,292 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
 <main class="sl-auth-shell">
+
     <div class="container">
+
         <div class="row justify-content-center">
+
             <div class="col-xl-10">
+
                 <div class="card sl-auth-card">
+
                     <div class="row g-0">
+
+                        <!-- Left visual area -->
                         <div class="col-lg-5 d-none d-lg-block">
-                            <section class="sl-auth-visual" aria-label="StayLanka guest experience">
-                                <span class="sl-eyebrow text-warning">Welcome back</span>
-                                <h2 class="display-6">Your StayLanka stay, all in one place.</h2>
-                                <p>Sign in to manage reservations, follow your stay history, send guest requests, and share verified reviews after checkout.</p>
+
+                            <section
+                                    class="sl-auth-visual"
+                                    aria-label="StayLanka guest experience">
+
+                                <span class="sl-eyebrow text-warning">
+                                    Welcome back
+                                </span>
+
+                                <h2 class="display-6">
+                                    Your StayLanka stay, all in one place.
+                                </h2>
+
+                                <p>
+                                    Sign in to manage reservations,
+                                    follow your stay history,
+                                    send guest requests,
+                                    and share verified reviews
+                                    after checkout.
+                                </p>
+
                                 <div class="sl-auth-benefits">
-                                    <span><i class="bi bi-calendar2-check"></i> Manage your reservations</span>
-                                    <span><i class="bi bi-chat-heart"></i> Track guest requests</span>
-                                    <span><i class="bi bi-patch-check"></i> Review completed stays</span>
+
+                                    <span>
+                                        <i class="bi bi-calendar2-check"></i>
+                                        Manage your reservations
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-chat-heart"></i>
+                                        Track guest requests
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-patch-check"></i>
+                                        Review completed stays
+                                    </span>
+
                                 </div>
+
                             </section>
+
                         </div>
+
+
+                        <!-- Login form area -->
                         <div class="col-lg-7">
+
                             <section class="sl-auth-form">
-                                <a class="sl-brand sl-brand--dark mb-4" th:href="@{/}">
-                                    <img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="44" height="44">
-                                    <span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span>
+
+                                <a
+                                        class="sl-brand sl-brand--dark mb-4"
+                                        th:href="@{/}">
+
+                                    <img
+                                            class="sl-brand-logo"
+                                            th:src="@{/images/staylanka-logo.svg}"
+                                            alt="StayLanka"
+                                            width="44"
+                                            height="44">
+
+                                    <span class="sl-brand-copy">
+
+                                        <strong>
+                                            StayLanka
+                                        </strong>
+
+                                        <small>
+                                            Island hospitality
+                                        </small>
+
+                                    </span>
+
                                 </a>
-                                <h1 class="h2 section-title mb-2">Sign in to your account</h1>
-                                <p class="text-secondary mb-4">Use the email address connected to your StayLanka account.</p>
-                                <div th:if="${param.error}" class="alert alert-danger" role="alert"><i class="bi bi-exclamation-circle me-2"></i>Invalid email or password.</div>
-                                <div th:if="${param.logout}" class="alert alert-success" role="alert"><i class="bi bi-check-circle me-2"></i>You have signed out.</div>
-                                <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-                                <form th:action="@{/login}" method="post" data-submit-feedback>
+
+                                <h1 class="h2 section-title mb-2">
+                                    Sign in to your account
+                                </h1>
+
+                                <p class="text-secondary mb-4">
+                                    Use your email address or staff ID to sign in.
+                                </p>
+
+
+                                <!-- Invalid credentials -->
+                                <div
+                                        th:if="${param.error}"
+                                        class="alert alert-danger"
+                                        role="alert">
+
+                                    <i class="bi bi-exclamation-circle me-2"></i>
+
+                                    Invalid email / staff ID or password.
+
+                                </div>
+
+
+                                <!-- Logout message -->
+                                <div
+                                        th:if="${param.logout}"
+                                        class="alert alert-success"
+                                        role="alert">
+
+                                    <i class="bi bi-check-circle me-2"></i>
+
+                                    You have signed out.
+
+                                </div>
+
+
+                                <!-- Account changed/expired -->
+                                <div
+                                        th:if="${param.expired}"
+                                        class="alert alert-warning"
+                                        role="alert">
+
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+
+                                    Your session has expired.
+                                    Please sign in again.
+
+                                </div>
+
+
+                                <!-- Registration success -->
+                                <div
+                                        th:if="${success}"
+                                        class="alert alert-success"
+                                        role="alert"
+                                        th:text="${success}">
+                                </div>
+
+
+                                <!--
+                                    IMPORTANT:
+
+                                    Keep th:action.
+
+                                    Spring Security + Thymeleaf automatically
+                                    adds the hidden CSRF field for this POST form.
+                                -->
+                                <form
+                                        th:action="@{/login}"
+                                        method="post"
+                                        data-submit-feedback>
+
                                     <div class="mb-3">
-                                        <label class="form-label required" for="email">Email</label>
-                                        <input class="form-control" id="email" name="email" type="email" autocomplete="username" required autofocus placeholder="you@example.com">
+
+                                        <label
+                                                class="form-label required"
+                                                for="email">
+
+                                            Email or Staff ID
+
+                                        </label>
+
+                                        <input
+                                                class="form-control"
+                                                id="email"
+                                                name="email"
+                                                type="text"
+                                                autocomplete="username"
+                                                required
+                                                autofocus
+                                                placeholder="Email or IT25103768">
+
                                     </div>
+
+
                                     <div class="mb-4">
-                                        <label class="form-label required" for="password">Password</label>
+
+                                        <label
+                                                class="form-label required"
+                                                for="password">
+
+                                            Password
+
+                                        </label>
+
                                         <div class="sl-input-group">
-                                            <input class="form-control pe-5" id="password" name="password" type="password" autocomplete="current-password" required>
-                                            <button class="sl-password-toggle" type="button" data-password-toggle="password" aria-label="Show password"><i class="bi bi-eye"></i></button>
+
+                                            <input
+                                                    class="form-control pe-5"
+                                                    id="password"
+                                                    name="password"
+                                                    type="password"
+                                                    autocomplete="current-password"
+                                                    required>
+
+                                            <button
+                                                    class="sl-password-toggle"
+                                                    type="button"
+                                                    data-password-toggle="password"
+                                                    aria-label="Show password">
+
+                                                <i class="bi bi-eye"></i>
+
+                                            </button>
+
                                         </div>
+
                                     </div>
-                                    <button class="btn btn-gold w-100" type="submit">
-                                        <span class="spinner-border spinner-border-sm sl-spinner" aria-hidden="true"></span>
-                                        <span>Sign In</span>
+
+
+                                    <button
+                                            class="btn btn-gold w-100"
+                                            type="submit">
+
+                                        <span
+                                                class="spinner-border
+                                                       spinner-border-sm
+                                                       sl-spinner"
+                                                aria-hidden="true">
+                                        </span>
+
+                                        <span>
+                                            Sign In
+                                        </span>
+
                                     </button>
+
                                 </form>
-                                <p class="text-center small text-secondary mt-4 mb-0">New to StayLanka? <a class="fw-semibold" th:href="@{/register}">Create a customer account</a></p>
+
+
+                                <p class="text-center small text-secondary mt-4 mb-2">
+
+                                    New to StayLanka?
+
+                                    <a
+                                            class="fw-semibold"
+                                            th:href="@{/register}">
+
+                                        Create a customer account
+
+                                    </a>
+
+                                </p>
+
+
+                                <p class="text-center small mb-0">
+
+                                    <a th:href="@{/forgot-password}">
+                                        Forgot your password?
+                                    </a>
+
+                                </p>
+
                             </section>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
-<p class="text-center"><a th:href="@{/forgot-password}">Forgot your password?</a></p></main>
+
+</main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
+
 </html>

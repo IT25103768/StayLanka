@@ -1,2 +1,111 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head('Review your stay')}"></head><body><nav th:replace="~{fragments/layout :: navbar}"></nav><main class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card p-4"><small class="text-secondary" th:text="${stay.room.roomType.name + ' · ' + stay.reservation.reservationReference}"></small><h1 class="h3 section-title" th:text="${reviewId == null ? 'Review your stay' : 'Edit review'}"></h1><form th:action="${reviewId == null ? '/customer/reviews?stayId=' + stayId : '/customer/reviews/' + reviewId}" th:object="${reviewForm}" method="post"><div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div><div class="mb-3"><label class="form-label required">Rating</label><select class="form-select" th:field="*{rating}"><option value="5">5 — Excellent</option><option value="4">4 — Very good</option><option value="3">3 — Good</option><option value="2">2 — Fair</option><option value="1">1 — Poor</option></select></div><div class="mb-3"><label class="form-label required">Comment</label><textarea class="form-control" rows="6" th:field="*{comment}" minlength="10" maxlength="2000"></textarea><div class="text-danger small" th:errors="*{comment}"></div></div><div class="d-flex gap-2"><button class="btn btn-gold">Submit review</button><a class="btn btn-outline-secondary" th:href="@{/customer/reviews}">Cancel</a></div></form></div></div></div></main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Review your stay')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
 
+<header class="sl-page-header">
+    <div class="container">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <span class="sl-eyebrow">Verified stay review</span>
+                <h1 class="mb-2" th:text="${reviewId == null ? 'Write a review' : 'Update your review'}">
+                    Write a review
+                </h1>
+                <p class="text-secondary mb-0">
+                    Share your experience from this completed StayLanka stay.
+                </p>
+            </div>
+            <div class="col-lg-4 d-lg-flex justify-content-lg-end">
+                <a class="btn btn-outline-secondary" th:href="@{/customer/reviews}">
+                    <i class="bi bi-arrow-left me-1"></i> My Reviews
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container py-5">
+    <div class="row justify-content-center g-4">
+        <div class="col-lg-8">
+
+            <div class="card p-4 p-lg-5">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <span class="small text-secondary">Completed stay</span>
+                        <h2 class="h4 mb-1" th:text="${stay.room.roomType.name}">Room type</h2>
+                        <div class="text-secondary small">
+                            <span th:text="${'Room ' + stay.room.roomNumber}">Room</span>
+                            <span class="mx-2">·</span>
+                            <span th:text="${stay.reservation.reservationReference}">Reference</span>
+                        </div>
+                    </div>
+
+                    <span class="sl-status sl-status--checked-out align-self-start">
+                        Completed stay
+                    </span>
+                </div>
+
+                <form th:action="${reviewId == null
+                                 ? '/customer/reviews?stayId=' + stayId
+                                 : '/customer/reviews/' + reviewId}"
+                      th:object="${reviewForm}"
+                      method="post">
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label required" for="rating">Overall rating</label>
+                        <select class="form-select" id="rating" th:field="*{rating}" required>
+                            <option value="5">5 — Excellent</option>
+                            <option value="4">4 — Very good</option>
+                            <option value="3">3 — Good</option>
+                            <option value="2">2 — Fair</option>
+                            <option value="1">1 — Poor</option>
+                        </select>
+                        <div class="text-danger small" th:errors="*{rating}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label required" for="comment">Tell us about your stay</label>
+                        <textarea class="form-control"
+                                  id="comment"
+                                  rows="7"
+                                  th:field="*{comment}"
+                                  minlength="10"
+                                  maxlength="2000"
+                                  placeholder="What did you enjoy about your stay?"
+                                  required></textarea>
+                        <div class="form-text">
+                            Your review is sent to the Promotion &amp; Review Manager for approval before it appears publicly.
+                        </div>
+                        <div class="text-danger small" th:errors="*{comment}"></div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-gold" type="submit">
+                            <i class="bi bi-send me-1"></i>
+                            <span th:text="${reviewId == null ? 'Submit Review' : 'Save Changes'}">
+                                Submit Review
+                            </span>
+                        </button>
+
+                        <a class="btn btn-outline-secondary" th:href="@{/customer/reviews}">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

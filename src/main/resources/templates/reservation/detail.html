@@ -1,77 +1,417 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head th:replace="~{fragments/layout :: head('Reservation details')}"></head>
+
 <body>
+
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <div th:replace="~{fragments/layout :: alerts}"></div>
+
 <header class="sl-page-header">
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
-            <div><span class="sl-eyebrow">Reservation</span><h1 class="mb-1" th:text="${reservation.reservationReference}"></h1><p class="text-secondary mb-0" th:text="${reservation.room.roomType.name + ' · Room ' + reservation.room.roomNumber}"></p></div>
-            <span class="sl-status" th:classappend="${' sl-status--' + #strings.toLowerCase(#strings.replace(reservation.status.name(), '_', '-'))}" th:text="${#strings.capitalizeWords(#strings.toLowerCase(#strings.replace(reservation.status.name(), '_', ' ')))}"></span>
+
+            <div>
+                <span class="sl-eyebrow">Reservation</span>
+
+                <h1 class="mb-1"
+                    th:text="${reservation.reservationReference}">
+                    SLR-000001
+                </h1>
+
+                <p class="text-secondary mb-0"
+                   th:text="${reservation.room.roomType.name + ' · Room ' + reservation.room.roomNumber}">
+                    Room details
+                </p>
+            </div>
+
+            <span class="sl-status"
+                  th:classappend="${' sl-status--' + #strings.toLowerCase(#strings.replace(reservation.status.name(), '_', '-'))}"
+                  th:text="${#strings.capitalizeWords(#strings.toLowerCase(#strings.replace(reservation.status.name(), '_', ' ')))}">
+                Pending
+            </span>
+
         </div>
     </div>
 </header>
+
 <main class="container py-5">
+
     <div class="row g-4 align-items-start">
+
         <div class="col-lg-8">
+
             <section class="card sl-form-card mb-4">
-                <h2 class="h4 section-title mb-4">Stay details</h2>
+
+                <h2 class="h4 section-title mb-4">
+                    Stay details
+                </h2>
+
                 <div class="sl-detail-facts">
-                    <div class="sl-detail-fact"><small>Room</small><strong th:text="${reservation.room.roomNumber}"></strong></div>
-                    <div class="sl-detail-fact"><small>Room type</small><strong th:text="${reservation.room.roomType.name}"></strong></div>
-                    <div class="sl-detail-fact"><small>Check-in</small><strong th:text="${#temporals.format(reservation.checkInDate,'dd MMM yyyy')}"></strong></div>
-                    <div class="sl-detail-fact"><small>Check-out</small><strong th:text="${#temporals.format(reservation.checkOutDate,'dd MMM yyyy')}"></strong></div>
-                    <div class="sl-detail-fact"><small>Nights</small><strong th:text="${reservation.numberOfNights}"></strong></div>
-                    <div class="sl-detail-fact"><small>Guests</small><strong th:text="${reservation.guestCount}"></strong></div>
+
+                    <div class="sl-detail-fact">
+                        <small>Room</small>
+                        <strong th:text="${reservation.room.roomNumber}"></strong>
+                    </div>
+
+                    <div class="sl-detail-fact">
+                        <small>Room type</small>
+                        <strong th:text="${reservation.room.roomType.name}"></strong>
+                    </div>
+
+                    <div class="sl-detail-fact">
+                        <small>Check-in</small>
+                        <strong th:text="${#temporals.format(reservation.checkInDate,'dd MMM yyyy')}"></strong>
+                    </div>
+
+                    <div class="sl-detail-fact">
+                        <small>Check-out</small>
+                        <strong th:text="${#temporals.format(reservation.checkOutDate,'dd MMM yyyy')}"></strong>
+                    </div>
+
+                    <div class="sl-detail-fact">
+                        <small>Nights</small>
+                        <strong th:text="${reservation.numberOfNights}"></strong>
+                    </div>
+
+                    <div class="sl-detail-fact">
+                        <small>Guests</small>
+                        <strong th:text="${reservation.guestCount}"></strong>
+                    </div>
+
                 </div>
+
             </section>
 
             <section class="card sl-form-card">
-                <h2 class="h4 section-title mb-4">Price snapshot</h2>
+
+                <h2 class="h4 section-title mb-4">
+                    Price snapshot
+                </h2>
+
                 <div class="d-grid gap-3">
-                    <div class="d-flex justify-content-between gap-3"><span class="text-secondary">Nightly price</span><strong th:text="${'LKR ' + #numbers.formatDecimal(reservation.nightlyPriceSnapshot,1,0)}"></strong></div>
-                    <div class="d-flex justify-content-between gap-3"><span class="text-secondary">Gross total</span><strong th:text="${'LKR ' + #numbers.formatDecimal(reservation.grossTotal,1,0)}"></strong></div>
-                    <div class="d-flex justify-content-between gap-3"><span class="text-secondary">Promotion discount</span><strong th:text="${'- LKR ' + #numbers.formatDecimal(reservation.discountAmount,1,0)}"></strong></div>
-                    <div class="d-flex justify-content-between gap-3 border-top pt-3"><span class="fw-bold">Reservation total</span><span class="sl-price" th:text="${'LKR ' + #numbers.formatDecimal(reservation.totalAmount,1,0)}"></span></div>
+
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-secondary">Nightly price</span>
+                        <strong th:text="${'LKR ' + #numbers.formatDecimal(reservation.nightlyPriceSnapshot,1,0)}"></strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-secondary">Gross total</span>
+                        <strong th:text="${'LKR ' + #numbers.formatDecimal(reservation.grossTotal,1,0)}"></strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-3">
+                        <span class="text-secondary">Promotion discount</span>
+                        <strong th:text="${'- LKR ' + #numbers.formatDecimal(reservation.discountAmount,1,0)}"></strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-3 border-top pt-3">
+                        <span class="fw-bold">Reservation total</span>
+                        <span class="sl-price"
+                              th:text="${'LKR ' + #numbers.formatDecimal(reservation.totalAmount,1,0)}"></span>
+                    </div>
+
                 </div>
-                <p class="small text-secondary mt-3 mb-0">This total uses the server-side price snapshot stored with the reservation.</p>
+
+                <p class="small text-secondary mt-3 mb-0">
+                    This total uses the server-side price snapshot stored with the reservation.
+                </p>
+
             </section>
 
-            <section sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" class="card sl-form-card mt-4">
-                <h2 class="h5 section-title">Customer contact</h2>
-                <p class="mb-1"><strong th:text="${reservation.customer.fullName}"></strong></p>
-                <p class="text-secondary mb-0"><span th:text="${reservation.customer.user.email}"></span><span th:if="${reservation.customer.phone}" th:text="${' · ' + reservation.customer.phone}"></span></p>
+            <section sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')"
+                     class="card sl-form-card mt-4">
+
+                <h2 class="h5 section-title">
+                    Customer contact
+                </h2>
+
+                <p class="mb-1">
+                    <strong th:text="${reservation.customer.fullName}"></strong>
+                </p>
+
+                <p class="text-secondary mb-0">
+                    <span th:text="${reservation.customer.user.email}"></span>
+
+                    <span th:if="${reservation.customer.phone}"
+                          th:text="${' · ' + reservation.customer.phone}"></span>
+                </p>
+
             </section>
 
-            <section th:if="${reservation.notes}" class="card sl-form-card mt-4"><h2 class="h5 section-title">Reservation notes</h2><p class="mb-0" th:text="${reservation.notes}"></p></section>
-            <div th:if="${reservation.cancellationReason}" class="alert alert-secondary mt-4 mb-0"><strong>Reason:</strong> <span th:text="${reservation.cancellationReason}"></span></div>
+            <section th:if="${reservation.notes}"
+                     class="card sl-form-card mt-4">
+
+                <h2 class="h5 section-title">
+                    Reservation notes
+                </h2>
+
+                <p class="mb-0"
+                   th:text="${reservation.notes}"></p>
+
+            </section>
+
+            <div th:if="${reservation.cancellationReason}"
+                 class="alert alert-secondary mt-4 mb-0">
+
+                <strong>Reason:</strong>
+                <span th:text="${reservation.cancellationReason}"></span>
+
+            </div>
+
         </div>
 
         <aside class="col-lg-4">
+
             <div class="card sl-booking-card">
-                <span class="sl-eyebrow">Available actions</span>
-                <h2 class="h4 section-title">Manage reservation</h2>
-                <div sec:authorize="hasRole('CUSTOMER')" class="d-grid gap-2">
-                    <a th:if="${(reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED') and reservation.checkInDate.isAfter(T(java.time.LocalDate).now())}" class="btn btn-outline-success" th:href="@{/customer/reservations/{id}/edit(id=${reservation.id})}">Edit Reservation</a>
-                    <form th:if="${reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED'}" th:action="@{/customer/reservations/{id}/cancel(id=${reservation.id})}" method="post">
-                        <label class="form-label required" for="cancellationReason">Cancellation reason</label>
-                        <textarea class="form-control mb-2" id="cancellationReason" name="reason" required maxlength="500" rows="3"></textarea>
-                        <button class="btn btn-outline-danger w-100" type="submit" data-confirm="Cancel this reservation?">Cancel Reservation</button>
+
+                <span class="sl-eyebrow">
+                    Available actions
+                </span>
+
+                <h2 class="h4 section-title">
+                    Manage reservation
+                </h2>
+
+                <!-- ================================================== -->
+                <!-- CUSTOMER ACTIONS                                   -->
+                <!-- Customers can edit/cancel, but NEVER hard-delete. -->
+                <!-- ================================================== -->
+
+                <div sec:authorize="hasRole('CUSTOMER')"
+                     class="d-grid gap-2">
+
+                    <a th:if="${(reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED') and reservation.checkInDate.isAfter(T(java.time.LocalDate).now())}"
+                       class="btn btn-outline-success"
+                       th:href="@{/customer/reservations/{id}/edit(id=${reservation.id})}">
+
+                        Edit Reservation
+
+                    </a>
+
+                    <form th:if="${reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED'}"
+                          th:action="@{/customer/reservations/{id}/cancel(id=${reservation.id})}"
+                          method="post">
+
+                        <label class="form-label required"
+                               for="cancellationReason">
+                            Cancellation reason
+                        </label>
+
+                        <textarea class="form-control mb-2"
+                                  id="cancellationReason"
+                                  name="reason"
+                                  required
+                                  maxlength="500"
+                                  rows="3"></textarea>
+
+                        <button class="btn btn-outline-danger w-100"
+                                type="submit"
+                                data-confirm="Cancel this reservation?">
+
+                            Cancel Reservation
+
+                        </button>
+
                     </form>
-                    <a class="btn btn-outline-secondary" th:href="@{/customer/reservations}">Back to Reservations</a>
+
+                    <a class="btn btn-outline-secondary"
+                       th:href="@{/customer/reservations}">
+
+                        Back to Reservations
+
+                    </a>
+
                 </div>
-                <div sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" class="d-grid gap-2">
-                    <form th:if="${reservation.status.name() == 'PENDING'}" th:action="@{/staff/reservations/{id}/confirm(id=${reservation.id})}" method="post"><button class="btn btn-success w-100" type="submit">Confirm Reservation</button></form>
-                    <form th:if="${reservation.status.name() == 'PENDING'}" th:action="@{/staff/reservations/{id}/reject(id=${reservation.id})}" method="post"><label class="form-label required" for="rejectionReason">Rejection reason</label><textarea class="form-control mb-2" id="rejectionReason" name="reason" maxlength="500" required rows="3"></textarea><button class="btn btn-outline-danger w-100" type="submit">Reject Reservation</button></form>
-                    <a th:if="${reservation.status.name() == 'CONFIRMED'}" sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')" class="btn btn-gold" th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">Check Guest In</a>
-                    <form th:if="${reservation.status.name() == 'CONFIRMED' and noShowEnabled == true}" th:action="@{/staff/reservations/{id}/no-show(id=${reservation.id})}" method="post"><label class="form-label" for="noShowReason">No-show note</label><input class="form-control mb-2" id="noShowReason" name="reason" placeholder="Optional"><button class="btn btn-outline-danger w-100" type="submit" data-confirm="Mark this reservation as a no-show?">Mark No-show</button></form>
-                    <a class="btn btn-outline-secondary" th:href="@{/staff/reservations}">Back to Reservation Queue</a>
+
+                <!-- ================================================== -->
+                <!-- RESERVATION MANAGER / ADMIN ACTIONS                -->
+                <!-- ================================================== -->
+
+                <div sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')"
+                     class="d-grid gap-2">
+
+                    <form th:if="${reservation.status.name() == 'PENDING'}"
+                          th:action="@{/staff/reservations/{id}/confirm(id=${reservation.id})}"
+                          method="post">
+
+                        <button class="btn btn-success w-100"
+                                type="submit">
+
+                            Confirm Reservation
+
+                        </button>
+
+                    </form>
+
+                    <form th:if="${reservation.status.name() == 'PENDING'}"
+                          th:action="@{/staff/reservations/{id}/reject(id=${reservation.id})}"
+                          method="post">
+
+                        <label class="form-label required"
+                               for="rejectionReason">
+                            Rejection reason
+                        </label>
+
+                        <textarea class="form-control mb-2"
+                                  id="rejectionReason"
+                                  name="reason"
+                                  maxlength="500"
+                                  required
+                                  rows="3"></textarea>
+
+                        <button class="btn btn-outline-danger w-100"
+                                type="submit">
+
+                            Reject Reservation
+
+                        </button>
+
+                    </form>
+
+                    <form th:if="${reservation.status.name() == 'CONFIRMED' and noShowEnabled == true}"
+                          th:action="@{/staff/reservations/{id}/no-show(id=${reservation.id})}"
+                          method="post">
+
+                        <label class="form-label"
+                               for="noShowReason">
+                            No-show note
+                        </label>
+
+                        <input class="form-control mb-2"
+                               id="noShowReason"
+                               name="reason"
+                               placeholder="Optional">
+
+                        <button class="btn btn-outline-danger w-100"
+                                type="submit"
+                                data-confirm="Mark this reservation as a no-show?">
+
+                            Mark No-show
+
+                        </button>
+
+                    </form>
+
+                    <a th:if="${reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED'}"
+                       class="btn btn-outline-success"
+                       th:href="@{/staff/reservations/{id}/edit(id=${reservation.id})}">
+
+                        Amend Reservation
+
+                    </a>
+
+                    <form th:if="${reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED'}"
+                          th:action="@{/staff/reservations/{id}/cancel(id=${reservation.id})}"
+                          method="post">
+
+                        <label class="form-label"
+                               for="staff-cancel">
+                            Cancellation reason
+                        </label>
+
+                        <input id="staff-cancel"
+                               name="reason"
+                               required
+                               maxlength="500"
+                               class="form-control mb-2">
+
+                        <button class="btn btn-outline-danger w-100"
+                                type="submit"
+                                data-confirm="Cancel this reservation?">
+
+                            Cancel Reservation
+
+                        </button>
+
+                    </form>
+
+                    <hr class="my-3">
+
+                    <!-- REAL CRUD DELETE -->
+                    <div th:if="${reservation.status.name() != 'CHECKED_IN'}"
+                         class="border border-danger rounded-3 p-3">
+
+                        <div class="small fw-bold text-danger mb-1">
+                            Permanent database deletion
+                        </div>
+
+                        <p class="small text-secondary mb-3">
+                            This permanently removes the reservation and linked
+                            request, stay, charge, review and promotion-usage
+                            records. This action cannot be undone.
+                        </p>
+
+                        <form th:action="@{/staff/reservations/{id}/delete(id=${reservation.id})}"
+                              method="post">
+
+                            <button class="btn btn-danger w-100"
+                                    type="submit"
+                                    th:attr="data-confirm=${'Permanently delete reservation ' + reservation.reservationReference + ' from the database? This cannot be undone.'}">
+
+                                <i class="bi bi-trash3 me-1"></i>
+                                Delete Permanently
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                    <div th:if="${reservation.status.name() == 'CHECKED_IN'}"
+                         class="alert alert-warning mb-0">
+
+                        This reservation cannot be permanently deleted while
+                        the guest is checked in. Complete or void the stay first.
+
+                    </div>
+
+                    <a class="btn btn-outline-secondary mt-2"
+                       th:href="@{/staff/reservations}">
+
+                        Back to Reservation Queue
+
+                    </a>
+
                 </div>
+
+                <!-- ================================================== -->
+                <!-- STAY MANAGER ACTION                                -->
+                <!-- ================================================== -->
+
+                <div sec:authorize="hasRole('STAY_MANAGER')"
+                     class="d-grid gap-2">
+
+                    <a th:if="${reservation.status.name() == 'CONFIRMED'}"
+                       class="btn btn-gold"
+                       th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">
+
+                        Check Guest In
+
+                    </a>
+
+                    <a class="btn btn-outline-secondary"
+                       th:href="@{/staff/reservations}">
+
+                        Back to Reservation Queue
+
+                    </a>
+
+                </div>
+
             </div>
+
         </aside>
+
     </div>
-<section class="mt-4" sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" th:if="${reservation.status.name()=='PENDING' or reservation.status.name()=='CONFIRMED'}"><a class="btn btn-outline-success" th:href="@{/staff/reservations/{id}/edit(id=${reservation.id})}">Amend reservation</a><form th:action="@{/staff/reservations/{id}/cancel(id=${reservation.id})}" method="post" class="mt-3"><label for="staff-cancel" class="form-label">Cancellation reason</label><input id="staff-cancel" name="reason" required maxlength="500" class="form-control"><button class="btn btn-outline-danger mt-2" data-confirm="Cancel this reservation?">Cancel reservation</button></form></section><a sec:authorize="hasRole('STAY_MANAGER')" th:if="${reservation.status.name()=='CONFIRMED'}" class="btn btn-gold mt-3" th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">Check guest in</a></main>
+
+</main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
 </html>
