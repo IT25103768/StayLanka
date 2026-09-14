@@ -3,11 +3,10 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f7f9fd">
+    <meta name="theme-color" content="#f6faf8">
     <meta name="color-scheme" content="light dark">
     <meta name="description" content="StayLanka — thoughtful Sri Lankan hospitality, comfortable rooms, and simple direct reservations.">
     <script>
-        /* Apply the preferred theme before stylesheets load to prevent a light/dark flash. */
         (function () {
             var key = 'staylanka-theme';
             var theme = 'light';
@@ -22,11 +21,13 @@
             document.documentElement.dataset.theme = theme;
             document.documentElement.style.colorScheme = theme;
             document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.classList.add('sl-js');
             var themeMeta = document.querySelector('meta[name="theme-color"]');
-            if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#050816' : '#f7f9fd');
+            if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#06110f' : '#f6faf8');
         })();
     </script>
     <title th:text="${title + ' | StayLanka'}">StayLanka</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/staylanka-logo.svg}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
@@ -34,9 +35,9 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-staylanka sticky-top" th:fragment="navbar" data-navbar>
     <div class="container">
-        <a class="navbar-brand sl-brand" th:href="@{/}" aria-label="StayLanka home">
-            <span class="sl-brand-mark" aria-hidden="true"><i class="bi bi-compass"></i></span>
-            <span>StayLanka</span>
+        <a class="navbar-brand sl-brand" th:href="@{/}" aria-label="StayLanka home" data-nav-link>
+            <img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="42" height="42">
+            <span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
                 aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,17 +45,17 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-lg-4 me-auto align-items-lg-center">
-                <li class="nav-item"><a class="nav-link" th:href="@{/rooms}">Rooms</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/promotions}">Promotions</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/reviews}">Reviews</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/rooms}" data-nav-link>Rooms</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/promotions}" data-nav-link>Promotions</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/reviews}" data-nav-link>Reviews</a></li>
                 <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                    <a class="nav-link" th:href="@{/customer/reservations}">My Reservations</a>
+                    <a class="nav-link" th:href="@{/customer/reservations}" data-nav-link>My Reservations</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
-                    <a class="nav-link" th:href="@{/staff/reservations}">Reservations</a>
+                <li class="nav-item" sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')">
+                    <a class="nav-link" th:href="@{/staff/reservations}" data-nav-link>Reservations</a>
                 </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('STAFF','ADMIN')">
-                    <a class="nav-link" th:href="@{/staff/requests}">Guest Requests</a>
+                <li class="nav-item" sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')">
+                    <a class="nav-link" th:href="@{/staff/requests}" data-nav-link>Guest Requests</a>
                 </li>
             </ul>
             <div class="sl-nav-actions">
@@ -73,12 +74,17 @@
                 <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-outline-light" th:href="@{/customer/dashboard}">
                     <i class="bi bi-grid me-1" aria-hidden="true"></i>Dashboard
                 </a>
-                <a sec:authorize="hasAnyRole('STAFF','ADMIN')" class="btn btn-outline-light" th:href="@{/dashboard}">
+                <a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')"
+                   class="btn btn-outline-light" th:href="@{/dashboard}">
                     <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Operations
                 </a>
                 <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-gold" th:href="@{/customer/profile}">
                     <i class="bi bi-person me-1" aria-hidden="true"></i>Profile
                 </a>
+                <span sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')"
+                      class="sl-nav-user d-none d-xl-inline-flex" title="Signed-in account">
+                    <i class="bi bi-person-check" aria-hidden="true"></i><span sec:authentication="name"></span>
+                </span>
                 <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
                     <button class="btn btn-link sl-nav-signin" type="submit">Sign Out</button>
                 </form>
@@ -87,8 +93,8 @@
     </div>
 </nav>
 
-<div th:fragment="alerts" class="container sl-alerts">
-    <div th:if="${success}" class="alert alert-success alert-dismissible fade show sl-alert" role="alert">
+<div th:fragment="alerts" class="container sl-alerts" aria-live="polite">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show sl-alert" role="status" data-auto-dismiss="5500">
         <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
         <span th:text="${success}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -105,8 +111,8 @@
         <div class="row g-5">
             <div class="col-lg-5 col-xl-4">
                 <a class="sl-brand sl-footer-brand" th:href="@{/}">
-                    <span class="sl-brand-mark" aria-hidden="true"><i class="bi bi-compass"></i></span>
-                    <span>StayLanka</span>
+                    <img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="44" height="44">
+                    <span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span>
                 </a>
                 <p class="sl-footer-copy mt-3 mb-0">Thoughtful stays, warm Sri Lankan hospitality, and a simpler way to reserve your room.</p>
             </div>
@@ -131,11 +137,12 @@
                     <a th:href="@{/customer/requests}">Guest Requests</a>
                     <a th:href="@{/customer/reviews}">My Reviews</a>
                 </nav>
-                <nav class="sl-footer-links" aria-label="Operations" sec:authorize="hasAnyRole('STAFF','ADMIN')">
+                <nav class="sl-footer-links" aria-label="Operations"
+                     sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')">
                     <a th:href="@{/dashboard}">Operations Dashboard</a>
-                    <a th:href="@{/staff/reservations}">Reservations</a>
-                    <a th:href="@{/staff/rooms}">Rooms</a>
-                    <a th:href="@{/staff/requests}">Guest Requests</a>
+                    <a sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/reservations}">Reservations</a>
+                    <a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','STAY_MANAGER','ADMIN')" th:href="@{/staff/rooms}">Rooms</a>
+                    <a sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/requests}">Guest Requests</a>
                 </nav>
             </div>
             <div class="col-md-4 col-lg-2">
