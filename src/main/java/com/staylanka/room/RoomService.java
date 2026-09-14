@@ -19,6 +19,8 @@ import java.util.Map;
 
 @Service
 public class RoomService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final RoomImageRepository imageRepository;
@@ -103,6 +105,9 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    public List<Room> selection() { return roomRepository.selection(); }
+
+    @Transactional(readOnly = true)
     public List<RoomType> allTypes() {
         return roomTypeRepository.findAll(Sort.by("name").ascending());
     }
@@ -115,16 +120,20 @@ public class RoomService {
 
     @Transactional
     public RoomType createType(RoomTypeForm form) {
+        rules.validate(form);
         if (roomTypeRepository.existsByNameIgnoreCase(form.getName())) {
             throw new ConflictException("A room type with this name already exists.");
         }
-        return roomTypeRepository.save(new RoomType(form.getName().trim(), trimToNull(form.getDescription()),
+        RoomType created = roomTypeRepository.save(new RoomType(form.getName().trim(), trimToNull(form.getDescription()),
                 form.getCapacity(), form.getBedInformation().trim(), form.getBasePrice(),
                 trimToNull(form.getAmenities())));
+        audit.record(created, "CREATE");
+        return created;
     }
 
     @Transactional
     public void updateType(Long id, RoomTypeForm form) {
+        rules.validate(form);
         RoomType type = getType(id);
         if (roomTypeRepository.existsByNameIgnoreCaseAndIdNot(form.getName(), id)) {
             throw new ConflictException("A room type with this name already exists.");
@@ -136,16 +145,21 @@ public class RoomService {
         }
         type.update(form.getName().trim(), trimToNull(form.getDescription()), form.getCapacity(),
                 form.getBedInformation().trim(), form.getBasePrice(), trimToNull(form.getAmenities()));
+        audit.record(type, "UPDATE");
     }
 
     @Transactional
     public void toggleType(Long id) {
         RoomType type = getType(id);
+        if (type.isActive() && reservationRepository.countCapacityConflictsForRoomType(id, 0, LocalDate.now()) > 0)
+            throw new BusinessRuleException("Resolve active or upcoming bookings before deactivating this room type.");
         type.setActive(!type.isActive());
+        audit.record(type, "STATUS_CHANGE");
     }
 
     @Transactional
     public Room create(RoomForm form) {
+        rules.validate(form);
         if (roomRepository.existsByRoomNumberIgnoreCase(form.getRoomNumber())) {
             throw new ConflictException("This room number is already in use.");
         }
@@ -156,11 +170,13 @@ public class RoomService {
         Room room = roomRepository.save(new Room(form.getRoomNumber().trim(), type,
                 trimToNull(form.getDescription()), form.getNightlyPrice(), RoomStatus.AVAILABLE));
         saveImageIfPresent(room, form);
+        audit.record(room, "CREATE");
         return room;
     }
 
     @Transactional
     public void update(Long id, RoomForm form) {
+        rules.validate(form);
         Room room = roomRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("Room was not found."));
         if (roomRepository.existsByRoomNumberIgnoreCaseAndIdNot(form.getRoomNumber(), id)) {
@@ -180,6 +196,7 @@ public class RoomService {
         room.updateDetails(form.getRoomNumber().trim(), type, trimToNull(form.getDescription()),
                 form.getNightlyPrice());
         saveImageIfPresent(room, form);
+        audit.record(room, "UPDATE");
     }
 
     @Transactional
@@ -220,6 +237,7 @@ public class RoomService {
                     "This room has an active or upcoming reservation. Cancel, reject, or reassign it before changing the room status.");
         }
         room.setStatus(target);
+        audit.record(room, "STATUS_CHANGE");
     }
 
     private void saveImageIfPresent(Room room, RoomForm form) {

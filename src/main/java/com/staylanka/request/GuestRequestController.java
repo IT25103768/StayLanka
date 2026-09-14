@@ -187,6 +187,11 @@ public class GuestRequestController {
         return "redirect:/staff/requests/" + id;
     }
 
+    @PostMapping("/staff/requests/{id}/archive")
+    public String archive(Authentication authentication, @PathVariable Long id, RedirectAttributes flash) {
+        requestService.archive(authentication,id);flash.addFlashAttribute("success","Request archived; history retained.");return "redirect:/staff/requests/"+id;
+    }
+
     private void prepareCustomerForm(Authentication authentication, Model model,
                                      GuestRequestForm form, Long requestId) {
         model.addAttribute("guestRequestForm", form);
@@ -204,7 +209,7 @@ public class GuestRequestController {
         if (staffView) {
             model.addAttribute("staff", requestService.activeStaff());
             model.addAttribute("priorities", RequestPriority.values());
-            model.addAttribute("requestResponseForm", new RequestResponseForm());
+            if (!model.containsAttribute("requestResponseForm")) model.addAttribute("requestResponseForm", new RequestResponseForm());
         }
     }
 }

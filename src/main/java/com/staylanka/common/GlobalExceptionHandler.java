@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({org.springframework.dao.DataIntegrityViolationException.class, org.springframework.orm.ObjectOptimisticLockingFailureException.class, org.springframework.dao.CannotAcquireLockException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String integrity(HttpServletRequest request, Model model) {
+        return error(model, 409, "Record changed or linked history exists", "Refresh and retry. Records with linked history cannot be permanently removed until their dependencies are safely resolved.", request);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String notFound(NotFoundException ex, HttpServletRequest request, Model model) {

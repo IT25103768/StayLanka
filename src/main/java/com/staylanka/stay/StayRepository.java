@@ -31,12 +31,11 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 
     @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
             "room", "room.roomType"})
-    Page<Stay> findByActualCheckOutIsNull(Pageable pageable);
+    Page<Stay> findByActualCheckOutIsNullAndVoidedFalse(Pageable pageable);
 
     @EntityGraph(attributePaths = {"reservation", "reservation.customer", "reservation.customer.user",
             "room", "room.roomType"})
     Page<Stay> findByActualCheckOutIsNotNull(Pageable pageable);
 
-    long countByActualCheckOutIsNull();
+    long countByActualCheckOutIsNullAndVoidedFalse();
 }
-

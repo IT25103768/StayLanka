@@ -22,7 +22,7 @@ public class CurrentUserService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new NotFoundException("Signed-in account was not found.");
         }
-        return userRepository.findByEmailIgnoreCase(authentication.getName())
+        return userRepository.findByEmailIgnoreCase(authentication.getName()).filter(AppUser::isActive)
                 .orElseThrow(() -> new NotFoundException("Signed-in account was not found."));
     }
 
@@ -31,4 +31,3 @@ public class CurrentUserService {
                 .orElseThrow(() -> new NotFoundException("Customer profile was not found."));
     }
 }
-

@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RegistrationService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
     private final AppUserRepository userRepository;
     private final CustomerProfileRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
@@ -26,11 +28,14 @@ public class RegistrationService {
 
     @Transactional
     public void register(RegistrationForm form) {
-        String email = form.getEmail().trim().toLowerCase();
+        rules.validate(form);
+        if (!form.getPassword().equals(form.getConfirmPassword())) throw new com.staylanka.common.BusinessRuleException("Passwords do not match.");
+        String email = form.getEmail().trim().toLowerCase(java.util.Locale.ROOT);
         if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("An account already exists for this email address.");
         }
         AppUser user = userRepository.save(new AppUser(email, passwordEncoder.encode(form.getPassword()), Role.CUSTOMER));
+        audit.record(user, "CREATE");
         customerRepository.save(new CustomerProfile(user, form.getFirstName().trim(),
                 form.getLastName().trim(), trimToNull(form.getPhone())));
     }
@@ -39,4 +44,3 @@ public class RegistrationService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 }
-

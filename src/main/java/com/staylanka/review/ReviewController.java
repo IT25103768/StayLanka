@@ -102,7 +102,7 @@ public class ReviewController {
     public String delete(Authentication authentication, @PathVariable Long id,
                          RedirectAttributes redirectAttributes) {
         reviewService.delete(authentication, id);
-        redirectAttributes.addFlashAttribute("success", "Review deleted.");
+        redirectAttributes.addFlashAttribute("success", "Review hidden; history retained.");
         return "redirect:/customer/reviews";
     }
 

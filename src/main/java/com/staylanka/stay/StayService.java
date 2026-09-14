@@ -23,6 +23,10 @@ import java.util.List;
 
 @Service
 public class StayService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.room.MaintenanceService maintenance;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.NotificationService notices;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
     private final StayRepository stayRepository;
     private final AdditionalChargeRepository chargeRepository;
     private final ReservationRepository reservationRepository;
@@ -62,6 +66,7 @@ public class StayService {
 
     @Transactional
     public Stay checkIn(Long reservationId, CheckInForm form) {
+        rules.validate(form);
         Reservation reservation = reservationService.detailed(reservationId);
         if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
             throw new BusinessRuleException("Only a confirmed reservation can be checked in.");
@@ -97,6 +102,8 @@ public class StayService {
         }
         Stay stay = stayRepository.save(new Stay(reservation, room, form.getActualCheckIn(),
                 form.getGuestCount(), trimToNull(form.getNotes()), reservation.getTotalAmount()));
+        stay.verifyIdentity();
+        audit.record(stay, "CHECK_IN");
         room.setStatus(RoomStatus.OCCUPIED);
         reservationService.markCheckedIn(reservation);
         return stay;
@@ -128,7 +135,7 @@ public class StayService {
         PageRequest pageable = PageRequest.of(Math.max(page, 0), 12,
                 Sort.by(Sort.Direction.DESC, completed ? "actualCheckOut" : "actualCheckIn"));
         return completed ? stayRepository.findByActualCheckOutIsNotNull(pageable)
-                : stayRepository.findByActualCheckOutIsNull(pageable);
+                : stayRepository.findByActualCheckOutIsNullAndVoidedFalse(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -138,11 +145,13 @@ public class StayService {
 
     @Transactional
     public void addCharge(Long stayId, AdditionalChargeForm form) {
+        rules.validate(form);
         Stay stay = openStay(stayId);
         chargeRepository.save(new AdditionalCharge(stay, form.getDescription().trim(),
                 form.getQuantity(), form.getUnitPrice()));
         chargeRepository.flush();
         recalculate(stay);
+        audit.record(stay, "UPDATE_CHARGES");
     }
 
     @Transactional(readOnly = true)
@@ -157,11 +166,13 @@ public class StayService {
 
     @Transactional
     public void updateCharge(Long stayId, Long chargeId, AdditionalChargeForm form) {
+        rules.validate(form);
         Stay stay = openStay(stayId);
         AdditionalCharge charge = getCharge(stayId, chargeId);
         charge.update(form.getDescription().trim(), form.getQuantity(), form.getUnitPrice());
         chargeRepository.flush();
         recalculate(stay);
+        audit.record(stay, "UPDATE_CHARGES");
     }
 
     @Transactional
@@ -171,13 +182,14 @@ public class StayService {
         chargeRepository.delete(charge);
         chargeRepository.flush();
         recalculate(stay);
+        audit.record(stay, "UPDATE_CHARGES");
     }
 
     @Transactional
     public void checkOut(Long stayId, CheckOutForm form) {
         Stay stay = stayRepository.findDetailedByIdForUpdate(stayId)
                 .orElseThrow(() -> new NotFoundException("Stay was not found."));
-        if (stay.isCompleted()) {
+        if (stay.isCompleted() || stay.isVoided()) {
             throw new BusinessRuleException("This stay has already been checked out.");
         }
         if (form.getActualCheckOut() == null) {
@@ -195,17 +207,76 @@ public class StayService {
         stay.checkOut(form.getActualCheckOut(), additional);
         room.setStatus(RoomStatus.AVAILABLE);
         reservationService.markCheckedOut(stay.getReservation());
+        audit.record(stay, "CHECK_OUT");
+        notices.send(stay.getReservation().getCustomer().getUser(), "Thank you for staying. You can now leave a verified review.", "/customer/stays/" + stay.getId());
     }
 
     @Transactional(readOnly = true)
     public long currentCount() {
-        return stayRepository.countByActualCheckOutIsNull();
+        return stayRepository.countByActualCheckOutIsNullAndVoidedFalse();
+    }
+
+    @Transactional
+    public void move(Long id, Long roomId) {
+        Stay stay = openStay(id);
+        Long oldId = stay.getRoom().getId();
+        if (oldId.equals(roomId)) throw new BusinessRuleException("Choose a different room.");
+        // Stable ordering prevents two opposite room moves deadlocking each other.
+        roomRepository.findByIdForUpdate(Math.min(oldId, roomId)).orElseThrow(() -> new NotFoundException("Room not found."));
+        roomRepository.findByIdForUpdate(Math.max(oldId, roomId)).orElseThrow(() -> new NotFoundException("Room not found."));
+        Room target = roomRepository.findByIdForUpdate(roomId).orElseThrow();
+        Reservation booking = stay.getReservation();
+        if (target.getStatus() != RoomStatus.AVAILABLE || !target.getRoomType().isActive()
+                || target.getRoomType().getCapacity() < stay.getGuestCount())
+            throw new BusinessRuleException("The destination room is unavailable or too small.");
+        if (!booking.getCheckOutDate().isAfter(LocalDate.now())) throw new BusinessRuleException("Extend the booking before changing an overdue stay's room.");
+        if (reservationRepository.countBlockingOverlaps(roomId, LocalDate.now(), booking.getCheckOutDate(), booking.getId()) > 0)
+            throw new BusinessRuleException("The destination room has an overlapping booking.");
+        if(maintenance.blocked(roomId,LocalDate.now(),booking.getCheckOutDate())) throw new BusinessRuleException("Destination has scheduled maintenance.");
+        stay.getRoom().setStatus(RoomStatus.AVAILABLE);
+        target.setStatus(RoomStatus.OCCUPIED);
+        stay.moveTo(target);
+        booking.updateDetails(target, booking.getCheckInDate(), booking.getCheckOutDate(), booking.getGuestCount(),
+                booking.getNightlyPriceSnapshot(), booking.getGrossTotal(), booking.getDiscountAmount(), booking.getTotalAmount(), booking.getPromotion(), booking.getNotes());
+        audit.record("Stay", id, "ROOM_CHANGE", "Room " + oldId + " -> " + roomId + "; original contracted rate retained");
+    }
+
+    @Transactional
+    public void extend(Long id, LocalDate date) {
+        Stay stay = openStay(id);
+        Reservation booking = stay.getReservation();
+        roomRepository.findByIdForUpdate(stay.getRoom().getId()).orElseThrow();
+        if (date == null || !date.isAfter(booking.getCheckOutDate()) || !date.isAfter(LocalDate.now()))
+            throw new BusinessRuleException("New departure must be after the existing departure and today.");
+        if (reservationRepository.countBlockingOverlaps(stay.getRoom().getId(), booking.getCheckOutDate(), date, booking.getId()) > 0)
+            throw new BusinessRuleException("Extension overlaps another booking.");
+        if(maintenance.blocked(stay.getRoom().getId(),booking.getCheckOutDate(),date)) throw new BusinessRuleException("Extension overlaps scheduled maintenance.");
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(booking.getCheckOutDate(), date);
+        BigDecimal extra = booking.getNightlyPriceSnapshot().multiply(BigDecimal.valueOf(nights));
+        booking.updateDetails(booking.getRoom(), booking.getCheckInDate(), date, booking.getGuestCount(),
+                booking.getNightlyPriceSnapshot(), booking.getGrossTotal().add(extra), booking.getDiscountAmount(),
+                booking.getTotalAmount().add(extra), booking.getPromotion(), booking.getNotes());
+        stay.extendCharge(extra);
+        audit.record("Stay", id, "STAY_EXTENSION", "Departure " + date + "; additional nights " + nights);
+        notices.send(booking.getCustomer().getUser(), "Your stay was extended to " + date, "/customer/stays/" + id);
+    }
+
+    @Transactional
+    public void voidStay(Long id) {
+        Stay stay = openStay(id);
+        if (!charges(id).isEmpty()) throw new BusinessRuleException("Remove incorrect charges before voiding an erroneous check-in.");
+        roomRepository.findByIdForUpdate(stay.getRoom().getId()).orElseThrow();
+        stay.voidRecord();
+        stay.getRoom().setStatus(RoomStatus.AVAILABLE);
+        stay.getReservation().transitionTo(ReservationStatus.CANCELLED, "Erroneous stay voided; rebook if needed");
+        audit.record(stay, "VOID");
+        audit.record(stay.getReservation(), "CANCEL");
     }
 
     private Stay openStay(Long stayId) {
         Stay stay = stayRepository.findDetailedByIdForUpdate(stayId)
                 .orElseThrow(() -> new NotFoundException("Stay was not found."));
-        if (stay.isCompleted()) {
+        if (stay.isCompleted() || stay.isVoided()) {
             throw new BusinessRuleException("Charges cannot be changed after check-out.");
         }
         return stay;

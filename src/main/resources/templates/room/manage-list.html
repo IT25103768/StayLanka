@@ -11,8 +11,8 @@
             <p class="text-secondary mb-0">Maintain rooms and operational availability.</p>
         </div>
         <div class="d-flex gap-2">
-            <a sec:authorize="hasRole('ADMIN')" class="btn btn-outline-success" th:href="@{/admin/room-types}">Room types</a>
-            <a class="btn btn-gold" th:href="@{/staff/rooms/new}">Add room</a>
+            <a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')" class="btn btn-outline-success" th:href="@{/admin/room-types}">Room types</a>
+            <a sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')" class="btn btn-gold" th:href="@{/staff/rooms/new}">Add room</a>
         </div>
     </div>
     <form class="card p-3 mb-4" method="get">
@@ -33,7 +33,7 @@
                     <td th:text="${'LKR ' + #numbers.formatDecimal(r.nightlyPrice,1,2)}"></td>
                     <td><span class="badge text-bg-secondary" th:text="${r.status}"></span></td>
                     <td class="text-end">
-                        <div class="d-flex justify-content-end gap-1 flex-wrap">
+                        <div sec:authorize="hasAnyRole('ROOM_MANAGER','ADMIN')" class="d-flex justify-content-end gap-1 flex-wrap">
                             <a class="btn btn-sm btn-outline-success" th:href="@{/staff/rooms/{id}/edit(id=${r.id})}">Edit</a>
 
                             <form th:if="${r.status.name() == 'AVAILABLE'}"

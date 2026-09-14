@@ -28,9 +28,9 @@
                     <h2 class="h4 section-title mb-2">Stay details</h2>
                     <p class="text-secondary mb-0">Fields marked with an asterisk are required.</p>
                 </div>
-                <form th:action="${reservationId == null ? '/customer/reservations' : '/customer/reservations/' + reservationId}"
+                <form th:action="${staffEdit == true ? '/staff/reservations/' + reservationId + '/edit' : (reservationId == null ? '/customer/reservations' : '/customer/reservations/' + reservationId)}"
                       th:object="${reservationForm}" method="post" data-date-pair data-submit-feedback>
-                    <input type="hidden" th:field="*{roomId}">
+                    <label for="roomId" class="form-label">Room *</label><select id="roomId" th:field="*{roomId}" class="form-select mb-3" required><option th:each="choice:${roomChoices}" th:value="${choice.id}" th:text="${choice.roomNumber+' · '+choice.roomType.name}"></option></select><p class="small">Changing rooms recalculates the price on save.</p>
                     <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
                         <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
                     </div>

@@ -83,7 +83,7 @@
             <div class="col-md-6 col-xl-4" sec:authorize="hasRole('ADMIN')"><a class="card sl-action-card" th:href="@{/admin/staff}"><i class="bi bi-person-badge"></i><strong>Manage staff</strong><span>Maintain administrative and staff accounts.</span></a></div>
         </div>
     </section>
-</main>
+<section class="container py-4"><h2 class="h4">Operational summary</h2><p class="small">Live database totals. A zero review average means no approved reviews.</p><dl class="row"><div class="col-6 col-lg-3 mb-3" th:each="metric:${summary}"><dt class="text-secondary" th:text="${metric.key}"></dt><dd class="display-6" th:text="${metric.value}"></dd></div></dl></section></main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>

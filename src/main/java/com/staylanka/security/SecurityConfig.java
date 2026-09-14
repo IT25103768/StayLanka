@@ -20,15 +20,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, com.staylanka.user.AppUserRepository users) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/forgot-password", "/reset-password").permitAll()
                         .requestMatchers("/", "/login", "/register", "/rooms", "/rooms/**",
                                 "/promotions", "/reviews", "/css/**", "/js/**", "/images/**",
                                 "/uploads/**", "/error", "/error/**").permitAll()
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
 
                         // Room & availability owner. Reservation and stay managers need room read access only.
+                        .requestMatchers("/staff/rooms/new", "/staff/rooms/*/edit").hasAnyRole("ROOM_MANAGER", "ADMIN")
+                        .requestMatchers("/staff/reservations/*/edit").hasAnyRole("RESERVATION_MANAGER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/staff/rooms/**").hasAnyRole("ROOM_MANAGER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/staff/rooms/**").hasAnyRole(
                                 "ROOM_MANAGER", "RESERVATION_MANAGER", "STAY_MANAGER", "ADMIN")
@@ -74,6 +77,7 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedHandler((request, response, exception) ->
                                 response.sendError(HttpServletResponse.SC_FORBIDDEN)));
+        http.addFilterAfter(new AccountStatusFilter(users), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

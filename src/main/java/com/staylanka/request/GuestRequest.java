@@ -60,6 +60,11 @@ public class GuestRequest extends BaseEntity {
     @Column(name = "lock_version", nullable = false)
     private long lockVersion;
 
+    @Column(nullable = false) private boolean archived;
+    public boolean isArchived() { return archived; }
+    public void setArchived(boolean value) { archived = value; }
+    public String getOwnerLabel() { return assignedStaff == null ? "Customer Relations queue" : assignedStaff.getEmail(); }
+
     protected GuestRequest() {
     }
 
@@ -108,4 +113,3 @@ public class GuestRequest extends BaseEntity {
     public RequestStatus getStatus() { return status; }
     public String getResolution() { return resolution; }
 }
-

@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class StayController {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.room.RoomService rooms;
     private final StayService stayService;
     private final ReviewService reviewService;
 
@@ -170,8 +171,9 @@ public class StayController {
 
     private void prepareDetail(Model model, Stay stay) {
         model.addAttribute("stay", stay);
+        model.addAttribute("roomChoices", rooms.selection());
         model.addAttribute("charges", stayService.charges(stay.getId()));
-        model.addAttribute("additionalChargeForm", new AdditionalChargeForm());
+        if (!model.containsAttribute("additionalChargeForm")) model.addAttribute("additionalChargeForm", new AdditionalChargeForm());
         model.addAttribute("canReview", false);
     }
 }

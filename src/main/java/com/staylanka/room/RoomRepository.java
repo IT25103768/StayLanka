@@ -53,6 +53,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             where r.status in (com.staylanka.room.RoomStatus.AVAILABLE,
                                com.staylanka.room.RoomStatus.OCCUPIED)
               and rt.active = true
+              and not exists (select b.id from MaintenanceBlock b where b.room=r and b.active=true and b.startDate<:checkOut and b.endDate>:checkIn)
               and rt.capacity >= :guests
               and (:typeId is null or rt.id = :typeId)
               and (:maxPrice is null or r.nightlyPrice <= :maxPrice)
@@ -62,7 +63,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                   and reservation.status not in (
                     com.staylanka.reservation.ReservationStatus.CANCELLED,
                     com.staylanka.reservation.ReservationStatus.REJECTED,
-                    com.staylanka.reservation.ReservationStatus.NO_SHOW)
+                    com.staylanka.reservation.ReservationStatus.NO_SHOW,
+                    com.staylanka.reservation.ReservationStatus.CHECKED_OUT)
                   and reservation.checkInDate < :checkOut
                   and reservation.checkOutDate > :checkIn
               )
@@ -79,4 +81,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Optional<Room> findByIdForUpdate(@Param("id") Long id);
 
     long countByStatus(RoomStatus status);
+
+    @Query("select r from Room r join fetch r.roomType where r.roomType.active=true and r.status in (com.staylanka.room.RoomStatus.AVAILABLE,com.staylanka.room.RoomStatus.OCCUPIED) order by r.roomNumber")
+    java.util.List<Room> selection();
 }

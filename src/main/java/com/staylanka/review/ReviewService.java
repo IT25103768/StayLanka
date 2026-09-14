@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReviewService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
     private final ReviewRepository reviewRepository;
     private final StayService stayService;
     private final CurrentUserService currentUserService;
@@ -47,13 +49,16 @@ public class ReviewService {
 
     @Transactional
     public Review create(Authentication authentication, Long stayId, ReviewForm form) {
+        rules.validate(form);
         CustomerProfile customer = currentUserService.customer(authentication);
         Stay stay = stayService.own(authentication, stayId);
         validateEligibility(stay);
         if (reviewRepository.existsByStayId(stayId)) {
             throw new ConflictException("A review has already been submitted for this stay.");
         }
-        return reviewRepository.save(new Review(stay, customer, form.getRating(), form.getComment().trim()));
+        Review created = reviewRepository.save(new Review(stay, customer, form.getRating(), form.getComment().trim()));
+        audit.record(created, "CREATE");
+        return created;
     }
 
     @Transactional(readOnly = true)
@@ -67,22 +72,33 @@ public class ReviewService {
 
     @Transactional
     public void update(Authentication authentication, Long id, ReviewForm form) {
-        ownReview(authentication, id).update(form.getRating(), form.getComment().trim());
+        rules.validate(form);
+        Review review = ownReview(authentication, id);
+        validateEligibility(review.getStay());
+        review.update(form.getRating(), form.getComment().trim());
+        audit.record(review, "UPDATE");
     }
 
     @Transactional
     public void delete(Authentication authentication, Long id) {
-        reviewRepository.delete(ownReview(authentication, id));
+        Review review = ownReview(authentication, id);
+        review.moderate(ReviewStatus.REJECTED);
+        audit.record(review, "HIDE");
     }
 
     @Transactional
     public void approve(Long id) {
-        detailed(id).moderate(ReviewStatus.APPROVED);
+        Review review = detailed(id);
+        validateEligibility(review.getStay());
+        review.moderate(ReviewStatus.APPROVED);
+        audit.record(review, "APPROVE");
     }
 
     @Transactional
     public void reject(Long id) {
-        detailed(id).moderate(ReviewStatus.REJECTED);
+        Review review = detailed(id);
+        review.moderate(ReviewStatus.REJECTED);
+        audit.record(review, "HIDE");
     }
 
     @Transactional(readOnly = true)

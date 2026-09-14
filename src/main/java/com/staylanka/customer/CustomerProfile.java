@@ -35,6 +35,14 @@ public class CustomerProfile extends BaseEntity {
     @Column(name = "identification_number", length = 80)
     private String identificationNumber;
 
+    @Column(length = 1000)
+    private String preferences;
+    @Column(name = "marketing_consent", nullable = false)
+    private boolean marketingConsent;
+    public String getPreferences() { return preferences; }
+    public boolean isMarketingConsent() { return marketingConsent; }
+    public void setPreferences(String preferences, boolean consent) { this.preferences = preferences; this.marketingConsent = consent; }
+
     protected CustomerProfile() {
     }
 
@@ -87,4 +95,3 @@ public class CustomerProfile extends BaseEntity {
         return identificationNumber;
     }
 }
-

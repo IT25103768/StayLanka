@@ -1,10 +1,12 @@
 spring:
   application:
     name: StayLanka
+
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/staylanka?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:H@ritha1}
+    password: ${DB_PASSWORD:}
+
   jpa:
     open-in-view: false
     hibernate:
@@ -14,14 +16,18 @@ spring:
         format_sql: true
         jdbc:
           time_zone: Asia/Colombo
+
   flyway:
     enabled: true
+
   thymeleaf:
-    cache: false
+    cache: true
+
   servlet:
     multipart:
-      max-file-size: 3MB
-      max-request-size: 4MB
+      max-file-size: 10MB
+      max-request-size: 12MB
+
   mvc:
     hiddenmethod:
       filter:
@@ -31,6 +37,7 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+
   servlet:
     session:
       cookie:
@@ -41,11 +48,11 @@ server:
 staylanka:
   uploads:
     directory: ${UPLOAD_DIR:./uploads}
-    max-bytes: 2097152
+    max-bytes: 10485760
+
   seed:
     enabled: false
     admin-email: ${DEV_ADMIN_EMAIL:admin@staylanka.lk}
     admin-password: ${DEV_ADMIN_PASSWORD:}
     staff-email: ${DEV_STAFF_EMAIL:staff@staylanka.lk}
     staff-password: ${DEV_STAFF_PASSWORD:}
-

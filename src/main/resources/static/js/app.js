@@ -72,6 +72,8 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         // The inline head bootstrap already selected a theme before CSS loaded. Sync controls now that they exist.
+        const main = document.querySelector('main');
+        if (main && !main.id) main.id = 'main-content';
         const initialTheme = root.dataset.theme === 'dark' ? 'dark' : 'light';
         applyTheme(initialTheme, false);
 

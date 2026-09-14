@@ -31,6 +31,10 @@ import java.util.Set;
 
 @Service
 public class ReservationService {
+    @org.springframework.beans.factory.annotation.Value("${staylanka.policies.no-show-enabled:false}") private boolean noShowEnabled;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.room.MaintenanceService maintenance;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.NotificationService notices;
     private static final Map<ReservationStatus, Set<ReservationStatus>> ALLOWED_TRANSITIONS = transitions();
 
     private final ReservationRepository reservationRepository;
@@ -57,6 +61,7 @@ public class ReservationService {
     @Transactional
     public Reservation create(Authentication authentication, ReservationForm form) {
         CustomerProfile customer = currentUserService.customer(authentication);
+        if (form.getRoomId() == null) throw new BusinessRuleException("Choose a room.");
         Room room = lockRoom(form.getRoomId());
         Pricing pricing = validateAndPrice(room, form, null);
         Reservation reservation = new Reservation(uniqueReference(), customer, room, form.getCheckInDate(),
@@ -65,21 +70,45 @@ public class ReservationService {
                 trimToNull(form.getNotes()));
         reservationRepository.save(reservation);
         savePromotionUsage(reservation, pricing.promotion());
+        audit.record(reservation, "CREATE");
+        notices.operations(com.staylanka.user.Role.RESERVATION_MANAGER,"New reservation "+reservation.getReservationReference(),"/staff/reservations/"+reservation.getId());
+        notices.send(reservation.getCustomer().getUser(), "Booking " + reservation.getReservationReference() + " received, awaiting confirmation.", "/customer/reservations/" + reservation.getId());
         return reservation;
     }
 
     @Transactional
     public void updateOwn(Authentication authentication, Long id, ReservationForm form) {
         Reservation reservation = own(authentication, id);
-        if (reservation.getStatus() != ReservationStatus.PENDING) {
-            throw new BusinessRuleException("Only pending reservations can be edited.");
+        updateBooking(reservation, form);
+    }
+
+    @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('RESERVATION_MANAGER','ADMIN')")
+    public void updateStaff(Long id, ReservationForm form) {
+        updateBooking(detailed(id), form);
+    }
+
+    @Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('RESERVATION_MANAGER','ADMIN')")
+    public void cancelStaff(Long id, String reason) {
+        if (reason == null || reason.isBlank() || reason.length() > 500) throw new BusinessRuleException("Provide a cancellation reason of up to 500 characters.");
+        transition(detailed(id), ReservationStatus.CANCELLED, reason.trim());
+    }
+
+    private void updateBooking(Reservation reservation, ReservationForm form) {
+        if (form.getRoomId() == null) throw new BusinessRuleException("Choose a room.");
+        if (!Set.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED).contains(reservation.getStatus())
+                || !reservation.getCheckInDate().isAfter(LocalDate.now())) {
+            throw new BusinessRuleException("Only pending or confirmed reservations before arrival can be edited.");
         }
         Room room = lockRoom(form.getRoomId());
-        Pricing pricing = validateAndPrice(room, form, id);
+        Pricing pricing = validateAndPrice(room, form, reservation.getId());
         reservation.updateDetails(room, form.getCheckInDate(), form.getCheckOutDate(), form.getGuestCount(),
                 room.getNightlyPrice(), pricing.gross(), pricing.promotion().discount(), pricing.total(),
                 pricing.promotion().promotion(), trimToNull(form.getNotes()));
         savePromotionUsage(reservation, pricing.promotion());
+        audit.record(reservation, "UPDATE");
+        notices.send(reservation.getCustomer().getUser(), "Booking " + reservation.getReservationReference() + " saved.", "/customer/reservations/" + reservation.getId());
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +142,7 @@ public class ReservationService {
     @Transactional
     public void cancelOwn(Authentication authentication, Long id, String reason) {
         Reservation reservation = own(authentication, id);
-        if (reason == null || reason.isBlank()) {
+        if (reason == null || reason.isBlank() || reason.length() > 500) {
             throw new BusinessRuleException("A cancellation reason is required.");
         }
         transition(reservation, ReservationStatus.CANCELLED, reason.trim());
@@ -142,6 +171,8 @@ public class ReservationService {
         if (LocalDate.now().isBefore(reservation.getCheckInDate())) {
             throw new BusinessRuleException("A future reservation cannot be marked as no-show.");
         }
+        if (!noShowEnabled) throw new BusinessRuleException("No-show handling is disabled until hotel policy is approved.");
+        if (reason != null && reason.length() > 500) throw new BusinessRuleException("No-show note must not exceed 500 characters.");
         transition(reservation, ReservationStatus.NO_SHOW,
                 reason == null || reason.isBlank() ? "Guest did not arrive" : reason.trim());
     }
@@ -167,6 +198,8 @@ public class ReservationService {
     }
 
     private Pricing validateAndPrice(Room room, ReservationForm form, Long excludeReservationId) {
+        if (form.getNotes()!=null && form.getNotes().length()>2000) throw new BusinessRuleException("Notes must not exceed 2000 characters.");
+        if (form.getPromotionCode()!=null && form.getPromotionCode().length()>40) throw new BusinessRuleException("Promotion code is too long.");
         if (form.getCheckInDate() == null || form.getCheckOutDate() == null) {
             throw new BusinessRuleException("Check-in and check-out dates are required.");
         }
@@ -187,6 +220,8 @@ public class ReservationService {
                 form.getCheckOutDate(), excludeReservationId) > 0) {
             throw new ConflictException("This room has just been reserved for overlapping dates. Please choose another room.");
         }
+        if (maintenance.blocked(room.getId(),form.getCheckInDate(),form.getCheckOutDate())) throw new BusinessRuleException("Room has scheduled maintenance for these dates.");
+        if(room.getStatus()==RoomStatus.OCCUPIED && !form.getCheckInDate().isAfter(LocalDate.now())) throw new BusinessRuleException("This room is still occupied. Wait for checkout before booking today.");
         long nights = ChronoUnit.DAYS.between(form.getCheckInDate(), form.getCheckOutDate());
         BigDecimal gross = room.getNightlyPrice().multiply(BigDecimal.valueOf(nights)).setScale(2, RoundingMode.HALF_UP);
         PromotionService.PromotionResult promotion = promotionService.apply(form.getPromotionCode(), gross, nights);
@@ -199,6 +234,8 @@ public class ReservationService {
             throw new BusinessRuleException("Reservation cannot move from " + current + " to " + target + ".");
         }
         reservation.transitionTo(target, reason);
+        audit.record("Reservation", reservation.getId(), "STATUS_CHANGE", current + " -> " + target);
+        notices.send(reservation.getCustomer().getUser(), "Booking " + reservation.getReservationReference() + ": " + target, "/customer/reservations/" + reservation.getId());
         eventPublisher.publishEvent(new ReservationStatusChangedEvent(reservation.getId(),
                 reservation.getReservationReference(), current, target));
     }

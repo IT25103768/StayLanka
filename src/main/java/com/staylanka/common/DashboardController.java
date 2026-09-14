@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class DashboardController {
+    @org.springframework.beans.factory.annotation.Autowired private ReportingService reporting;
     private final RoomService roomService;
     private final ReservationService reservationService;
     private final StayService stayService;
@@ -30,6 +31,7 @@ public class DashboardController {
 
     @GetMapping({"/admin/dashboard", "/staff/dashboard"})
     public String operations(Model model) {
+        model.addAttribute("summary",reporting.summary());
         model.addAttribute("availableRooms", roomService.countAvailable());
         model.addAttribute("pendingReservations", reservationService.pendingCount());
         model.addAttribute("currentStays", stayService.currentCount());

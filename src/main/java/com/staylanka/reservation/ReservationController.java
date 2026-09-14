@@ -20,6 +20,7 @@ import java.time.LocalDate;
 
 @Controller
 public class ReservationController {
+    @org.springframework.beans.factory.annotation.Value("${staylanka.policies.no-show-enabled:false}") private boolean noShowEnabled;
     private final ReservationService reservationService;
     private final RoomService roomService;
 
@@ -127,6 +128,7 @@ public class ReservationController {
 
     @GetMapping("/staff/reservations/{id}")
     public String staffDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("noShowEnabled", noShowEnabled);
         model.addAttribute("reservation", reservationService.detailed(id));
         return "reservation/detail";
     }
@@ -156,6 +158,7 @@ public class ReservationController {
 
     private void prepareForm(Model model, ReservationForm form, Long reservationId) {
         model.addAttribute("reservationForm", form);
+        model.addAttribute("roomChoices", roomService.selection());
         model.addAttribute("reservationId", reservationId);
         if (form.getRoomId() != null) {
             model.addAttribute("room", roomService.get(form.getRoomId()));

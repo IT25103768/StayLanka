@@ -3,6 +3,6 @@ staylanka:
   seed:
     enabled: true
     admin-email: ${DEV_ADMIN_EMAIL:admin@staylanka.lk}
-    admin-password: ${DEV_ADMIN_PASSWORD:Admin@12345}
+    admin-password: ${DEV_ADMIN_PASSWORD:}
     staff-email: ${DEV_STAFF_EMAIL:staff@staylanka.lk}
-    staff-password: ${DEV_STAFF_PASSWORD:Staff@12345}
+    staff-password: ${DEV_STAFF_PASSWORD:}

@@ -27,6 +27,9 @@ import java.util.Set;
 
 @Service
 public class GuestRequestService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.NotificationService notices;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
     private static final Map<RequestStatus, Set<RequestStatus>> ALLOWED_TRANSITIONS = transitions();
     private static final Set<Role> REQUEST_STAFF_ROLES = EnumSet.of(Role.INQUIRY_REQUEST_MANAGER, Role.STAFF, Role.ADMIN);
 
@@ -59,6 +62,7 @@ public class GuestRequestService {
 
     @Transactional
     public GuestRequest create(Authentication authentication, GuestRequestForm form) {
+        rules.validate(form);
         CustomerProfile customer = currentUserService.customer(authentication);
         Reservation reservation = linkedReservation(authentication, form.getReservationId());
         GuestRequest request = requestRepository.save(new GuestRequest(uniqueReference(), customer, reservation,
@@ -66,11 +70,14 @@ public class GuestRequestService {
                 form.getType(), form.getPriority()));
         eventPublisher.publishEvent(new RequestStatusChangedEvent(request, customer.getUser(), null,
                 RequestStatus.SUBMITTED, "Request submitted"));
+        audit.record(request, "CREATE");
+        notices.operations(Role.INQUIRY_REQUEST_MANAGER, "New request " + request.getRequestReference(), "/staff/requests/"+request.getId());
         return request;
     }
 
     @Transactional
     public void updateOwn(Authentication authentication, Long id, GuestRequestForm form) {
+        rules.validate(form);
         GuestRequest request = own(authentication, id);
         if (request.getStatus() != RequestStatus.SUBMITTED) {
             throw new BusinessRuleException("Only submitted requests can be edited.");
@@ -78,6 +85,8 @@ public class GuestRequestService {
         Reservation reservation = linkedReservation(authentication, form.getReservationId());
         request.updateCustomerFields(reservation, form.getCategory().trim(), form.getSubject().trim(),
                 form.getDescription().trim(), form.getType(), form.getPriority());
+        audit.record(request, "UPDATE");
+        eventPublisher.publishEvent(new RequestStatusChangedEvent(request, currentUserService.user(authentication), request.getStatus(), request.getStatus(), "Request details updated"));
     }
 
     @Transactional
@@ -145,6 +154,8 @@ public class GuestRequestService {
             throw new BusinessRuleException("A closed or cancelled request cannot be assigned.");
         }
         request.assign(staff);
+        audit.record(request, "ASSIGN");
+        notices.send(staff,"Request assigned: "+request.getRequestReference(),"/staff/requests/"+id);
         if (request.getStatus() == RequestStatus.SUBMITTED) {
             transition(request, actor, RequestStatus.ASSIGNED, "Assigned to " + staff.getEmail(), null);
         } else {
@@ -160,7 +171,9 @@ public class GuestRequestService {
             throw new BusinessRuleException("Priority cannot be changed for this request.");
         }
         RequestPriority old = request.getPriority();
+        if (priority == null) throw new BusinessRuleException("Choose a priority.");
         request.setPriority(priority);
+        audit.record(request, "PRIORITY_CHANGE");
         eventPublisher.publishEvent(new RequestStatusChangedEvent(request, currentUserService.user(authentication),
                 request.getStatus(), request.getStatus(), "Priority changed from " + old + " to " + priority));
     }
@@ -171,7 +184,11 @@ public class GuestRequestService {
         if (request.getStatus() == RequestStatus.CLOSED || request.getStatus() == RequestStatus.CANCELLED) {
             throw new BusinessRuleException("Responses cannot be added to a closed or cancelled request.");
         }
+        if (message == null || message.isBlank() || message.length() > 2000) throw new BusinessRuleException("Response must contain 1 to 2000 characters.");
         responseRepository.save(new RequestResponse(request, currentUserService.user(authentication), message.trim()));
+        audit.record(request, "RESPONSE");
+        notices.send(request.getCustomer().getUser(), "A response was added to " + request.getRequestReference(), "/customer/requests/" + id);
+        eventPublisher.publishEvent(new RequestStatusChangedEvent(request, currentUserService.user(authentication), request.getStatus(), request.getStatus(), "Staff response added"));
     }
 
     @Transactional
@@ -201,6 +218,16 @@ public class GuestRequestService {
                 "Request reopened", null);
     }
 
+    @Transactional
+    public void archive(Authentication authentication, Long id) {
+        GuestRequest request = detailed(id);
+        if (!Set.of(RequestStatus.CLOSED, RequestStatus.CANCELLED).contains(request.getStatus()))
+            throw new BusinessRuleException("Close or cancel the request before archiving.");
+        request.setArchived(true);
+        audit.record(request, "ARCHIVE");
+        eventPublisher.publishEvent(new RequestStatusChangedEvent(request,currentUserService.user(authentication),request.getStatus(),request.getStatus(),"Request archived"));
+    }
+
     @Transactional(readOnly = true)
     public long openCount() {
         return requestRepository.countOpen();
@@ -216,7 +243,11 @@ public class GuestRequestService {
         if (!ALLOWED_TRANSITIONS.getOrDefault(current, Set.of()).contains(target)) {
             throw new BusinessRuleException("Request cannot move from " + current + " to " + target + ".");
         }
+        if (request.isArchived()) throw new BusinessRuleException("Archived requests cannot be changed.");
+        if (target == RequestStatus.IN_PROGRESS && request.getAssignedStaff() == null) throw new BusinessRuleException("Assign an owner before processing.");
         request.transitionTo(target, resolution);
+        audit.record("GuestRequest", request.getId(), "STATUS_CHANGE", current + " -> " + target);
+        notices.send(request.getCustomer().getUser(), "Request " + request.getRequestReference() + ": " + target, "/customer/requests/" + request.getId());
         eventPublisher.publishEvent(new RequestStatusChangedEvent(request, actor, current, target, note));
     }
 
@@ -235,6 +266,7 @@ public class GuestRequestService {
         map.put(RequestStatus.SUBMITTED, EnumSet.of(RequestStatus.ASSIGNED, RequestStatus.CANCELLED));
         map.put(RequestStatus.ASSIGNED, EnumSet.of(RequestStatus.IN_PROGRESS, RequestStatus.CANCELLED));
         map.put(RequestStatus.IN_PROGRESS, EnumSet.of(RequestStatus.RESOLVED, RequestStatus.CANCELLED));
+        map.put(RequestStatus.CLOSED, EnumSet.of(RequestStatus.IN_PROGRESS));
         map.put(RequestStatus.RESOLVED, EnumSet.of(RequestStatus.CLOSED, RequestStatus.IN_PROGRESS));
         return Map.copyOf(map);
     }

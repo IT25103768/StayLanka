@@ -17,6 +17,8 @@ import java.util.Map;
 
 @Service
 public class PromotionService {
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
+    @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
     private final PromotionRepository promotionRepository;
     private final Map<PromotionType, DiscountStrategy> strategies = new EnumMap<>(PromotionType.class);
 
@@ -49,9 +51,11 @@ public class PromotionService {
         if (promotionRepository.existsByCodeIgnoreCase(form.getCode())) {
             throw new ConflictException("This promotion code is already in use.");
         }
-        return promotionRepository.save(new Promotion(form.getCode().trim().toUpperCase(), form.getName().trim(),
+        Promotion created = promotionRepository.save(new Promotion(form.getCode().trim().toUpperCase(), form.getName().trim(),
                 trimToNull(form.getDescription()), form.getType(), form.getValue(), form.getStartDate(),
                 form.getEndDate(), form.getMinimumNights(), form.getMinimumAmount()));
+        audit.record(created, "CREATE");
+        return created;
     }
 
     @Transactional
@@ -64,12 +68,14 @@ public class PromotionService {
         promotion.update(form.getCode().trim().toUpperCase(), form.getName().trim(), trimToNull(form.getDescription()),
                 form.getType(), form.getValue(), form.getStartDate(), form.getEndDate(),
                 form.getMinimumNights(), form.getMinimumAmount());
+        audit.record(promotion, "UPDATE");
     }
 
     @Transactional
     public void toggle(Long id) {
         Promotion promotion = get(id);
         promotion.setActive(!promotion.isActive());
+        audit.record(promotion, "STATUS_CHANGE");
     }
 
     @Transactional(readOnly = true)
@@ -99,6 +105,7 @@ public class PromotionService {
     }
 
     private void validate(PromotionForm form) {
+        rules.validate(form);
         if (form.getEndDate() != null && form.getStartDate() != null && form.getEndDate().isBefore(form.getStartDate())) {
             throw new BusinessRuleException("Promotion end date cannot be before the start date.");
         }
@@ -115,4 +122,3 @@ public class PromotionService {
     public record PromotionResult(Promotion promotion, BigDecimal discount) {
     }
 }
-

@@ -70,23 +70,23 @@ public class DevDataSeeder implements ApplicationRunner {
             log.info("Development administrator account created for configured email.");
         }
 
-        seedModuleOwner("IT25103762", "Room@2026!", Role.ROOM_MANAGER,
+        seedModuleOwner("IT25103762", properties.seed().staffPassword(), Role.ROOM_MANAGER,
                 "Abeyrathna", "A.H.M.P.M.", "Room & Availability Manager");
-        seedModuleOwner("IT25103763", "Reservation@2026!", Role.RESERVATION_MANAGER,
+        seedModuleOwner("IT25103763", properties.seed().staffPassword(), Role.RESERVATION_MANAGER,
                 "Wimukthi", "A.K.A.", "Reservation Manager");
-        seedModuleOwner("IT25103764", "Profile@2026!", Role.PROFILE_MANAGER,
+        seedModuleOwner("IT25103764", properties.seed().staffPassword(), Role.PROFILE_MANAGER,
                 "Silva", "Y.H.S.D.", "Customer Profile Manager");
-        seedModuleOwner("IT25103765", "Stay@2026!", Role.STAY_MANAGER,
+        seedModuleOwner("IT25103765", properties.seed().staffPassword(), Role.STAY_MANAGER,
                 "Parindya", "R.K.M.", "Check-In/Out & Stay Manager");
-        seedModuleOwner("IT25103767", "Promotion@2026!", Role.PROMOTION_REVIEW_MANAGER,
+        seedModuleOwner("IT25103767", properties.seed().staffPassword(), Role.PROMOTION_REVIEW_MANAGER,
                 "Gunaseela", "Y.P.S.", "Promotion & Review Manager");
-        seedModuleOwner("IT25103768", "Request@2026!", Role.INQUIRY_REQUEST_MANAGER,
+        seedModuleOwner("IT25103768", properties.seed().staffPassword(), Role.INQUIRY_REQUEST_MANAGER,
                 "Kasthuriarachchi", "K.A.M.H.N.", "Inquiry & Special Request Manager");
     }
 
     private void seedModuleOwner(String username, String rawPassword, Role role,
                                  String firstName, String lastName, String jobTitle) {
-        if (userRepository.existsByEmailIgnoreCase(username)) {
+        if (!hasText(rawPassword) || userRepository.existsByEmailIgnoreCase(username)) {
             return;
         }
         AppUser staff = userRepository.save(new AppUser(username,

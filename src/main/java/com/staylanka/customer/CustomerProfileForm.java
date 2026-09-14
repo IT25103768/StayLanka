@@ -5,6 +5,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CustomerProfileForm {
+    @Size(max = 1000) private String preferences;
+    private boolean marketingConsent;
+    public String getPreferences() { return preferences; }
+    public void setPreferences(String value) { preferences = value; }
+    public boolean isMarketingConsent() { return marketingConsent; }
+    public void setMarketingConsent(boolean value) { marketingConsent = value; }
     @NotBlank
     @Size(max = 80)
     private String firstName;
@@ -27,6 +33,8 @@ public class CustomerProfileForm {
 
     public static CustomerProfileForm from(CustomerProfile profile) {
         CustomerProfileForm form = new CustomerProfileForm();
+        form.preferences = profile.getPreferences();
+        form.marketingConsent = profile.isMarketingConsent();
         form.firstName = profile.getFirstName();
         form.lastName = profile.getLastName();
         form.phone = profile.getPhone();

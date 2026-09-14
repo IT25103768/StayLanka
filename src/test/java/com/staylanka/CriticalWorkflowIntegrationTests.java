@@ -244,6 +244,7 @@ class CriticalWorkflowIntegrationTests {
         reservationService.confirm(reservation.getId());
 
         CheckInForm checkInForm = new CheckInForm();
+        checkInForm.setIdentityVerified(true);
         checkInForm.setActualCheckIn(LocalDate.now().atStartOfDay());
         checkInForm.setGuestCount(2);
         Stay stay = stayService.checkIn(reservation.getId(), checkInForm);
@@ -307,7 +308,7 @@ class CriticalWorkflowIntegrationTests {
         assertThat(requestService.history(request.getId()))
                 .extracting(item -> item.getNewStatus())
                 .containsExactly(RequestStatus.SUBMITTED, RequestStatus.ASSIGNED,
-                        RequestStatus.IN_PROGRESS, RequestStatus.RESOLVED, RequestStatus.CLOSED);
+                        RequestStatus.IN_PROGRESS, RequestStatus.IN_PROGRESS, RequestStatus.RESOLVED, RequestStatus.CLOSED);
     }
 
     private Authentication registerCustomer(String email) {

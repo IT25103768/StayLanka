@@ -9,6 +9,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 public class CheckInForm {
+    @jakarta.validation.constraints.AssertTrue(message = "Verify the guest identity document before check-in")
+    private boolean identityVerified;
+    public boolean isIdentityVerified() { return identityVerified; }
+    public void setIdentityVerified(boolean value) { identityVerified = value; }
     @NotNull @PastOrPresent @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime actualCheckIn = LocalDateTime.now().withSecond(0).withNano(0);
     @Min(1)
@@ -23,4 +27,3 @@ public class CheckInForm {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 }
-

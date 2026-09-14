@@ -38,7 +38,7 @@
                 <p class="small text-secondary mt-3 mb-0">This total uses the server-side price snapshot stored with the reservation.</p>
             </section>
 
-            <section sec:authorize="hasAnyRole('STAFF','ADMIN')" class="card sl-form-card mt-4">
+            <section sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" class="card sl-form-card mt-4">
                 <h2 class="h5 section-title">Customer contact</h2>
                 <p class="mb-1"><strong th:text="${reservation.customer.fullName}"></strong></p>
                 <p class="text-secondary mb-0"><span th:text="${reservation.customer.user.email}"></span><span th:if="${reservation.customer.phone}" th:text="${' · ' + reservation.customer.phone}"></span></p>
@@ -53,7 +53,7 @@
                 <span class="sl-eyebrow">Available actions</span>
                 <h2 class="h4 section-title">Manage reservation</h2>
                 <div sec:authorize="hasRole('CUSTOMER')" class="d-grid gap-2">
-                    <a th:if="${reservation.status.name() == 'PENDING'}" class="btn btn-outline-success" th:href="@{/customer/reservations/{id}/edit(id=${reservation.id})}">Edit Pending Reservation</a>
+                    <a th:if="${(reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED') and reservation.checkInDate.isAfter(T(java.time.LocalDate).now())}" class="btn btn-outline-success" th:href="@{/customer/reservations/{id}/edit(id=${reservation.id})}">Edit Reservation</a>
                     <form th:if="${reservation.status.name() == 'PENDING' or reservation.status.name() == 'CONFIRMED'}" th:action="@{/customer/reservations/{id}/cancel(id=${reservation.id})}" method="post">
                         <label class="form-label required" for="cancellationReason">Cancellation reason</label>
                         <textarea class="form-control mb-2" id="cancellationReason" name="reason" required maxlength="500" rows="3"></textarea>
@@ -61,17 +61,17 @@
                     </form>
                     <a class="btn btn-outline-secondary" th:href="@{/customer/reservations}">Back to Reservations</a>
                 </div>
-                <div sec:authorize="hasAnyRole('STAFF','ADMIN')" class="d-grid gap-2">
+                <div sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" class="d-grid gap-2">
                     <form th:if="${reservation.status.name() == 'PENDING'}" th:action="@{/staff/reservations/{id}/confirm(id=${reservation.id})}" method="post"><button class="btn btn-success w-100" type="submit">Confirm Reservation</button></form>
                     <form th:if="${reservation.status.name() == 'PENDING'}" th:action="@{/staff/reservations/{id}/reject(id=${reservation.id})}" method="post"><label class="form-label required" for="rejectionReason">Rejection reason</label><textarea class="form-control mb-2" id="rejectionReason" name="reason" maxlength="500" required rows="3"></textarea><button class="btn btn-outline-danger w-100" type="submit">Reject Reservation</button></form>
-                    <a th:if="${reservation.status.name() == 'CONFIRMED'}" class="btn btn-gold" th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">Check Guest In</a>
-                    <form th:if="${reservation.status.name() == 'CONFIRMED'}" th:action="@{/staff/reservations/{id}/no-show(id=${reservation.id})}" method="post"><label class="form-label" for="noShowReason">No-show note</label><input class="form-control mb-2" id="noShowReason" name="reason" placeholder="Optional"><button class="btn btn-outline-danger w-100" type="submit" data-confirm="Mark this reservation as a no-show?">Mark No-show</button></form>
+                    <a th:if="${reservation.status.name() == 'CONFIRMED'}" sec:authorize="hasAnyRole('STAY_MANAGER','ADMIN')" class="btn btn-gold" th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">Check Guest In</a>
+                    <form th:if="${reservation.status.name() == 'CONFIRMED' and noShowEnabled == true}" th:action="@{/staff/reservations/{id}/no-show(id=${reservation.id})}" method="post"><label class="form-label" for="noShowReason">No-show note</label><input class="form-control mb-2" id="noShowReason" name="reason" placeholder="Optional"><button class="btn btn-outline-danger w-100" type="submit" data-confirm="Mark this reservation as a no-show?">Mark No-show</button></form>
                     <a class="btn btn-outline-secondary" th:href="@{/staff/reservations}">Back to Reservation Queue</a>
                 </div>
             </div>
         </aside>
     </div>
-</main>
+<section class="mt-4" sec:authorize="hasAnyRole('RESERVATION_MANAGER','ADMIN')" th:if="${reservation.status.name()=='PENDING' or reservation.status.name()=='CONFIRMED'}"><a class="btn btn-outline-success" th:href="@{/staff/reservations/{id}/edit(id=${reservation.id})}">Amend reservation</a><form th:action="@{/staff/reservations/{id}/cancel(id=${reservation.id})}" method="post" class="mt-3"><label for="staff-cancel" class="form-label">Cancellation reason</label><input id="staff-cancel" name="reason" required maxlength="500" class="form-control"><button class="btn btn-outline-danger mt-2" data-confirm="Cancel this reservation?">Cancel reservation</button></form></section><a sec:authorize="hasRole('STAY_MANAGER')" th:if="${reservation.status.name()=='CONFIRMED'}" class="btn btn-gold mt-3" th:href="@{/staff/check-ins/{id}(id=${reservation.id})}">Check guest in</a></main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
 </html>

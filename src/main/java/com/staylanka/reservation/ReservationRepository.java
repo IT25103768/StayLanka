@@ -50,7 +50,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
               and r.status not in (
                 com.staylanka.reservation.ReservationStatus.CANCELLED,
                 com.staylanka.reservation.ReservationStatus.REJECTED,
-                com.staylanka.reservation.ReservationStatus.NO_SHOW)
+                com.staylanka.reservation.ReservationStatus.NO_SHOW,
+                com.staylanka.reservation.ReservationStatus.CHECKED_OUT)
               and r.checkInDate < :checkOut
               and r.checkOutDate > :checkIn
             """)

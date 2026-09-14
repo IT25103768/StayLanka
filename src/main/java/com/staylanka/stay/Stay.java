@@ -51,6 +51,15 @@ public class Stay extends BaseEntity {
     @Column(name = "lock_version", nullable = false)
     private long lockVersion;
 
+    @Column(nullable = false) private boolean voided;
+    @Column(name = "identity_verified", nullable = false) private boolean identityVerified;
+    public boolean isVoided() { return voided; }
+    public boolean isIdentityVerified() { return identityVerified; }
+    public void verifyIdentity() { identityVerified = true; }
+    public void moveTo(Room room) { this.room = room; }
+    public void extendCharge(BigDecimal amount) { roomCharge = roomCharge.add(amount); }
+    public void voidRecord() { voided = true; }
+
     protected Stay() {
     }
 
@@ -83,6 +92,5 @@ public class Stay extends BaseEntity {
     public BigDecimal getRoomCharge() { return roomCharge; }
     public BigDecimal getAdditionalChargeTotal() { return additionalChargeTotal; }
     public BigDecimal getFinalTotal() { return finalTotal; }
-    public boolean isCompleted() { return actualCheckOut != null; }
+    public boolean isCompleted() { return actualCheckOut != null && !voided; }
 }
-

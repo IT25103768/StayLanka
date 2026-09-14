@@ -23,8 +23,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser account = userRepository.findByEmailIgnoreCase(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
-        return new User(account.getEmail(), account.getPasswordHash(), account.isActive(), true, true, true,
-                List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name())));
+        return new AccountPrincipal(account);
     }
 }
-
