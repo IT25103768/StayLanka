@@ -31,6 +31,23 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        :root{--sl-brand-ink:#0b2239;--sl-brand-teal:#0f766e;--sl-brand-teal-deep:#0b5a54;--sl-brand-gold:#d7a63f;--sl-motion:520ms cubic-bezier(.16,1,.3,1);--sl-motion-fast:220ms cubic-bezier(.2,.75,.25,1)}
+        html[data-theme="light"]{--sl-accent:var(--sl-brand-teal);--sl-accent-hover:var(--sl-brand-teal-deep);--sl-accent-2:#167d91;--sl-accent-3:var(--sl-brand-gold);--sl-green:var(--sl-brand-teal);--sl-green-dark:var(--sl-brand-teal-deep);--sl-green-soft:#edf7f4;--sl-gold:var(--sl-brand-gold);--sl-gold-dark:#b47d1f;--sl-gold-light:#f6e8bf;--sl-heading:var(--sl-brand-ink);--sl-nav-text-strong:var(--sl-brand-ink);--sl-border-strong:rgba(15,118,110,.24)}
+        html[data-theme="dark"]{--sl-accent:#5fd1c3;--sl-accent-hover:#87e5da;--sl-accent-2:#75c7dd;--sl-accent-3:#f0c86d;--sl-green:#5fd1c3;--sl-green-dark:#87e5da;--sl-green-soft:rgba(95,209,195,.11);--sl-gold:#f0c86d;--sl-gold-dark:#f7d98d;--sl-gold-light:#fae6b5;--sl-heading:#f5fbfa;--sl-border-strong:rgba(95,209,195,.24)}
+        .sl-brand{gap:.72rem}.sl-brand-logo{width:2.65rem;height:2.65rem;flex:0 0 auto;filter:drop-shadow(0 .45rem .8rem rgba(11,34,57,.15));transition:transform var(--sl-motion-fast),filter var(--sl-motion-fast)}.sl-brand:hover .sl-brand-logo{transform:rotate(-4deg) scale(1.055);filter:drop-shadow(0 .6rem 1rem rgba(15,118,110,.22))}.sl-brand-copy{display:grid;line-height:1.02;gap:.2rem}.sl-brand-copy strong{font-size:1.16rem;letter-spacing:-.03em}.sl-brand-copy small{color:var(--sl-muted);font-size:.61rem;font-weight:760;text-transform:uppercase;letter-spacing:.14em}.footer .sl-brand-copy small{color:#9eb7b2}
+        .sl-nav-user{align-items:center;gap:.35rem;max-width:180px;padding:.45rem .65rem;border:1px solid var(--sl-border);border-radius:999px;color:var(--sl-muted);font-size:.76rem;overflow:hidden}.sl-nav-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .navbar-staylanka{min-height:78px;border-bottom-color:rgba(15,118,110,.1)}.navbar-staylanka .nav-link{position:relative;transition:color var(--sl-motion-fast),background var(--sl-motion-fast),transform var(--sl-motion-fast)}.navbar-staylanka .nav-link:after{content:"";position:absolute;left:.8rem;right:.8rem;bottom:.35rem;height:2px;border-radius:999px;background:linear-gradient(90deg,var(--sl-accent),var(--sl-gold));transform:scaleX(0);transition:transform var(--sl-motion-fast)}.navbar-staylanka .nav-link:hover:after,.navbar-staylanka .nav-link.is-active:after{transform:scaleX(1)}.navbar-staylanka .nav-link.is-active{color:var(--sl-nav-text-strong);background:var(--sl-accent-soft)}
+        .btn{position:relative;overflow:hidden}.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(0) scale(.985)}.btn-gold{color:#102016;background:linear-gradient(135deg,#f4d37f,var(--sl-brand-gold));border-color:transparent;box-shadow:0 .65rem 1.6rem rgba(180,125,31,.2)}.btn-gold:hover,.btn-gold:focus{color:#0f1c15;background:linear-gradient(135deg,#f8df9d,#dda944);box-shadow:0 .85rem 2rem rgba(180,125,31,.28)}html[data-theme="dark"] .btn-gold,html[data-theme="dark"] .btn-gold:hover{color:#0d1c18}
+        .sl-hero{background:radial-gradient(circle at 80% 20%,rgba(240,200,109,.2),transparent 20rem),radial-gradient(circle at 72% 70%,rgba(95,209,195,.13),transparent 24rem),linear-gradient(112deg,rgba(6,31,46,.98) 0%,rgba(8,73,67,.95) 52%,rgba(12,91,73,.9) 100%),url('/images/hero-pattern.svg') center/cover no-repeat}.sl-hero h1{text-shadow:0 1rem 3rem rgba(0,0,0,.18)}
+        .card,.sl-feature-card,.sl-amenity,.sl-action-card{transition:transform var(--sl-motion-fast),box-shadow var(--sl-motion-fast),border-color var(--sl-motion-fast),background-color var(--sl-transition)}.sl-feature-card:hover,.sl-amenity:hover,.sl-action-card:hover{transform:translateY(-5px);box-shadow:var(--sl-shadow-hover)}.sl-room-card:hover{transform:translateY(-7px)}.sl-room-card:hover .sl-room-media img{transform:scale(1.055)}
+        .form-control,.form-select{transition:border-color var(--sl-motion-fast),box-shadow var(--sl-motion-fast),transform var(--sl-motion-fast),background-color var(--sl-transition)}.form-control:focus,.form-select:focus{transform:translateY(-1px);border-color:var(--sl-accent);box-shadow:0 0 0 .23rem color-mix(in srgb,var(--sl-accent) 13%,transparent),0 .7rem 1.5rem color-mix(in srgb,var(--sl-accent) 7%,transparent)}
+        .table tbody tr{transition:background-color var(--sl-motion-fast)}.table tbody tr:hover{background:var(--sl-accent-soft)}
+        .sl-js body{opacity:0}.sl-js body.sl-page-ready{opacity:1;transition:opacity 380ms ease}.sl-reveal{opacity:0;transform:translateY(24px) scale(.985);transition:opacity var(--sl-motion),transform var(--sl-motion);transition-delay:var(--sl-reveal-delay,0ms)}.sl-reveal.is-visible{opacity:1;transform:translateY(0) scale(1)}.sl-alert{animation:slAlertIn 460ms cubic-bezier(.16,1,.3,1) both}@keyframes slAlertIn{from{opacity:0;transform:translateY(-12px) scale(.98)}to{opacity:1;transform:none}}
+        @media(max-width:991.98px){.sl-brand-copy small{display:none}.sl-nav-actions{flex-wrap:wrap}.sl-nav-actions>.btn,.sl-nav-actions>form{flex:1 1 auto}}
+        @media(max-width:575.98px){.sl-brand-logo{width:2.35rem;height:2.35rem}}
+        @media(prefers-reduced-motion:reduce){.sl-reveal{opacity:1!important;transform:none!important}.sl-js body{opacity:1!important}}
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-staylanka sticky-top" th:fragment="navbar" data-navbar>
@@ -39,124 +56,61 @@
             <img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="42" height="42">
             <span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav ms-lg-4 me-auto align-items-lg-center">
                 <li class="nav-item"><a class="nav-link" th:href="@{/rooms}" data-nav-link>Rooms</a></li>
                 <li class="nav-item"><a class="nav-link" th:href="@{/promotions}" data-nav-link>Promotions</a></li>
                 <li class="nav-item"><a class="nav-link" th:href="@{/reviews}" data-nav-link>Reviews</a></li>
-                <li class="nav-item" sec:authorize="hasRole('CUSTOMER')">
-                    <a class="nav-link" th:href="@{/customer/reservations}" data-nav-link>My Reservations</a>
-                </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')">
-                    <a class="nav-link" th:href="@{/staff/reservations}" data-nav-link>Reservations</a>
-                </li>
-                <li class="nav-item" sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')">
-                    <a class="nav-link" th:href="@{/staff/requests}" data-nav-link>Guest Requests</a>
-                </li>
+                <li class="nav-item" sec:authorize="hasRole('CUSTOMER')"><a class="nav-link" th:href="@{/customer/reservations}" data-nav-link>My Reservations</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')"><a class="nav-link" th:href="@{/staff/reservations}" data-nav-link>Reservations</a></li>
+                <li class="nav-item" sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')"><a class="nav-link" th:href="@{/staff/requests}" data-nav-link>Guest Requests</a></li>
             </ul>
             <div class="sl-nav-actions">
-                <button class="sl-theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme" aria-pressed="false" title="Switch color theme">
-                    <span class="sl-theme-toggle-track" aria-hidden="true">
-                        <span class="sl-theme-toggle-icon sl-theme-toggle-sun"><i class="bi bi-sun-fill"></i></span>
-                        <span class="sl-theme-toggle-thumb"></span>
-                        <span class="sl-theme-toggle-icon sl-theme-toggle-moon"><i class="bi bi-moon-stars-fill"></i></span>
-                    </span>
-                    <span class="visually-hidden" data-theme-label>Switch to dark mode</span>
-                </button>
+                <button class="sl-theme-toggle" type="button" data-theme-toggle aria-label="Switch color theme" aria-pressed="false" title="Switch color theme"><span class="sl-theme-toggle-track" aria-hidden="true"><span class="sl-theme-toggle-icon sl-theme-toggle-sun"><i class="bi bi-sun-fill"></i></span><span class="sl-theme-toggle-thumb"></span><span class="sl-theme-toggle-icon sl-theme-toggle-moon"><i class="bi bi-moon-stars-fill"></i></span></span><span class="visually-hidden" data-theme-label>Switch to dark mode</span></button>
                 <a sec:authorize="isAnonymous()" class="btn btn-link sl-nav-signin" th:href="@{/login}">Sign In</a>
                 <a sec:authorize="isAnonymous()" class="btn btn-outline-light" th:href="@{/register}">Create Account</a>
                 <a sec:authorize="isAnonymous()" class="btn btn-gold" th:href="@{/rooms}">Check Availability</a>
-
-                <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-outline-light" th:href="@{/customer/dashboard}">
-                    <i class="bi bi-grid me-1" aria-hidden="true"></i>Dashboard
-                </a>
-                <a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')"
-                   class="btn btn-outline-light" th:href="@{/dashboard}">
-                    <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Operations
-                </a>
-                <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-gold" th:href="@{/customer/profile}">
-                    <i class="bi bi-person me-1" aria-hidden="true"></i>Profile
-                </a>
-                <span sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')"
-                      class="sl-nav-user d-none d-xl-inline-flex" title="Signed-in account">
-                    <i class="bi bi-person-check" aria-hidden="true"></i><span sec:authentication="name"></span>
-                </span>
-                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
-                    <button class="btn btn-link sl-nav-signin" type="submit">Sign Out</button>
-                </form>
+                <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-outline-light" th:href="@{/customer/dashboard}"><i class="bi bi-grid me-1" aria-hidden="true"></i>Dashboard</a>
+                <a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')" class="btn btn-outline-light" th:href="@{/dashboard}"><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>Operations</a>
+                <a sec:authorize="hasRole('CUSTOMER')" class="btn btn-gold" th:href="@{/customer/profile}"><i class="bi bi-person me-1" aria-hidden="true"></i>Profile</a>
+                <span sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')" class="sl-nav-user d-none d-xl-inline-flex" title="Signed-in account"><i class="bi bi-person-check" aria-hidden="true"></i><span sec:authentication="name"></span></span>
+                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0"><button class="btn btn-link sl-nav-signin" type="submit">Sign Out</button></form>
             </div>
         </div>
     </div>
 </nav>
 
 <div th:fragment="alerts" class="container sl-alerts" aria-live="polite">
-    <div th:if="${success}" class="alert alert-success alert-dismissible fade show sl-alert" role="status" data-auto-dismiss="5500">
-        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-        <span th:text="${success}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show sl-alert" role="alert">
-        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
-        <span th:text="${error}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show sl-alert" role="status" data-auto-dismiss="5500"><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span th:text="${success}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show sl-alert" role="alert"><i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i><span th:text="${error}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
 </div>
 
 <footer class="footer" th:fragment="footer">
     <div class="container py-5">
         <div class="row g-5">
-            <div class="col-lg-5 col-xl-4">
-                <a class="sl-brand sl-footer-brand" th:href="@{/}">
-                    <img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="44" height="44">
-                    <span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span>
-                </a>
-                <p class="sl-footer-copy mt-3 mb-0">Thoughtful stays, warm Sri Lankan hospitality, and a simpler way to reserve your room.</p>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2 offset-xl-1">
-                <h2 class="sl-footer-heading">Explore</h2>
-                <nav class="sl-footer-links" aria-label="Explore">
-                    <a th:href="@{/rooms}">Rooms</a>
-                    <a th:href="@{/promotions}">Promotions</a>
-                    <a th:href="@{/reviews}">Guest Reviews</a>
-                </nav>
-            </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <h2 class="sl-footer-heading">Guest Services</h2>
-                <nav class="sl-footer-links" aria-label="Guest services" sec:authorize="isAnonymous()">
-                    <a th:href="@{/login}">Sign In</a>
-                    <a th:href="@{/register}">Create Account</a>
-                    <a th:href="@{/rooms}">Check Availability</a>
-                </nav>
-                <nav class="sl-footer-links" aria-label="Customer services" sec:authorize="hasRole('CUSTOMER')">
-                    <a th:href="@{/customer/reservations}">My Reservations</a>
-                    <a th:href="@{/customer/stays}">My Stays</a>
-                    <a th:href="@{/customer/requests}">Guest Requests</a>
-                    <a th:href="@{/customer/reviews}">My Reviews</a>
-                </nav>
-                <nav class="sl-footer-links" aria-label="Operations"
-                     sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')">
-                    <a th:href="@{/dashboard}">Operations Dashboard</a>
-                    <a sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/reservations}">Reservations</a>
-                    <a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','STAY_MANAGER','ADMIN')" th:href="@{/staff/rooms}">Rooms</a>
-                    <a sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/requests}">Guest Requests</a>
-                </nav>
-            </div>
-            <div class="col-md-4 col-lg-2">
-                <h2 class="sl-footer-heading">StayLanka</h2>
-                <p class="sl-footer-small mb-0">Thoughtful stays across Sri Lanka.</p>
-            </div>
+            <div class="col-lg-5 col-xl-4"><a class="sl-brand sl-footer-brand" th:href="@{/}"><img class="sl-brand-logo" th:src="@{/images/staylanka-logo.svg}" alt="" width="44" height="44"><span class="sl-brand-copy"><strong>StayLanka</strong><small>Island hospitality</small></span></a><p class="sl-footer-copy mt-3 mb-0">Thoughtful stays, warm Sri Lankan hospitality, and a simpler way to reserve your room.</p></div>
+            <div class="col-6 col-md-4 col-lg-2 offset-xl-1"><h2 class="sl-footer-heading">Explore</h2><nav class="sl-footer-links" aria-label="Explore"><a th:href="@{/rooms}">Rooms</a><a th:href="@{/promotions}">Promotions</a><a th:href="@{/reviews}">Guest Reviews</a></nav></div>
+            <div class="col-6 col-md-4 col-lg-3"><h2 class="sl-footer-heading">Guest Services</h2><nav class="sl-footer-links" aria-label="Guest services" sec:authorize="isAnonymous()"><a th:href="@{/login}">Sign In</a><a th:href="@{/register}">Create Account</a><a th:href="@{/rooms}">Check Availability</a></nav><nav class="sl-footer-links" aria-label="Customer services" sec:authorize="hasRole('CUSTOMER')"><a th:href="@{/customer/reservations}">My Reservations</a><a th:href="@{/customer/stays}">My Stays</a><a th:href="@{/customer/requests}">Guest Requests</a><a th:href="@{/customer/reviews}">My Reviews</a></nav><nav class="sl-footer-links" aria-label="Operations" sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','PROFILE_MANAGER','STAY_MANAGER','PROMOTION_REVIEW_MANAGER','INQUIRY_REQUEST_MANAGER','STAFF','ADMIN')"><a th:href="@{/dashboard}">Operations Dashboard</a><a sec:authorize="hasAnyRole('RESERVATION_MANAGER','STAY_MANAGER','INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/reservations}">Reservations</a><a sec:authorize="hasAnyRole('ROOM_MANAGER','RESERVATION_MANAGER','STAY_MANAGER','ADMIN')" th:href="@{/staff/rooms}">Rooms</a><a sec:authorize="hasAnyRole('INQUIRY_REQUEST_MANAGER','ADMIN')" th:href="@{/staff/requests}">Guest Requests</a></nav></div>
+            <div class="col-md-4 col-lg-2"><h2 class="sl-footer-heading">StayLanka</h2><p class="sl-footer-small mb-0">Thoughtful stays across Sri Lanka.</p></div>
         </div>
-        <div class="sl-footer-bottom">
-            <span>© 2026 StayLanka. All rights reserved.</span>
-            <span>Direct reservations in Sri Lankan Rupees.</span>
-        </div>
+        <div class="sl-footer-bottom"><span>© 2026 StayLanka. All rights reserved.</span><span>Direct reservations in Sri Lankan Rupees.</span></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/app.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){
+            document.body.classList.add('sl-page-ready');
+            var path=window.location.pathname;
+            document.querySelectorAll('[data-nav-link]').forEach(function(link){var href=link.getAttribute('href');if(href&&href!=='/'&&(path===href||path.startsWith(href+'/')))link.classList.add('is-active')});
+            var targets=document.querySelectorAll('.sl-section-heading,.card,.sl-feature-card,.sl-amenity,.sl-page-header,.page-header,.table-responsive,.sl-auth-card');
+            if('IntersectionObserver' in window&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+                var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}})},{threshold:.08,rootMargin:'0px 0px -24px 0px'});
+                targets.forEach(function(el,index){el.classList.add('sl-reveal');el.style.setProperty('--sl-reveal-delay',Math.min((index%4)*55,165)+'ms');observer.observe(el)});
+            }else{targets.forEach(function(el){el.classList.add('is-visible')})}
+            document.querySelectorAll('[data-auto-dismiss]').forEach(function(alert){var delay=parseInt(alert.dataset.autoDismiss||'5500',10);window.setTimeout(function(){if(window.bootstrap)bootstrap.Alert.getOrCreateInstance(alert).close()},delay)});
+        });
+    </script>
 </footer>
 </body>
 </html>
