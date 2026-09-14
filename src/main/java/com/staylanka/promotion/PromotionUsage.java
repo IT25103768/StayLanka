@@ -11,10 +11,14 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Objects;
 
 @Entity
 @Table(name = "promotion_usages")
 public class PromotionUsage extends BaseEntity {
+
+    private static final int MONEY_SCALE = 2;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "promotion_id", nullable = false)
@@ -35,7 +39,7 @@ public class PromotionUsage extends BaseEntity {
             name = "discount_amount",
             nullable = false,
             precision = 12,
-            scale = 2
+            scale = MONEY_SCALE
     )
     private BigDecimal discountAmount;
 
@@ -45,6 +49,9 @@ public class PromotionUsage extends BaseEntity {
     protected PromotionUsage() {
     }
 
+    /**
+     * Creates a promotion usage for a reservation.
+     */
     public PromotionUsage(
             Promotion promotion,
             Reservation reservation,
@@ -56,14 +63,14 @@ public class PromotionUsage extends BaseEntity {
 
         this.promotion = promotion;
         this.reservation = reservation;
-        this.discountAmount = discountAmount;
+        this.discountAmount = normalizeAmount(discountAmount);
     }
 
     /**
      * Updates the promotion and discount amount.
      *
-     * The reservation is intentionally not changed because
-     * a promotion usage belongs to a specific reservation.
+     * The reservation is intentionally immutable because
+     * this usage belongs to a specific reservation.
      */
     public void update(
             Promotion promotion,
@@ -73,7 +80,16 @@ public class PromotionUsage extends BaseEntity {
         validateDiscountAmount(discountAmount);
 
         this.promotion = promotion;
-        this.discountAmount = discountAmount;
+        this.discountAmount = normalizeAmount(discountAmount);
+    }
+
+    /**
+     * Changes only the discount amount.
+     */
+    public void updateDiscountAmount(BigDecimal discountAmount) {
+        validateDiscountAmount(discountAmount);
+
+        this.discountAmount = normalizeAmount(discountAmount);
     }
 
     private void validatePromotion(Promotion promotion) {
@@ -104,6 +120,18 @@ public class PromotionUsage extends BaseEntity {
                     "Discount amount cannot be negative."
             );
         }
+
+        if (discountAmount.scale() > MONEY_SCALE
+                && discountAmount.stripTrailingZeros()
+                .scale() > MONEY_SCALE) {
+            throw new IllegalArgumentException(
+                    "Discount amount cannot have more than 2 decimal places."
+            );
+        }
+    }
+
+    private BigDecimal normalizeAmount(BigDecimal amount) {
+        return amount.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
     public Promotion getPromotion() {
