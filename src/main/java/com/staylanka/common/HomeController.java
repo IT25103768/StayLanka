@@ -37,14 +37,22 @@ public class HomeController {
 
     @GetMapping("/dashboard")
     public String dashboard(Authentication authentication) {
-        boolean admin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_" + Role.ADMIN));
-        boolean staff = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_" + Role.STAFF));
-        if (admin) {
+        if (hasRole(authentication, Role.ADMIN)) {
             return "redirect:/admin/dashboard";
         }
-        if (staff) {
+        for (Role role : Role.values()) {
+            if (role.isModuleManager() && hasRole(authentication, role)) {
+                return "redirect:/staff/dashboard";
+            }
+        }
+        if (hasRole(authentication, Role.STAFF)) {
             return "redirect:/staff/dashboard";
         }
         return "redirect:/customer/dashboard";
+    }
+
+    private boolean hasRole(Authentication authentication, Role role) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role.name()));
     }
 }

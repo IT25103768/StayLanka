@@ -18,7 +18,7 @@ public class AppUser extends BaseEntity {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 40)
     private Role role;
 
     @Column(nullable = false)
@@ -61,4 +61,3 @@ public class AppUser extends BaseEntity {
         this.active = active;
     }
 }
-
