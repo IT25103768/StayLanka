@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "room_types")
 public class RoomType extends BaseEntity {
+
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
@@ -34,13 +35,32 @@ public class RoomType extends BaseEntity {
     protected RoomType() {
     }
 
-    public RoomType(String name, String description, int capacity, String bedInformation,
-                    BigDecimal basePrice, String amenities) {
-        update(name, description, capacity, bedInformation, basePrice, amenities);
+    public RoomType(
+            String name,
+            String description,
+            int capacity,
+            String bedInformation,
+            BigDecimal basePrice,
+            String amenities
+    ) {
+        update(
+                name,
+                description,
+                capacity,
+                bedInformation,
+                basePrice,
+                amenities
+        );
     }
 
-    public void update(String name, String description, int capacity, String bedInformation,
-                       BigDecimal basePrice, String amenities) {
+    public void update(
+            String name,
+            String description,
+            int capacity,
+            String bedInformation,
+            BigDecimal basePrice,
+            String amenities
+    ) {
         this.name = name;
         this.description = description;
         this.capacity = capacity;
@@ -49,13 +69,35 @@ public class RoomType extends BaseEntity {
         this.amenities = amenities;
     }
 
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public int getCapacity() { return capacity; }
-    public String getBedInformation() { return bedInformation; }
-    public BigDecimal getBasePrice() { return basePrice; }
-    public String getAmenities() { return amenities; }
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
-}
+    public String getName() {
+        return name;
+    }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getBedInformation() {
+        return bedInformation;
+    }
+
+    public BigDecimal getBasePrice() {
+        return basePrice;
+    }
+
+    public String getAmenities() {
+        return amenities;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+}
