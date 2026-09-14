@@ -1,1 +1,32 @@
-<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments/layout :: head('Create staff')}"></head><body><nav th:replace="~{fragments/layout :: navbar}"></nav><main class="container py-5"><div class="row justify-content-center"><div class="col-lg-7"><div class="card p-4"><h1 class="h3 section-title">Create staff account</h1><p class="text-secondary">The temporary password should be shared through a secure channel.</p><form th:action="@{/admin/staff}" th:object="${staffForm}" method="post"><div class="row g-3"><div class="col-md-6"><label class="form-label required">First name</label><input class="form-control" th:field="*{firstName}"><div class="text-danger small" th:errors="*{firstName}"></div></div><div class="col-md-6"><label class="form-label required">Last name</label><input class="form-control" th:field="*{lastName}"><div class="text-danger small" th:errors="*{lastName}"></div></div><div class="col-12"><label class="form-label required">Job title</label><input class="form-control" th:field="*{jobTitle}"><div class="text-danger small" th:errors="*{jobTitle}"></div></div><div class="col-12"><label class="form-label required">Email</label><input class="form-control" type="email" th:field="*{email}"><div class="text-danger small" th:errors="*{email}"></div></div><div class="col-12"><label class="form-label required">Temporary password</label><input class="form-control" type="password" th:field="*{password}" autocomplete="new-password"><div class="text-danger small" th:errors="*{password}"></div></div></div><div class="mt-4 d-flex gap-2"><button class="btn btn-gold">Create account</button><a class="btn btn-outline-secondary" th:href="@{/admin/staff}">Cancel</a></div></form></div></div></div></main><footer th:replace="~{fragments/layout :: footer}"></footer></body></html>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create staff')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 p-lg-5">
+                <span class="sl-eyebrow">Administration</span>
+                <h1 class="h3 section-title">Create operational staff account</h1>
+                <p class="text-secondary">Choose the module role deliberately. The temporary password should be shared through a secure channel.</p>
+                <form th:action="@{/admin/staff}" th:object="${staffForm}" method="post" data-submit-feedback>
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert"><div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div></div>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label required">First name</label><input class="form-control" th:field="*{firstName}" autocomplete="given-name"><div class="text-danger small mt-1" th:errors="*{firstName}"></div></div>
+                        <div class="col-md-6"><label class="form-label required">Last name</label><input class="form-control" th:field="*{lastName}" autocomplete="family-name"><div class="text-danger small mt-1" th:errors="*{lastName}"></div></div>
+                        <div class="col-md-7"><label class="form-label required">Job title</label><input class="form-control" th:field="*{jobTitle}" placeholder="e.g. Reservation Manager"><div class="text-danger small mt-1" th:errors="*{jobTitle}"></div></div>
+                        <div class="col-md-5"><label class="form-label required" for="role">Module role</label><select class="form-select" id="role" name="role" required><option th:each="r : ${roles}" th:value="${r}" th:selected="${r == selectedRole}" th:text="${#strings.replace(r.name(), '_', ' ')}"></option></select></div>
+                        <div class="col-12"><label class="form-label required">Email / login ID</label><input class="form-control" type="text" th:field="*{email}" autocomplete="username"><div class="text-danger small mt-1" th:errors="*{email}"></div></div>
+                        <div class="col-12"><label class="form-label required">Temporary password</label><div class="sl-input-group"><input class="form-control pe-5" id="staffPassword" type="password" th:field="*{password}" autocomplete="new-password"><button class="sl-password-toggle" type="button" data-password-toggle="staffPassword" aria-label="Show password"><i class="bi bi-eye"></i></button></div><div class="form-text">Minimum 8 characters with at least one letter and number.</div><div class="text-danger small mt-1" th:errors="*{password}"></div></div>
+                    </div>
+                    <div class="mt-4 d-flex flex-wrap gap-2"><button class="btn btn-gold" type="submit"><span class="spinner-border spinner-border-sm sl-spinner" aria-hidden="true"></span><span>Create account</span></button><a class="btn btn-outline-secondary" th:href="@{/admin/staff}">Cancel</a></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

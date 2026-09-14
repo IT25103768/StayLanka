@@ -13,6 +13,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     boolean existsByEmailIgnoreCase(String email);
 
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+
     Page<AppUser> findByRoleAndEmailContainingIgnoreCase(Role role, String email, Pageable pageable);
 
     Page<AppUser> findByRoleInAndEmailContainingIgnoreCase(Collection<Role> roles, String email, Pageable pageable);
