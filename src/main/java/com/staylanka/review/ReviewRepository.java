@@ -10,19 +10,74 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
+
+    /**
+     * Checks whether a review already exists for a stay.
+     */
     boolean existsByStayId(Long stayId);
+
+    /**
+     * Finds the review associated with a specific stay.
+     */
     Optional<Review> findByStayId(Long stayId);
 
-    @EntityGraph(attributePaths = {"customer", "stay", "stay.room", "stay.room.roomType"})
-    Page<Review> findByStatus(ReviewStatus status, Pageable pageable);
+    /**
+     * Finds reviews by moderation status.
+     *
+     * Fetches the customer and stay information required
+     * for displaying review information.
+     */
+    @EntityGraph(attributePaths = {
+            "customer",
+            "customer.user",
+            "stay",
+            "stay.room",
+            "stay.room.roomType"
+    })
+    Page<Review> findByStatus(
+            ReviewStatus status,
+            Pageable pageable
+    );
 
-    @EntityGraph(attributePaths = {"customer", "customer.user", "stay", "stay.room", "stay.room.roomType"})
-    @Query("select r from Review r where r.id = :id")
-    Optional<Review> findDetailedById(@Param("id") Long id);
+    /**
+     * Finds a review with all required related entities.
+     *
+     * Used when viewing, updating, deleting or moderating
+     * a specific review.
+     */
+    @EntityGraph(attributePaths = {
+            "customer",
+            "customer.user",
+            "stay",
+            "stay.room",
+            "stay.room.roomType"
+    })
+    @Query("""
+            SELECT r
+            FROM Review r
+            WHERE r.id = :id
+            """)
+    Optional<Review> findDetailedById(
+            @Param("id") Long id
+    );
 
-    @EntityGraph(attributePaths = {"stay", "stay.room", "stay.room.roomType"})
-    Page<Review> findByCustomerUserEmailIgnoreCase(String email, Pageable pageable);
+    /**
+     * Finds reviews belonging to a specific customer.
+     */
+    @EntityGraph(attributePaths = {
+            "customer",
+            "customer.user",
+            "stay",
+            "stay.room",
+            "stay.room.roomType"
+    })
+    Page<Review> findByCustomerUserEmailIgnoreCase(
+            String email,
+            Pageable pageable
+    );
 
+    /**
+     * Counts reviews waiting for moderation.
+     */
     long countByStatus(ReviewStatus status);
 }
-
