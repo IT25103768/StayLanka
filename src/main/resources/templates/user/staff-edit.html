@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit staff')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 p-lg-5">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-4"><div><span class="sl-eyebrow">Administration</span><h1 class="h3 section-title mb-2">Edit staff account</h1><p class="text-secondary mb-0">Update identity, job title, or module ownership without changing the password.</p></div><span class="badge" th:classappend="${staffUser.active} ? 'text-bg-success' : 'text-bg-secondary'" th:text="${staffUser.active ? 'Active' : 'Inactive'}"></span></div>
+                <form th:action="@{/admin/staff/{id}(id=${staffUser.id})}" method="post" data-submit-feedback>
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label required" for="firstName">First name</label><input class="form-control" id="firstName" name="firstName" th:value="${staffProfile.firstName}" maxlength="80" required></div>
+                        <div class="col-md-6"><label class="form-label required" for="lastName">Last name</label><input class="form-control" id="lastName" name="lastName" th:value="${staffProfile.lastName}" maxlength="80" required></div>
+                        <div class="col-md-7"><label class="form-label required" for="jobTitle">Job title</label><input class="form-control" id="jobTitle" name="jobTitle" th:value="${staffProfile.jobTitle}" maxlength="100" required></div>
+                        <div class="col-md-5"><label class="form-label required" for="role">Module role</label><select class="form-select" id="role" name="role" required><option th:each="r : ${roles}" th:value="${r}" th:selected="${r == staffUser.role}" th:text="${#strings.replace(r.name(), '_', ' ')}"></option></select></div>
+                        <div class="col-12"><label class="form-label required" for="email">Email / login ID</label><input class="form-control" id="email" name="email" th:value="${staffUser.email}" maxlength="190" required></div>
+                    </div>
+                    <div class="alert alert-light mt-4 mb-0"><i class="bi bi-shield-lock me-2"></i>Password changes are intentionally separate from profile/role editing.</div>
+                    <div class="mt-4 d-flex flex-wrap gap-2"><button class="btn btn-gold" type="submit"><span class="spinner-border spinner-border-sm sl-spinner" aria-hidden="true"></span><span>Save changes</span></button><a class="btn btn-outline-secondary" th:href="@{/admin/staff}">Cancel</a></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
