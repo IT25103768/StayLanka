@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "room_images")
 public class RoomImage extends BaseEntity {
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
@@ -30,7 +31,13 @@ public class RoomImage extends BaseEntity {
     protected RoomImage() {
     }
 
-    public RoomImage(Room room, String fileName, String contentType, String storagePath, boolean primaryImage) {
+    public RoomImage(
+            Room room,
+            String fileName,
+            String contentType,
+            String storagePath,
+            boolean primaryImage
+    ) {
         this.room = room;
         this.fileName = fileName;
         this.contentType = contentType;
@@ -38,11 +45,27 @@ public class RoomImage extends BaseEntity {
         this.primaryImage = primaryImage;
     }
 
-    public Room getRoom() { return room; }
-    public String getFileName() { return fileName; }
-    public String getContentType() { return contentType; }
-    public String getStoragePath() { return storagePath; }
-    public boolean isPrimaryImage() { return primaryImage; }
-    public void setPrimaryImage(boolean primaryImage) { this.primaryImage = primaryImage; }
-}
+    public Room getRoom() {
+        return room;
+    }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public String getStoragePath() {
+        return storagePath;
+    }
+
+    public boolean isPrimaryImage() {
+        return primaryImage;
+    }
+
+    public void setPrimaryImage(boolean primaryImage) {
+        this.primaryImage = primaryImage;
+    }
+}
