@@ -69,16 +69,30 @@ public class DevDataSeeder implements ApplicationRunner {
                     passwordEncoder.encode(properties.seed().adminPassword()), Role.ADMIN));
             log.info("Development administrator account created for configured email.");
         }
-        if (hasText(properties.seed().staffPassword())
-                && !userRepository.existsByEmailIgnoreCase(properties.seed().staffEmail())) {
-            AppUser staff = userRepository.save(new AppUser(properties.seed().staffEmail(),
-                    passwordEncoder.encode(properties.seed().staffPassword()), Role.STAFF));
-            staffRepository.save(new StaffProfile(staff, "Nimali", "Perera", "Front Office Executive"));
-            log.info("Development staff account created for configured email.");
+
+        seedModuleOwner("IT25103762", "Room@2026!", Role.ROOM_MANAGER,
+                "Abeyrathna", "A.H.M.P.M.", "Room & Availability Manager");
+        seedModuleOwner("IT25103763", "Reservation@2026!", Role.RESERVATION_MANAGER,
+                "Wimukthi", "A.K.A.", "Reservation Manager");
+        seedModuleOwner("IT25103764", "Profile@2026!", Role.PROFILE_MANAGER,
+                "Silva", "Y.H.S.D.", "Customer Profile Manager");
+        seedModuleOwner("IT25103765", "Stay@2026!", Role.STAY_MANAGER,
+                "Parindya", "R.K.M.", "Check-In/Out & Stay Manager");
+        seedModuleOwner("IT25103767", "Promotion@2026!", Role.PROMOTION_REVIEW_MANAGER,
+                "Gunaseela", "Y.P.S.", "Promotion & Review Manager");
+        seedModuleOwner("IT25103768", "Request@2026!", Role.INQUIRY_REQUEST_MANAGER,
+                "Kasthuriarachchi", "K.A.M.H.N.", "Inquiry & Special Request Manager");
+    }
+
+    private void seedModuleOwner(String username, String rawPassword, Role role,
+                                 String firstName, String lastName, String jobTitle) {
+        if (userRepository.existsByEmailIgnoreCase(username)) {
+            return;
         }
-        if (!hasText(properties.seed().adminPassword()) || !hasText(properties.seed().staffPassword())) {
-            log.warn("Development seed passwords are not configured; missing seed accounts were skipped.");
-        }
+        AppUser staff = userRepository.save(new AppUser(username,
+                passwordEncoder.encode(rawPassword), role));
+        staffRepository.save(new StaffProfile(staff, firstName, lastName, jobTitle));
+        log.info("Development module-owner account created: {} ({})", username, role);
     }
 
     private void seedRooms() {
