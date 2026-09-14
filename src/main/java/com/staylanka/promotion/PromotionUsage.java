@@ -12,16 +12,19 @@ import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Objects;
 
 @Entity
 @Table(name = "promotion_usages")
 public class PromotionUsage extends BaseEntity {
 
     private static final int MONEY_SCALE = 2;
+    private static final BigDecimal ZERO = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "promotion_id", nullable = false)
+    @JoinColumn(
+            name = "promotion_id",
+            nullable = false
+    )
     private Promotion promotion;
 
     /**
@@ -57,13 +60,9 @@ public class PromotionUsage extends BaseEntity {
             Reservation reservation,
             BigDecimal discountAmount
     ) {
-        validatePromotion(promotion);
-        validateReservation(reservation);
-        validateDiscountAmount(discountAmount);
-
-        this.promotion = promotion;
-        this.reservation = reservation;
-        this.discountAmount = normalizeAmount(discountAmount);
+        this.promotion = requirePromotion(promotion);
+        this.reservation = requireReservation(reservation);
+        this.discountAmount = normalizeDiscountAmount(discountAmount);
     }
 
     /**
@@ -76,62 +75,71 @@ public class PromotionUsage extends BaseEntity {
             Promotion promotion,
             BigDecimal discountAmount
     ) {
-        validatePromotion(promotion);
-        validateDiscountAmount(discountAmount);
-
-        this.promotion = promotion;
-        this.discountAmount = normalizeAmount(discountAmount);
+        this.promotion = requirePromotion(promotion);
+        this.discountAmount = normalizeDiscountAmount(discountAmount);
     }
 
     /**
-     * Changes only the discount amount.
+     * Updates only the discount amount.
      */
     public void updateDiscountAmount(BigDecimal discountAmount) {
-        validateDiscountAmount(discountAmount);
-
-        this.discountAmount = normalizeAmount(discountAmount);
+        this.discountAmount = normalizeDiscountAmount(discountAmount);
     }
 
-    private void validatePromotion(Promotion promotion) {
+    /**
+     * Validates and returns a promotion.
+     */
+    private Promotion requirePromotion(Promotion promotion) {
         if (promotion == null) {
             throw new IllegalArgumentException(
                     "Promotion cannot be null."
             );
         }
+
+        return promotion;
     }
 
-    private void validateReservation(Reservation reservation) {
+    /**
+     * Validates and returns a reservation.
+     */
+    private Reservation requireReservation(Reservation reservation) {
         if (reservation == null) {
             throw new IllegalArgumentException(
                     "Reservation cannot be null."
             );
         }
+
+        return reservation;
     }
 
-    private void validateDiscountAmount(BigDecimal discountAmount) {
+    /**
+     * Validates and normalizes the discount amount.
+     */
+    private BigDecimal normalizeDiscountAmount(
+            BigDecimal discountAmount
+    ) {
         if (discountAmount == null) {
             throw new IllegalArgumentException(
                     "Discount amount cannot be null."
             );
         }
 
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
+        if (discountAmount.compareTo(ZERO) < 0) {
             throw new IllegalArgumentException(
                     "Discount amount cannot be negative."
             );
         }
 
-        if (discountAmount.scale() > MONEY_SCALE
-                && discountAmount.stripTrailingZeros()
-                .scale() > MONEY_SCALE) {
+        if (discountAmount.scale() > MONEY_SCALE) {
             throw new IllegalArgumentException(
                     "Discount amount cannot have more than 2 decimal places."
             );
         }
-    }
 
-    private BigDecimal normalizeAmount(BigDecimal amount) {
-        return amount.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+        return discountAmount.setScale(
+                MONEY_SCALE,
+                RoundingMode.HALF_UP
+        );
     }
 
     public Promotion getPromotion() {
