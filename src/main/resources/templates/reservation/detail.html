@@ -39,6 +39,10 @@
 </header>
 
 <main class="container py-5">
+<div class="d-flex flex-wrap gap-2 mb-4" sec:authorize="hasAnyRole('CUSTOMER','ADMIN','RESERVATION_MANAGER','STAY_MANAGER')">
+<a class="btn btn-gold" th:href="@{/payments/reservations/{id}(id=${reservation.id})}">Payments &amp; receipts</a>
+<a class="btn btn-outline-secondary" sec:authorize="hasAnyRole('ADMIN','RESERVATION_MANAGER','STAY_MANAGER')" th:href="@{/payments}">Payment accounts</a>
+</div>
 
     <div class="row g-4 align-items-start">
 

@@ -474,6 +474,206 @@
         .hp .tilt-card { transform: none; }
         .hp .hero-photo { transform: none; }
     }
+
+    /* Layered hero: independent float, pointer tilt and scroll transforms. */
+    .hp .hero-inner { grid-template-columns: 1.25fr 1fr; gap: 35px; }
+    .hp .dream-scene { position: relative; height: 490px; perspective: 1400px; }
+    .hp .dream-stack { position: absolute; inset: 0; transform-style: preserve-3d;
+        transform: rotateX(var(--stack-rx, 0deg)) rotateY(var(--stack-ry, -8deg));
+        transition: transform .4s ease-out; }
+    .hp .dream-layer { position: absolute; transform-style: preserve-3d;
+        transition: transform .18s ease-out; }
+    .hp .dream-float { position: relative; padding: 7px; border-radius: 19px;
+        background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.55);
+        box-shadow: 0 28px 55px rgba(0,0,0,.36); animation: dreamFloat 7s ease-in-out infinite;
+        transform-style: preserve-3d; }
+    .hp .dream-layer img { width: 100%; display: block; object-fit: cover; border-radius: 13px; }
+    .hp .layer-room { width: 66%; left: 18%; top: 60px;
+        transform: translate3d(0, var(--room-scroll, 0px), 65px) rotateZ(-5deg); }
+    .hp .layer-room img { aspect-ratio: 3/4; }
+    .hp .layer-pool { width: 51%; left: -3%; top: 13px;
+        transform: translate3d(var(--pool-scroll, 0px), -8px, -35px) rotateZ(-16deg); }
+    .hp .layer-pool img, .hp .layer-dining img { aspect-ratio: 4/3; }
+    .hp .layer-pool .dream-float { animation-delay: -2s; }
+    .hp .layer-dining { width: 50%; right: -2%; top: 240px;
+        transform: translate3d(var(--dining-scroll, 0px), 0, 105px) rotateZ(12deg); }
+    .hp .layer-dining .dream-float { animation-delay: -4s; }
+    .hp .dream-layer span { position: absolute; left: 17px; bottom: 17px;
+        background: rgba(15,43,31,.88); padding: 6px 10px; border-radius: 7px;
+        color: white; font-size: .73rem; }
+    .hp .dream-caption { position: absolute; left: -15px; right: 15px; bottom: 25px;
+        background: #faf7f1; color: #193e31; border-radius: 11px; padding: 17px;
+        transform: translateZ(32px); box-shadow: 0 12px 25px rgba(0,0,0,.2); }
+    .hp .dream-caption small { font-size: .57rem; letter-spacing: .13em; }
+    .hp .dream-caption strong { display: block; font-family: Georgia, serif; font-size: 1.3rem; }
+    .hp .dream-label { position: absolute; bottom: -4px; left: 14%; color: #e9e2ca;
+        font-size: .75rem; letter-spacing: .08em; }
+    .hp .dream-orbit { position: absolute; border: 1px solid rgba(230,189,114,.25);
+        border-radius: 50%; pointer-events: none; }
+    .hp .orbit-one { inset: 15px -15px; transform: rotateZ(-20deg); }
+    .hp .orbit-two { inset: 50px -35px; transform: rotateZ(24deg); }
+    .hp .hero-text { position: relative; z-index: 2;
+        translate: var(--text-x, 0px) var(--text-y, 0px); transition: translate .45s ease-out; }
+    .hp .hero-shade { background: linear-gradient(90deg,rgba(5,25,21,.9),rgba(5,25,21,.6) 58%,rgba(5,25,21,.3)); }
+    .hp .button { translate: var(--mag-x, 0px) var(--mag-y, 0px); transition: translate .2s, transform .25s, box-shadow .25s, background .25s; }
+    .hp .tilt-card { display: flex; flex-direction: column; }
+    .hp .card-body { flex: 1; display: flex; flex-direction: column; }
+    .hp .card-body .price { margin-top: auto; }
+    .hp .card-body .button { align-self: flex-start; }
+    .hp .tilt-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit;
+        pointer-events: none; opacity: 0; transition: opacity .3s;
+        background: radial-gradient(circle at var(--glow-x,50%) var(--glow-y,50%),rgba(230,189,114,.15),transparent 55%); }
+    .hp .tilt-card.is-tilting::after { opacity: 1; }
+    @keyframes dreamFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-13px); } }
+    [data-bs-theme="dark"] .hp { --surface:#1d3026; --background:#14221c; --heading:#e8ecdc; --muted:#bfccbf; --border:#354b3c; }
+    [data-bs-theme="dark"] .hp .experience { background:#192a21; }
+    [data-bs-theme="dark"] .hp .eyebrow, [data-bs-theme="dark"] .hp .rating { color:#f0ce86; }
+    [data-bs-theme="dark"] .hp input, [data-bs-theme="dark"] .hp select { color-scheme:dark; }
+    @media (max-width:991px) {
+        .hp .hero-inner { grid-template-columns:1fr; }
+        .hp .dream-scene { display:none; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+        .hp .dream-stack { transform:none; }
+        .hp .hero-text, .hp .button { translate:none; }
+    }
+
+
+    /* Open the stack into three separate photo cards on desktop hover. */
+    .hp .dream-room-label { display: none; }
+    @media (min-width: 992px) and (hover: hover) and (pointer: fine) {
+        .hp .dream-layer {
+            transition: transform .65s cubic-bezier(.22,.8,.25,1),
+                        left .65s ease, right .65s ease,
+                        top .65s ease, width .65s ease;
+        }
+        .hp .dream-layer img {
+            transition: aspect-ratio .65s ease;
+        }
+        .hp .dream-caption {
+            transition: opacity .25s ease;
+        }
+        .hp .dream-scene:hover .dream-stack {
+            transform: rotateX(0deg) rotateY(0deg);
+        }
+        .hp .dream-scene:hover .dream-layer {
+            width: 48%;
+            transform: translate3d(0, 0, 0) rotateZ(0deg);
+        }
+        .hp .dream-scene:hover .layer-pool {
+            left: -2%; top: 35px;
+        }
+        .hp .dream-scene:hover .layer-room {
+            left: 51%; top: 35px;
+        }
+        .hp .dream-scene:hover .layer-dining {
+            left: 23%; right: auto; top: 255px; width: 54%;
+        }
+        .hp .dream-scene:hover .dream-layer img {
+            aspect-ratio: auto;
+            height: auto;
+            object-fit: contain;
+            background: transparent;
+        }
+        .hp .dream-scene:hover .dream-float {
+            animation: none;
+        }
+        .hp .dream-scene:hover .dream-room-label { display: block; }
+        .hp .dream-scene:hover .dream-caption {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .hp .dream-scene:hover .dream-layer span {
+            left: 10px; right: 10px; bottom: 12px;
+            padding: 6px; font-size: .65rem; text-align: center;
+        }
+    }
+
+
+    /* Larger, balanced expanded gallery. */
+    @media (min-width: 1200px) {
+        .hp .hero-inner { grid-template-columns: 1.08fr 1.12fr; gap: 50px; }
+        .hp .hero-inner.wrap { width: min(1280px, calc(100% - 64px)); }
+        .hp h1 { font-size: clamp(3rem, 5vw, 4.7rem); }
+    }
+    @media (min-width: 992px) and (hover: hover) and (pointer: fine) {
+        .hp .dream-scene { height: 540px; }
+        .hp .dream-scene:hover .layer-pool {
+            width: 49%; left: -1%; top: 12px;
+        }
+        .hp .dream-scene:hover .layer-room {
+            width: 49%; left: 52%; top: 12px;
+        }
+        .hp .dream-scene:hover .layer-dining {
+            width: 72%; left: 14%; right: auto; top: 242px;
+        }
+        .hp .dream-scene:hover .dream-float {
+            padding: 8px; background: rgba(255,255,255,.18);
+            border-color: rgba(255,255,255,.65);
+            box-shadow: 0 22px 45px rgba(0,0,0,.3);
+        }
+        .hp .dream-scene:hover .dream-layer span {
+            position: static; display: block;
+            margin: 0; padding: 10px 4px 3px;
+            background: transparent; color: white;
+            font-size: .78rem; font-weight: 600;
+            letter-spacing: .02em;
+        }
+        .hp .dream-scene:hover .dream-orbit { opacity: .4; }
+        .hp .dream-scene:hover .dream-label { opacity: 0; }
+        .hp .dream-orbit, .hp .dream-label { transition: opacity .4s; }
+    }
+
+
+    /* Keep the resting stack inside its scene and avoid caption overlap. */
+    .hp .dream-label { display: none; }
+    @media (min-width: 992px) {
+        .hp .layer-room { width: 60%; left: 20%; top: 65px; }
+        .hp .layer-room img { aspect-ratio: 4 / 5; }
+        .hp .layer-pool { width: 44%; left: 0; top: 45px; }
+        .hp .layer-dining { width: 44%; right: 0; top: 270px; }
+    }
+
+
+    .ayubowan-intro[hidden] { display: none !important; }
+    .ayubowan-intro { position: fixed; left: 22px; bottom: 0; z-index: 1050;
+        display: flex; align-items: center; gap: 0; pointer-events: none;
+        max-width: calc(100vw - 30px); animation: ayHello .7s ease both; }
+    .ayubowan-intro.leaving { animation: ayBye .45s ease both; }
+    .ayubowan-person { width: 185px; height: 340px; object-fit: contain;
+        filter: drop-shadow(0 12px 20px rgba(0,0,0,.22));
+        transform-origin: bottom center; animation: ayBow 2s ease .7s both; }
+    .ayubowan-message { position: relative; margin-left: -12px; max-width: 260px;
+        background: #faf7f1; color: #193e31; border: 1px solid #e6bd72;
+        border-radius: 18px; padding: 22px; box-shadow: 0 15px 40px rgba(0,0,0,.22); }
+    .ayubowan-message small { font-size: .65rem; font-weight: 800; letter-spacing: .12em; }
+    .ayubowan-message strong { display:block; font-family: Georgia,serif;
+        font-size: 2rem; margin: 8px 0; }
+    .ayubowan-message p { font-size: .9rem; margin: 0 0 12px; }
+    .ayubowan-skip { pointer-events: auto; border: 1px solid #c7cebf;
+        border-radius: 8px; background: transparent; color: #193e31;
+        padding: 6px 12px; font-size: .8rem; }
+    .ayubowan-skip:focus-visible { outline: 3px solid #b48b43; outline-offset: 3px; }
+    @keyframes ayHello { from { opacity:0; transform:translateX(-35px); }
+        to { opacity:1; transform:translateX(0); } }
+    @keyframes ayBow { 0%,100% { transform:rotate(0deg); } 50% { transform:rotate(2deg); } }
+    @keyframes ayBye { to { opacity:0; transform:translateX(-25px); } }
+    @media(max-width:600px) {
+        .ayubowan-intro { left: 8px; }
+        .ayubowan-person { width:115px; height:225px; }
+        .ayubowan-message { padding:16px; max-width:205px; }
+        .ayubowan-message strong { font-size:1.6rem; }
+    }
+    @media(prefers-reduced-motion:reduce) {
+        .ayubowan-intro, .ayubowan-person { animation:none !important; }
+    }
+
+
+    .ayubowan-offers { display: block; pointer-events: auto; margin-bottom: 12px;
+        padding: 10px 12px; border-radius: 8px; background: #e6bd72;
+        color: #193e31; font-size: .85rem; font-weight: 800; text-decoration: none; }
+    .ayubowan-offers:hover { background: #f0cc8a; color: #193e31; }
+    .ayubowan-offers:focus-visible { outline: 3px solid #b48b43; outline-offset: 3px; }
 </style>
 
 <main id="main-content" class="hp">
@@ -505,14 +705,34 @@
                 </div>
             </div>
 
-            <div class="floating-photo" aria-hidden="true">
-                <div class="postcard">
-                    <img th:src="@{/images/room-suite.png}" alt="">
-                    <div class="postcard-caption">
-                        <strong>A moment of island calm.</strong>
-                        <small>Your next escape starts here.</small>
+            <div class="dream-scene" aria-hidden="true">
+                <div class="dream-orbit orbit-one"></div>
+                <div class="dream-orbit orbit-two"></div>
+                <div class="dream-stack">
+                    <div class="dream-layer layer-pool">
+                        <div class="dream-float">
+                            <img th:src="@{/images/facility-pool.png}" alt="">
+                            <span>Slow island days</span>
+                        </div>
+                    </div>
+                    <div class="dream-layer layer-dining">
+                        <div class="dream-float">
+                            <img th:src="@{/images/facility-dining.png}" alt="">
+                            <span>Sunset moments</span>
+                        </div>
+                    </div>
+                    <div class="dream-layer layer-room">
+                        <div class="dream-float">
+                            <img th:src="@{/images/room-suite.png}" alt="">
+                            <span class="dream-room-label">Your room retreat</span>
+                            <div class="dream-caption">
+                                <small>THE ART OF SLOWING DOWN</small>
+                                <strong>Your island escape.</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <span class="dream-label">A little island inspiration</span>
             </div>
         </div>
     </section>
@@ -573,8 +793,8 @@
                             <img th:src="@{${featuredRoomImages[room.id] != null
                                  ? '/uploads/' + featuredRoomImages[room.id]
                                  : (item.index % 2 == 0
-                                 ? '/images/room-deluxe.png'
-                                 : '/images/room-suite.png')}}"
+                                 ? '/images/room-default.svg'
+                                 : '/images/room-default.svg')}}"
                                  th:alt="${room.roomType.name + ' room image'}"
                                  loading="lazy">
                         </div>
@@ -584,9 +804,9 @@
                                 <span th:text="${'Up to ' + room.roomType.capacity + ' guests'}"></span>
                             </div>
                             <h3 th:text="${room.roomType.name}"></h3>
-                            <p th:text="${room.description}"></p>
+                            <p th:text="${room.description ?: room.roomType.description}"></p>
                             <span class="price"
-                                  th:text="${'LKR ' + room.roomType.basePrice + ' / night'}"></span>
+                                  th:text="${'LKR ' + #numbers.formatDecimal(room.nightlyPrice, 1, 'COMMA', 2, 'POINT') + ' / night'}"></span>
                             <a class="button"
                                th:href="@{/rooms/{id}(id=${room.id})}">
                                 Explore room &rarr;
@@ -728,6 +948,26 @@
     </section>
 </main>
 
+
+<aside id="ayubowanIntro" class="ayubowan-intro" hidden aria-label="Welcome to StayLanka">
+    <img id="ayubowanPerson" class="ayubowan-person"
+         th:src="@{/images/ayubowan-hostess.png}" alt="" width="185" height="340">
+    <div class="ayubowan-message">
+        <div role="status" aria-live="polite">
+            <small>ISLAND HOSPITALITY</small>
+            <strong>Ayubowan!</strong>
+            <p>Welcome to StayLanka.</p>
+            <p th:unless="${#lists.isEmpty(activePromotions)}">
+                We have offers for your next stay. Explore our current promotions!
+            </p>
+        </div>
+        <a class="ayubowan-offers" th:unless="${#lists.isEmpty(activePromotions)}"
+           th:href="@{/promotions}">View promotions <span aria-hidden="true">→</span></a>
+        <button id="ayubowanSkip" class="ayubowan-skip" type="button"
+                aria-label="Dismiss welcome greeting">Skip intro</button>
+    </div>
+</aside>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 
 <script>
@@ -856,50 +1096,189 @@
             finePointer.addEventListener('change', reset);
         });
 
-        /* Hero pointer parallax */
+        /* Layered hero, scroll spread and magnetic buttons. */
         const hero = document.getElementById('hpHero');
         const photo = hero.querySelector('.hero-photo');
+        const stack = hero.querySelector('.dream-stack');
+        const text = hero.querySelector('.hero-text');
+        const desktop = window.matchMedia('(min-width: 992px)');
         let heroFrame = 0;
+        let scrollFrame = 0;
+        let heroVisible = true;
+        const heroMotion = () => motionEnabled() && desktop.matches;
 
         function resetHero() {
             cancelAnimationFrame(heroFrame);
             photo.style.setProperty('--px', '0px');
             photo.style.setProperty('--py', '0px');
+            stack.style.setProperty('--stack-rx', '0deg');
+            stack.style.setProperty('--stack-ry', '-8deg');
+            text.style.setProperty('--text-x', '0px');
+            text.style.setProperty('--text-y', '0px');
         }
 
         hero.addEventListener('pointermove', event => {
-            if (!motionEnabled() || event.pointerType === 'touch') {
-                resetHero();
-                return;
-            }
-
+            if (!heroMotion() || event.pointerType === 'touch') return;
             const bounds = hero.getBoundingClientRect();
             const x = (event.clientX - bounds.left) / bounds.width - .5;
             const y = (event.clientY - bounds.top) / bounds.height - .5;
-
             cancelAnimationFrame(heroFrame);
             heroFrame = requestAnimationFrame(() => {
-                photo.style.setProperty('--px', `${x * 24}px`);
-                photo.style.setProperty('--py', `${y * 18}px`);
+                photo.style.setProperty('--px', `${x * 28}px`);
+                photo.style.setProperty('--py', `${y * 20}px`);
+                stack.style.setProperty('--stack-rx', `${-y * 12}deg`);
+                stack.style.setProperty('--stack-ry', `${-8 + x * 18}deg`);
+                text.style.setProperty('--text-x', `${-x * 5}px`);
+                text.style.setProperty('--text-y', `${-y * 4}px`);
+            });
+        });
+        hero.addEventListener('pointerleave', resetHero);
+        hero.addEventListener('pointercancel', resetHero);
+
+        function updateSpread() {
+            scrollFrame = 0;
+            const bounds = hero.getBoundingClientRect();
+            const progress = heroMotion()
+                ? Math.min(1, Math.max(0, -bounds.top / bounds.height)) : 0;
+            stack.style.setProperty('--pool-scroll', `${-progress * 55}px`);
+            stack.style.setProperty('--dining-scroll', `${progress * 55}px`);
+            stack.style.setProperty('--room-scroll', `${progress * 30}px`);
+        }
+        function queueSpread() {
+            if (!scrollFrame) scrollFrame = requestAnimationFrame(updateSpread);
+        }
+        window.addEventListener('scroll', () => {
+            if (heroVisible && heroMotion()) queueSpread();
+        }, { passive: true });
+        window.addEventListener('resize', queueSpread, { passive: true });
+        if ('IntersectionObserver' in window) {
+            const heroObserver = new IntersectionObserver(entries => {
+                heroVisible = entries[0].isIntersecting;
+                if (heroVisible) queueSpread();
+            });
+            heroObserver.observe(hero);
+        }
+
+        const magneticResets = [];
+        document.querySelectorAll('.hp .button').forEach(button => {
+            const reset = () => {
+                button.style.setProperty('--mag-x', '0px');
+                button.style.setProperty('--mag-y', '0px');
+            };
+            magneticResets.push(reset);
+            button.addEventListener('pointermove', event => {
+                if (!heroMotion() || event.pointerType === 'touch') return;
+                const rect = button.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width - .5;
+                const y = (event.clientY - rect.top) / rect.height - .5;
+                button.style.setProperty('--mag-x', `${x * 6}px`);
+                button.style.setProperty('--mag-y', `${y * 5}px`);
+            });
+            button.addEventListener('pointerleave', reset);
+            button.addEventListener('pointercancel', reset);
+            button.addEventListener('blur', reset);
+        });
+
+        cards.forEach(card => {
+            card.parentElement.addEventListener('pointermove', event => {
+                if (!motionEnabled()) return;
+                const rect = card.parentElement.getBoundingClientRect();
+                card.style.setProperty('--glow-x', `${(event.clientX - rect.left) / rect.width * 100}%`);
+                card.style.setProperty('--glow-y', `${(event.clientY - rect.top) / rect.height * 100}%`);
             });
         });
 
-        hero.addEventListener('pointerleave', resetHero);
-        hero.addEventListener('pointercancel', resetHero);
-        finePointer.addEventListener('change', resetHero);
-
-        reducedMotion.addEventListener('change', () => {
+        function resetMotion() {
             resetHero();
-
+            queueSpread();
+            magneticResets.forEach(reset => reset());
             if (reducedMotion.matches) {
-                if (observer) observer.disconnect();
+                observer?.disconnect();
                 reveals.forEach(element => {
                     element.classList.remove('waiting');
                     element.classList.add('shown');
                 });
             }
-        });
+        }
+        finePointer.addEventListener('change', resetMotion);
+        reducedMotion.addEventListener('change', resetMotion);
+        desktop.addEventListener('change', resetMotion);
+        updateSpread();
     })();
+</script>
+
+
+<script>
+(() => {
+    const intro = document.getElementById('ayubowanIntro');
+    const person = document.getElementById('ayubowanPerson');
+    const skip = document.getElementById('ayubowanSkip');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let timer;
+    let removal;
+    let dismissed = false;
+    let shown = false;
+    // Respect visitors who request reduced motion.
+    if (reduced.matches) return;
+    function dismiss(immediate = false) {
+        dismissed = true;
+        clearTimeout(timer);
+        clearTimeout(removal);
+        if (intro.hidden) return;
+        if (intro.contains(document.activeElement)) {
+            const target = document.querySelector('.hp .actions a');
+            target?.focus({ preventScroll: true });
+        }
+        if (immediate) { intro.hidden = true; return; }
+        intro.classList.add('leaving');
+        removal = setTimeout(() => { intro.hidden = true; }, 450);
+    }
+    function show() {
+        if (dismissed || shown || reduced.matches || document.hidden || !person.naturalWidth) return;
+        shown = true;
+        intro.hidden = false;
+        timer = setTimeout(() => dismiss(), 7000);
+    }
+    skip.addEventListener('click', () => dismiss());
+    // Give visitors time to read and use the promotion link.
+    intro.addEventListener('pointerenter', () => clearTimeout(timer));
+    intro.addEventListener('pointerleave', () => {
+        if (!dismissed && !intro.contains(document.activeElement)) {
+            timer = setTimeout(() => dismiss(), 2500);
+        }
+    });
+    intro.addEventListener('focusin', () => clearTimeout(timer));
+    intro.addEventListener('focusout', event => {
+        if (!dismissed && !intro.contains(event.relatedTarget)) {
+            timer = setTimeout(() => dismiss(), 2500);
+        }
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !intro.hidden) dismiss();
+    });
+    reduced.addEventListener('change', () => {
+        if (reduced.matches) dismiss(true);
+    });
+    window.addEventListener('pagehide', () => dismiss(true));
+    // Replay when Home is restored using the browser Back/Forward cache.
+    window.addEventListener('pageshow', event => {
+        if (!event.persisted) return;
+        clearTimeout(timer);
+        clearTimeout(removal);
+        intro.hidden = true;
+        intro.classList.remove('leaving');
+        dismissed = false;
+        shown = false;
+        show();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && shown) dismiss(true);
+        else show();
+    });
+    person.addEventListener('load', show, { once: true });
+    person.addEventListener('error', () => dismiss(true), { once: true });
+    if (person.complete) show();
+})();
 </script>
 
 </body>

@@ -214,6 +214,17 @@ public class ReservationService {
         Reservation reservation =
                 detailed(id);
 
+        // Preserve all financial history, including refunded transactions.
+        em.lock(reservation, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        Long paymentCount = em.createQuery(
+                "select count(p) from PaymentEntry p where p.reservation.id = :id", Long.class)
+                .setParameter("id", id).getSingleResult();
+        if (paymentCount > 0) {
+            throw new BusinessRuleException(
+                    "This reservation has payment history and cannot be permanently deleted. "
+                    + "Keep the ledger and use cancellation instead.");
+        }
+
         String reference =
                 reservation.getReservationReference();
 

@@ -4,45 +4,804 @@
 <body>
 <nav th:replace="~{fragments/layout :: navbar}"></nav>
 <div th:replace="~{fragments/layout :: alerts}"></div>
-<header class="sl-page-header">
-    <div class="container">
-        <span class="sl-eyebrow">StayLanka offers</span>
-        <h1 class="mb-2">Current promotions</h1>
-        <p class="text-secondary mb-0">Use an eligible code during reservation. Every offer is checked against its real validity and stay conditions.</p>
-    </div>
-</header>
-<main class="container py-5">
-    <div class="row g-4" th:unless="${promotions.empty}">
-        <div class="col-md-6" th:each="promotion : ${promotions}">
-            <article class="card sl-offer-card">
-                <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
-                    <span class="sl-offer-code" th:text="${promotion.code}"></span>
-                    <span class="sl-offer-value" th:text="${promotion.type.name() == 'PERCENTAGE' ? #numbers.formatDecimal(promotion.value,1,0) + '% off' : 'LKR ' + #numbers.formatDecimal(promotion.value,1,0) + ' off'}"></span>
-                </div>
-                <h2 class="h3" th:text="${promotion.name}"></h2>
-                <p th:text="${promotion.description}"></p>
-                <div class="row g-2 small mt-2">
-                    <div class="col-sm-6"><span class="d-block text-white-50">Valid through</span><strong th:text="${#temporals.format(promotion.endDate,'dd MMM yyyy')}"></strong></div>
-                    <div class="col-sm-6"><span class="d-block text-white-50">Minimum stay</span><strong th:text="${promotion.minimumNights + (promotion.minimumNights == 1 ? ' night' : ' nights')}"></strong></div>
-                    <div class="col-sm-6" th:if="${promotion.minimumAmount.signum() > 0}"><span class="d-block text-white-50">Minimum booking value</span><strong th:text="${'LKR ' + #numbers.formatDecimal(promotion.minimumAmount,1,0)}"></strong></div>
-                </div>
-            </article>
+
+<style>
+    .offers {
+        --of-bg: #faf7f1;
+        --of-surface: #ffffff;
+        --of-text: #193e31;
+        --of-muted: #65746b;
+        --of-border: #dfe5da;
+        --of-gold: #e6bd72;
+        background: var(--of-bg);
+        color: var(--of-text);
+        padding-bottom: 60px;
+    }
+
+    [data-bs-theme="dark"] .offers {
+        --of-bg: #111e19;
+        --of-surface: #192b23;
+        --of-text: #edf5ee;
+        --of-muted: #b0c0b5;
+        --of-border: #34483c;
+    }
+
+    .of-wrap {
+        width: min(1200px, calc(100% - 40px));
+        margin: auto;
+    }
+
+    .of-hero {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background: #193e31;
+        padding: 65px 0 75px;
+        color: #fff;
+    }
+
+    .of-hero > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -2;
+    }
+
+    .of-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+                90deg, rgba(12, 37, 27, .92), rgba(12, 37, 27, .55)
+        );
+        z-index: -1;
+    }
+
+    .of-breadcrumb {
+        display: flex;
+        gap: 12px;
+        color: #d5dfd7;
+        font-size: .9rem;
+        margin-bottom: 30px;
+    }
+
+    .of-breadcrumb a {
+        color: #e6bd72;
+        text-underline-offset: 4px;
+    }
+
+    .of-eyebrow {
+        display: block;
+        font-size: .75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .18em;
+        margin-bottom: 13px;
+        color: var(--of-muted);
+    }
+
+    .of-hero .of-eyebrow {
+        color: #e6bd72;
+    }
+
+    .of-hero h1 {
+        font-family: Georgia, serif;
+        font-size: clamp(2.6rem, 5vw, 4.6rem);
+        line-height: 1.08;
+        color: white;
+        max-width: 760px;
+        margin-bottom: 22px;
+    }
+
+    .of-hero h1 em {
+        color: #e6bd72;
+    }
+
+    .of-hero p {
+        color: #e1e9e3;
+        max-width: 640px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .of-section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin: 42px 0 26px;
+    }
+
+    .of-section-heading h2 {
+        font-family: Georgia, serif;
+        font-size: 2rem;
+        color: var(--of-text);
+        margin: 0;
+    }
+
+    .of-count {
+        color: var(--of-muted);
+        font-size: .9rem;
+    }
+
+    .of-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px;
+    }
+
+    .of-scene {
+        perspective: 1200px;
+        min-width: 0;
+    }
+
+    .of-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--of-border);
+        border-radius: 22px;
+        background: var(--of-surface);
+        box-shadow: 0 15px 40px rgba(20, 50, 35, .08);
+        transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+        transition: transform .2s ease, box-shadow .3s ease;
+    }
+
+    .of-card:hover {
+        box-shadow: 0 24px 50px rgba(20, 50, 35, .15);
+    }
+
+    .of-photo {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        background: #193e31;
+    }
+
+    .of-photo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .7s ease;
+    }
+
+    .of-card:hover .of-photo img {
+        transform: scale(1.045);
+    }
+
+    .of-photo::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+                180deg, rgba(0, 0, 0, .06), rgba(9, 30, 20, .5)
+        );
+    }
+
+    .of-discount {
+        position: absolute;
+        bottom: 20px;
+        left: 22px;
+        z-index: 1;
+        padding: 12px 18px;
+        border-radius: 13px;
+        background: #e6bd72;
+        color: #193e31;
+        font-size: clamp(1.2rem, 2vw, 1.7rem);
+        font-weight: 800;
+    }
+
+    .of-body {
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .of-body h3 {
+        font-family: Georgia, serif;
+        font-size: 1.8rem;
+        color: var(--of-text);
+        margin-bottom: 13px;
+        overflow-wrap: anywhere;
+    }
+
+    .of-description {
+        color: var(--of-muted);
+        line-height: 1.8;
+        margin-bottom: 24px;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+
+    .of-facts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: auto;
+        padding: 20px 0;
+        border-top: 1px solid var(--of-border);
+    }
+
+    .of-facts small {
+        display: block;
+        color: var(--of-muted);
+        margin-bottom: 6px;
+    }
+
+    .of-facts strong {
+        display: block;
+        font-size: .95rem;
+        overflow-wrap: anywhere;
+    }
+
+    .of-code-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 15px;
+        background: var(--of-bg);
+        border: 1px dashed var(--of-border);
+        border-radius: 12px;
+        margin: 3px 0 18px;
+    }
+
+    .of-code-box small {
+        display: block;
+        color: var(--of-muted);
+        margin-bottom: 5px;
+    }
+
+    .of-code {
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        overflow-wrap: anywhere;
+    }
+
+    .of-copy {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--of-border);
+        border-radius: 9px;
+        padding: 9px 12px;
+        background: var(--of-surface);
+        color: var(--of-text);
+        font-size: .85rem;
+        font-weight: 700;
+    }
+
+    .of-copy:hover {
+        border-color: var(--of-gold);
+    }
+
+    .of-button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 22px;
+        min-height: 50px;
+        border: 1px solid var(--of-gold);
+        border-radius: 11px;
+        background: var(--of-gold);
+        color: #193e31;
+        text-decoration: none;
+        font-weight: 800;
+        transition: transform .2s, background .2s;
+    }
+
+    .of-button:hover {
+        background: #f0cc8a;
+        color: #193e31;
+        transform: translateY(-2px);
+    }
+
+    .of-button:focus-visible,
+    .of-copy:focus-visible {
+        outline: 3px solid var(--of-gold);
+        outline-offset: 4px;
+    }
+
+    .of-note {
+        color: var(--of-muted);
+        text-align: center;
+        font-size: .8rem;
+        line-height: 1.7;
+        margin: 14px 0 0;
+    }
+
+    .of-how {
+        margin-top: 44px;
+        padding: 32px;
+        background: var(--of-surface);
+        border: 1px solid var(--of-border);
+        border-radius: 20px;
+    }
+
+    .of-how h2 {
+        font-family: Georgia, serif;
+        color: var(--of-text);
+        font-size: 1.9rem;
+        margin-bottom: 25px;
+    }
+
+    .of-steps {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 28px;
+    }
+
+    .of-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #e6bd72;
+        color: #193e31;
+        font-weight: 800;
+        margin-bottom: 14px;
+    }
+
+    .of-step h3 {
+        font-size: 1.1rem;
+        color: var(--of-text);
+        margin-bottom: 9px;
+    }
+
+    .of-step p {
+        color: var(--of-muted);
+        font-size: .9rem;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .of-empty {
+        text-align: center;
+        background: var(--of-surface);
+        border: 1px solid var(--of-border);
+        border-radius: 20px;
+        padding: 45px 25px;
+    }
+
+    .of-empty > i {
+        font-size: 2.5rem;
+        color: var(--of-text);
+    }
+
+    .of-empty h2 {
+        color: var(--of-text);
+        margin: 18px 0 12px;
+    }
+
+    .of-empty p {
+        color: var(--of-muted);
+        margin-bottom: 24px;
+    }
+
+    .of-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-top: 32px;
+    }
+
+    .of-pagination a {
+        color: var(--of-text);
+        border: 1px solid var(--of-border);
+        border-radius: 10px;
+        padding: 10px 15px;
+        text-decoration: none;
+    }
+
+    .of-pagination span {
+        color: var(--of-muted);
+    }
+
+    .of-status {
+        min-height: 24px;
+        color: var(--of-text);
+        font-size: .9rem;
+        margin-top: 18px;
+    }
+
+    .of-reveal {
+        transition: opacity .65s ease, translate .65s ease;
+    }
+
+    .of-reveal.waiting {
+        opacity: 0;
+        translate: 0 25px;
+    }
+
+    @media (max-width: 767px) {
+        .of-wrap {
+            width: calc(100% - 28px);
+        }
+
+        .of-hero {
+            padding: 42px 0 50px;
+        }
+
+        .of-grid,
+        .of-steps {
+            grid-template-columns: 1fr;
+        }
+
+        .of-section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .of-body,
+        .of-how {
+            padding: 22px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .of-facts {
+            grid-template-columns: 1fr;
+        }
+
+        .of-code-box {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .offers *,
+        .offers *::before,
+        .offers *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        .of-reveal.waiting {
+            opacity: 1;
+            translate: none;
+        }
+
+        .of-card {
+            transform: none;
+        }
+    }
+</style>
+
+<main id="main-content" class="offers">
+    <header class="of-hero">
+        <img th:src="@{/images/hotel-hero.png}" alt="">
+
+        <div class="of-wrap">
+            <nav class="of-breadcrumb" aria-label="Breadcrumb">
+                <a th:href="@{/}">Home</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Promotions</span>
+            </nav>
+
+            <span class="of-eyebrow">StayLanka offers</span>
+            <h1>A beautiful stay.<br><em>A little extra value.</em></h1>
+            <p>
+                Explore our current promotions and find an offer for your
+                next island escape. Choose your dates, check the conditions,
+                and use your code when you reserve.
+            </p>
         </div>
-    </div>
-    <div th:if="${promotions.empty}" class="card empty-state">
-        <i class="bi bi-tag fs-1"></i><h2 class="h4 mt-3">No active promotions right now</h2><p>Room availability and direct reservations are still open.</p><a class="btn btn-gold mx-auto" th:href="@{/rooms}">Browse Rooms</a>
-    </div>
-    <nav class="mt-5" th:if="${promotions.totalPages > 1}" aria-label="Promotion pages">
-        <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${promotions.first} ? 'disabled'"><a class="page-link" th:href="@{/promotions(page=${promotions.number-1})}">Previous</a></li>
-            <li class="page-item disabled"><span class="page-link" th:text="${'Page ' + (promotions.number+1) + ' of ' + promotions.totalPages}"></span></li>
-            <li class="page-item" th:classappend="${promotions.last} ? 'disabled'"><a class="page-link" th:href="@{/promotions(page=${promotions.number+1})}">Next</a></li>
-        </ul>
-    </nav>
-    <div class="sl-booking-cta mt-5">
-        <div class="row align-items-center g-4"><div class="col-lg-8"><h2 class="mb-2">Found an offer that suits your stay?</h2><p class="mb-0">Check live room availability first. You can enter the promotion code on the reservation form.</p></div><div class="col-lg-4 d-lg-flex justify-content-lg-end"><a class="btn btn-gold btn-lg" th:href="@{/rooms}">Check Availability</a></div></div>
+    </header>
+
+    <div class="of-wrap">
+        <div class="of-section-heading">
+            <div>
+                <span class="of-eyebrow">More reasons to get away</span>
+                <h2>Current promotions</h2>
+            </div>
+
+            <span class="of-count"
+                  th:text="${promotions.totalElements + (promotions.totalElements == 1 ? ' offer available' : ' offers available')}">
+                Offers available
+            </span>
+        </div>
+
+        <div class="of-grid" th:unless="${promotions.empty}">
+            <div class="of-scene of-reveal"
+                 th:each="promotion, stat : ${promotions}">
+
+                <article class="of-card" data-offer-tilt>
+                    <div class="of-photo">
+                        <img th:src="@{${stat.index % 2 == 0
+                             ? '/images/facility-pool.png'
+                             : '/images/room-suite.png'}}"
+                             alt="Illustrative StayLanka stay inspiration"
+                             loading="lazy">
+
+                        <span class="of-discount"
+                              th:text="${promotion.type.name() == 'PERCENTAGE'
+                                  ? #numbers.formatDecimal(promotion.value, 1, 0) + '% off'
+                                  : 'LKR ' + #numbers.formatDecimal(promotion.value, 1, 'COMMA', 2, 'POINT') + ' off'}">
+                            Offer discount
+                        </span>
+                    </div>
+
+                    <div class="of-body">
+                        <span class="of-eyebrow">Your next escape</span>
+                        <h3 th:text="${promotion.name}">Promotion name</h3>
+
+                        <p class="of-description"
+                           th:text="${promotion.description}">
+                            Promotion description
+                        </p>
+
+                        <div class="of-facts">
+                            <div>
+                                <small>
+                                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                    Valid through
+                                </small>
+                                <strong th:text="${#temporals.format(promotion.endDate, 'dd MMM yyyy')}">
+                                    End date
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>
+                                    <i class="bi bi-moon" aria-hidden="true"></i>
+                                    Minimum stay
+                                </small>
+                                <strong th:text="${promotion.minimumNights
+                                    + (promotion.minimumNights == 1 ? ' night' : ' nights')}">
+                                    Minimum nights
+                                </strong>
+                            </div>
+
+                            <div th:if="${promotion.minimumAmount.signum() > 0}">
+                                <small>Minimum booking value</small>
+                                <strong th:text="${'LKR '
+                                    + #numbers.formatDecimal(promotion.minimumAmount, 1, 'COMMA', 2, 'POINT')}">
+                                    Minimum amount
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="of-code-box">
+                            <div>
+                                <small>Your promotion code</small>
+                                <span class="of-code"
+                                      th:text="${promotion.code}">CODE</span>
+                            </div>
+
+                            <button class="of-copy"
+                                    type="button"
+                                    th:attr="data-copy-code=${promotion.code},
+                                             aria-label=${'Copy promotion code ' + promotion.code}">
+                                <i class="bi bi-copy" aria-hidden="true"></i>
+                                <span>Copy code</span>
+                            </button>
+                        </div>
+
+                        <a class="of-button" th:href="@{/rooms}">
+                            Find a room
+                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        </a>
+
+                        <p class="of-note">
+                            Enter this code on the reservation form.
+                            Eligibility is checked before the discount is applied.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="of-empty" th:if="${promotions.empty}">
+            <i class="bi bi-tag" aria-hidden="true"></i>
+            <h2 class="h4">No active promotions right now</h2>
+            <p>
+                Your next island escape is still waiting.
+                Explore our rooms and choose your travel dates.
+            </p>
+            <a class="of-button" th:href="@{/rooms}">
+                Browse rooms
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        <p id="offerCopyStatus"
+           class="of-status"
+           role="status"
+           aria-live="polite"
+           aria-atomic="true"></p>
+
+        <nav class="of-pagination"
+             th:if="${promotions.totalPages > 1}"
+             aria-label="Promotion pages">
+
+            <a th:unless="${promotions.first}"
+               th:href="@{/promotions(page=${promotions.number - 1})}">
+                Previous
+            </a>
+
+            <span th:text="${'Page ' + (promotions.number + 1)
+                + ' of ' + promotions.totalPages}">
+                Page number
+            </span>
+
+            <a th:unless="${promotions.last}"
+               th:href="@{/promotions(page=${promotions.number + 1})}">
+                Next
+            </a>
+        </nav>
+
+        <section class="of-how of-reveal">
+            <span class="of-eyebrow">Simple from start to stay</span>
+            <h2>How to use your offer</h2>
+
+            <div class="of-steps">
+                <div class="of-step">
+                    <span class="of-step-number">1</span>
+                    <h3>Choose your offer</h3>
+                    <p>
+                        Check the validity date and minimum stay.
+                        Copy the promotion code you want to use.
+                    </p>
+                </div>
+
+                <div class="of-step">
+                    <span class="of-step-number">2</span>
+                    <h3>Find your room</h3>
+                    <p>
+                        Search by your dates and guest count,
+                        then choose an available room.
+                    </p>
+                </div>
+
+                <div class="of-step">
+                    <span class="of-step-number">3</span>
+                    <h3>Apply your code</h3>
+                    <p>
+                        Enter the code on the reservation form.
+                        StayLanka checks the conditions and calculates
+                        your eligible discount.
+                    </p>
+                </div>
+            </div>
+
+            <p class="of-note mt-4">
+                Photos are illustrative. Included facilities and benefits
+                are described in each room and offer.
+            </p>
+        </section>
     </div>
 </main>
+
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script>
+    (() => {
+        const reducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        );
+
+        const finePointer = window.matchMedia(
+            '(hover: hover) and (pointer: fine)'
+        );
+
+        const status = document.getElementById('offerCopyStatus');
+        const copyButtons = document.querySelectorAll('[data-copy-code]');
+
+        copyButtons.forEach(button => {
+            let resetTimer;
+
+            button.addEventListener('click', async () => {
+                const code = button.dataset.copyCode;
+                const label = button.querySelector('span');
+
+                button.disabled = true;
+                clearTimeout(resetTimer);
+
+                try {
+                    if (!navigator.clipboard || !window.isSecureContext) {
+                        throw new Error('Clipboard unavailable');
+                    }
+
+                    await navigator.clipboard.writeText(code);
+
+                    label.textContent = 'Copied!';
+                    status.textContent =
+                        `Code ${code} copied. Enter it on the reservation form.`;
+
+                    resetTimer = setTimeout(() => {
+                        label.textContent = 'Copy code';
+                    }, 2500);
+                } catch {
+                    label.textContent = 'Copy code';
+                    status.textContent =
+                        `Please select and copy code ${code} manually.`;
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+
+        const reveals = [...document.querySelectorAll('.of-reveal')];
+        let observer;
+
+        if (!reducedMotion.matches && 'IntersectionObserver' in window) {
+            observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('waiting');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.06 });
+
+            reveals.forEach(element => {
+                element.classList.add('waiting');
+                observer.observe(element);
+            });
+        }
+
+        const resetCallbacks = [];
+
+        document.querySelectorAll('[data-offer-tilt]').forEach(card => {
+            const scene = card.parentElement;
+            let frame = 0;
+
+            const reset = () => {
+                cancelAnimationFrame(frame);
+                card.style.setProperty('--rx', '0deg');
+                card.style.setProperty('--ry', '0deg');
+            };
+
+            resetCallbacks.push(reset);
+
+            scene.addEventListener('pointermove', event => {
+                if (reducedMotion.matches || !finePointer.matches) return;
+
+                const rect = scene.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width - 0.5;
+                const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+                cancelAnimationFrame(frame);
+                frame = requestAnimationFrame(() => {
+                    card.style.setProperty('--rx', `${-y * 6}deg`);
+                    card.style.setProperty('--ry', `${x * 6}deg`);
+                });
+            });
+
+            scene.addEventListener('pointerleave', reset);
+            scene.addEventListener('pointercancel', reset);
+        });
+
+        reducedMotion.addEventListener('change', () => {
+            resetCallbacks.forEach(reset => reset());
+
+            if (reducedMotion.matches) {
+                observer?.disconnect();
+                reveals.forEach(element => {
+                    element.classList.remove('waiting');
+                });
+            }
+        });
+
+        finePointer.addEventListener('change', () => {
+            resetCallbacks.forEach(reset => reset());
+        });
+    })();
+</script>
 </body>
 </html>
