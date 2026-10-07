@@ -9,9 +9,11 @@ import com.staylanka.reservation.ReservationStatus;
 import com.staylanka.room.Room;
 import com.staylanka.room.RoomRepository;
 import com.staylanka.room.RoomStatus;
+import com.staylanka.review.ReviewRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class StayService {
     @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.AuditService audit;
     @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.NotificationService notices;
     @org.springframework.beans.factory.annotation.Autowired private com.staylanka.common.InputRules rules;
+    @org.springframework.beans.factory.annotation.Autowired private ReviewRepository reviewRepository;
     private final StayRepository stayRepository;
     private final AdditionalChargeRepository chargeRepository;
     private final ReservationRepository reservationRepository;
@@ -271,6 +274,47 @@ public class StayService {
         stay.getReservation().transitionTo(ReservationStatus.CANCELLED, "Erroneous stay voided; rebook if needed");
         audit.record(stay, "VOID");
         audit.record(stay.getReservation(), "CANCEL");
+    }
+
+    /**
+     * Permanently removes a finished/voided stay from the database.
+     *
+     * Active stays are deliberately blocked. Reviews and additional charges
+     * reference stays with ON DELETE RESTRICT, so they are removed first.
+     * The linked reservation is retained as booking history.
+     */
+    @Transactional
+    @PreAuthorize("hasAnyRole('STAY_MANAGER','ADMIN')")
+    public void deletePermanently(Long id) {
+        Stay stay = stayRepository.findDetailedByIdForUpdate(id)
+                .orElseThrow(() -> new NotFoundException("Stay was not found."));
+
+        if (!stay.isCompleted() && !stay.isVoided()) {
+            throw new BusinessRuleException(
+                    "Only a completed or voided stay can be permanently deleted."
+            );
+        }
+
+        Long stayId = stay.getId();
+        String reservationReference = stay.getReservation().getReservationReference();
+
+        // Keep a non-FK audit trace before removing the stay row.
+        audit.record(
+                "Stay",
+                stayId,
+                "HARD_DELETE",
+                "Stay permanently deleted; reservation " + reservationReference + " retained"
+        );
+
+        // Child rows use ON DELETE RESTRICT, so remove them first.
+        reviewRepository.deleteByStayId(stayId);
+        reviewRepository.flush();
+
+        chargeRepository.deleteByStayId(stayId);
+        chargeRepository.flush();
+
+        stayRepository.delete(stay);
+        stayRepository.flush();
     }
 
     private Stay openStay(Long stayId) {

@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface AdditionalChargeRepository extends JpaRepository<AdditionalCharge, Long> {
     List<AdditionalCharge> findByStayIdOrderByCreatedAtAsc(Long stayId);
+    void deleteByStayId(Long stayId);
 
     @Query("select coalesce(sum(c.subtotal), 0) from AdditionalCharge c where c.stay.id = :stayId")
     BigDecimal totalForStay(@Param("stayId") Long stayId);

@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByStayId(Long stayId);
     Optional<Review> findByStayId(Long stayId);
+    void deleteByStayId(Long stayId);
 
     @EntityGraph(attributePaths = {"customer", "stay", "stay.room", "stay.room.roomType"})
     Page<Review> findByStatus(ReviewStatus status, Pageable pageable);
